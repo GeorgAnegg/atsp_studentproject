@@ -1,5 +1,7 @@
 package ch.ethz.math.ifor.atsp
 
-class Solver {
+trait Solver {
+
+  def solve (input: Input): Output
 
 }
