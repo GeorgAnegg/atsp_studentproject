@@ -6,17 +6,15 @@ object BranchAndBoundSolver extends Solver {
 
 
   // TODO: construct root node
-  val rootNode:BranchNode = ???
+  val rootNode: BranchNode = ???
 
   def solve(input: Input): Output = {
 
     var currentBestNode: Option[LeafNode] = None
 
-    // start with root node
-    var activeBranches: List[BranchNode] = List(rootNode)
+    var activeBranches: List[BranchNode] = List(rootNode) // start with root node
 
-
-    while (activeBranches.nonEmpty)  {
+    while (activeBranches.nonEmpty) {
 
       val sortedNodes = activeBranches.sortBy(_.lowerBound)
 
@@ -25,15 +23,14 @@ object BranchAndBoundSolver extends Solver {
 
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
-          if (leaf.upperBound<currentBestNode.get.upperBound){ //compare with current upper bound
-            currentBestNode=Some(leaf)
-            activeBranches=activeBranches.filter(_.lowerBound>currentBestNode.get.upperBound)//prune remaining branches
+          if (leaf.upperBound < currentBestNode.get.upperBound) { //compare with current upper bound
+            currentBestNode = Some(leaf)
+            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.upperBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
-          activeBranches =  activeBranches ++ children //add children/new branches
+          activeBranches = activeBranches ++ children //add children/new branches
       }
     }
-
 
     val tour = currentBestNode.get.tour
     new Output(input, tour)
