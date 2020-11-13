@@ -1,7 +1,12 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-// TODO: replace "Double" by the type of a variable
-class BranchNode(vars: Map[Double, Option[Int]]) extends Node(vars) {
+import ch.ethz.math.ifor.atsp.Input
+import com.google.ortools.linearsolver.MPVariable
+
+class BranchNode(input: Input,
+                 varAssignment: Map[MPVariable, Option[Boolean]],
+                 level: Int)
+  extends Node(input, varAssignment, level) {
 
   // TODO: implement branchStep
   def branchStep: Either[LeafNode, List[BranchNode]] = {

@@ -18,6 +18,7 @@ object BranchAndBoundSolver extends Solver {
 
       val sortedNodes = activeBranches.sortBy(_.lowerBound)
 
+      //TODO: this is wrong! do depth-first search to get upper bounds for pruning
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.init //remove considered node from active nodes
 

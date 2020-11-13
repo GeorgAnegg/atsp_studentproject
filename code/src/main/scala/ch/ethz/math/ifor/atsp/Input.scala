@@ -1,5 +1,7 @@
 package ch.ethz.math.ifor.atsp
 
+import com.google.ortools.linearsolver.MPVariable
+
 class Input(val sites: Vector[Site],
             val distMat: Map[Site, Map[Site, Double]]) {
 
@@ -8,6 +10,10 @@ class Input(val sites: Vector[Site],
   assert(distMat.keys.toVector == sites && distMat.values.forall(_.keys.toVector == sites), "distance matrix incomplete")
 
   def distance(fromSite: Site, toSite: Site): Double = distMat(fromSite)(toSite)
+
+  // TODO: figure out the best type to implement this
+  val variables: Map[Site, Map[Site, MPVariable]] = ???
+
 }
 
 

@@ -1,16 +1,16 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-import ch.ethz.math.ifor.atsp.Site
+import ch.ethz.math.ifor.atsp.{Input, Tour}
+import com.google.ortools.linearsolver.MPVariable
 
-// TODO: replace "Double" by the type of a variable
-class LeafNode(vars: Map[Double, Option[Int]]) extends Node(vars) {
+class LeafNode(input: Input, varAssignment: Map[MPVariable, Option[Boolean]], level: Int) extends Node(input, varAssignment, level) {
 
   //require that all variables are fixed
-  assert(vars.values.forall(_.isDefined), "not all variables are fixed")
+  assert(varAssignment.values.forall(_.isDefined), "not all variables are fixed")
 
   //TODO: compute upper bound
   val upperBound: Double = ???
 
   // TODO: get tour from leaf Node
-  val tour: List[Site] = ???
+  val tour: Tour = ???
 }
