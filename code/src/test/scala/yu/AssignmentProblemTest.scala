@@ -1,0 +1,5 @@
+package yu
+
+object AssignmentProblemTest {
+
+}
