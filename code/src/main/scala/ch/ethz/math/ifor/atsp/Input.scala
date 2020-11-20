@@ -11,9 +11,6 @@ class Input(val sites: Vector[Site],
 
   def distance(fromSite: Site, toSite: Site): Double = distMat(fromSite)(toSite)
 
-  // TODO: figure out the best type to implement this
-  val variables: Map[Site, Map[Site, MPVariable]] = ???
-
 }
 
 

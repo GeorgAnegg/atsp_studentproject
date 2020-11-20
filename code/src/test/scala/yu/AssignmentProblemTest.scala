@@ -1,6 +1,6 @@
 package yu
 
-import ch.ethz.math.ifor.atsp.BranchAndBound.AssignmentProblem.AssignmentProblemSolver
+import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.ORToolsIP
 
 object AssignmentProblemTest extends App {
 
@@ -14,6 +14,6 @@ object AssignmentProblemTest extends App {
       Vector(1, 10, 10, 100)
     )
 
-  AssignmentProblemSolver.sol(costs)
+  ORToolsIP.sol(costs)
 
 }

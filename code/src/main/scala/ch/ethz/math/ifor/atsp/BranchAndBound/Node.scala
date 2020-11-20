@@ -1,27 +1,21 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
+import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.ORToolsIP
 import ch.ethz.math.ifor.atsp.Input
 import com.google.ortools.linearsolver.MPVariable
-import ch.ethz.math.ifor.atsp.BranchAndBound.AssignmentProblem.AssignmentProblemSolver
 
 
-//input.variables
-abstract class Node(input: Input, varAssignments: Map[MPVariable, Option[Boolean]], level: Int) {
+/** abstract class for node classes like branch node and leaf node
+  *
+  * @param input
+  * @param varAssignments contains information for which variables are already set to 0 or 1
+  * @param level
+  */
+abstract class Node(input: Input, varAssignments: Map[MPVariable, Option[Boolean]]) {
 
-  assert(input.variables == varAssignments.keys, "var assignments don't match input")
+  assert(lowerBoundSolvers.variables == varAssignments.keys, "var assignments don't match input")
 
-  def lowerBound: Double = ??? //compute lower bound by solving AP
-  //set up AP problem
 
-  //add constraints to AP problem
-
-  //have exactly one arc going out of each node
-  input.sites.map( site =>
-  input.variables(site).values
-  )
-
-  //have exactly one arc coming into each node
-  //TODO: scala exercise
 
 
 }

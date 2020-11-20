@@ -16,15 +16,16 @@ object BranchAndBoundSolver extends Solver {
 
     while (activeBranches.nonEmpty) {
 
-      val sortedNodes = activeBranches.sortBy(_.lowerBound)
 
-      //TODO: this is wrong! do depth-first search to get upper bounds for pruning //CT80 sorted indeed by lower bound?
+      /** CT80 uses lowest-lower-bound search instead of depth-first search  */
+      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
+
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
-      activeBranches = sortedNodes.init //remove considered node from active nodes //.init remove the last one?
+      activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
-          if (leaf.upperBound < currentBestNode.get.upperBound) { //compare with current upper bound //why by upper bound?
+          if (leaf.upperBound < currentBestNode.get.upperBound) { //compare with current upper bound
             currentBestNode = Some(leaf)
             activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.upperBound) //prune remaining branches
           }

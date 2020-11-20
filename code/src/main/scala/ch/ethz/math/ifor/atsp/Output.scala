@@ -9,7 +9,6 @@ class Output (val input: Input,
 
 
 
-
   def print(): Unit =
     println(s"""The optimal tour is
     ${tour.sequence}

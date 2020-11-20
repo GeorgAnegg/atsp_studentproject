@@ -3,14 +3,14 @@ package ch.ethz.math.ifor.atsp.BranchAndBound
 import ch.ethz.math.ifor.atsp.{Input, Tour}
 import com.google.ortools.linearsolver.MPVariable
 
-class LeafNode(input: Input, varAssignment: Map[MPVariable, Option[Boolean]], level: Int) extends Node(input, varAssignment, level) {
+class LeafNode(input: Input, varAssignment: Map[MPVariable, Option[Boolean]]) extends Node(input, varAssignment) {
 
   //require that all variables are fixed
   assert(varAssignment.values.forall(_.isDefined), "not all variables are fixed")
 
-  //TODO: compute upper bound
+    //TODO: might build LeafNodes differently to avoid potential re-computation
   val upperBound: Double = ???
 
-  // TODO: get tour from leaf Node
+  //TODO: might build LeafNodes differently to avoid potential re-computation
   val tour: Tour = ???
 }

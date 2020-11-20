@@ -1,12 +1,20 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
+
 import ch.ethz.math.ifor.atsp.Input
 import com.google.ortools.linearsolver.MPVariable
 
 class BranchNode(input: Input,
-                 varAssignment: Map[MPVariable, Option[Boolean]],
-                 level: Int)
-  extends Node(input, varAssignment, level) {
+                 varAssignment: Map[MPVariable, Option[Boolean]]
+                 )
+  extends Node(input, varAssignment) {
+
+
+  def lowerBoundSolve:(LowerBound, IsLeafNode) = lowerBoundSolver.compute(branchNode = this)
+
+  val lowerBound: LowerBound  = lowerBoundSolve._1
+  val isLeafNode: IsLeafNode = lowerBoundSolve._2
+
 
   // TODO: implement branchStep
   def branchStep: Either[LeafNode, List[BranchNode]] = {
@@ -14,8 +22,8 @@ class BranchNode(input: Input,
     // either returns LeafNode at current BranchNode,
     // or returns children of current BranchNode
 
-    val isLeafNode: Boolean = ??? //check if lower bound solution is feasible tour
 
+    //TODO: depending on what lowerBoundSolvers compute and output, adjust how LeafNodes are built
     if (isLeafNode) { //if lower bound is feasible tour, create leaf node
       val toLeafNode: LeafNode = ???
       Left(toLeafNode)

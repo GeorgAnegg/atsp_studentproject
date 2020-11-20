@@ -1,11 +1,14 @@
-package ch.ethz.math.ifor.atsp.BranchAndBound.AssignmentProblem
+package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 
-import com.google.ortools.linearsolver.MPConstraint
-import com.google.ortools.linearsolver.MPObjective
-import com.google.ortools.linearsolver.MPSolver
-import com.google.ortools.linearsolver.MPVariable
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, IsLeafNode, LowerBound}
+import com.google.ortools.linearsolver.{MPSolver, MPVariable}
+import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.{LowerBoundSolver, variables}
 
-object AssignmentProblemSolver {
+object ORToolsIP extends  LowerBoundSolver{
+
+  def compute(branchNode: BranchNode): (LowerBound, IsLeafNode) = ???
+
+
 
   def sol(costs: Vector[Vector[Double]]): Unit = {
 
@@ -68,4 +71,3 @@ object AssignmentProblemSolver {
   }
 
 }
-
