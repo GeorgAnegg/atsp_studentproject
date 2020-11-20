@@ -2,7 +2,10 @@ package ch.ethz.math.ifor.atsp.BranchAndBound
 
 import ch.ethz.math.ifor.atsp.Input
 import com.google.ortools.linearsolver.MPVariable
+import ch.ethz.math.ifor.atsp.BranchAndBound.AssignmentProblem.AssignmentProblemSolver
 
+
+//input.variables
 abstract class Node(input: Input, varAssignments: Map[MPVariable, Option[Boolean]], level: Int) {
 
   assert(input.variables == varAssignments.keys, "var assignments don't match input")
@@ -11,7 +14,6 @@ abstract class Node(input: Input, varAssignments: Map[MPVariable, Option[Boolean
   //set up AP problem
 
   //add constraints to AP problem
-
 
   //have exactly one arc going out of each node
   input.sites.map( site =>
