@@ -10,10 +10,11 @@ class BranchNode(input: Input,
   extends Node(input, varAssignment) {
 
 
-  def lowerBoundSolve:(LowerBound, IsLeafNode) = lowerBoundSolver.compute(branchNode = this)
+  val lowerBoundSolve: Map[MPVariable, Boolean] = lowerBoundSolver.compute(branchNode = this)
 
-  val lowerBound: LowerBound  = lowerBoundSolve._1
-  val isLeafNode: IsLeafNode = lowerBoundSolve._2
+  //TODO: compute this from the variable assignment in returned by lowerBoundSolve
+  val lowerBound: LowerBound  = ???
+  val isLeafNode: IsLeafNode = ???
 
 
   // TODO: implement branchStep

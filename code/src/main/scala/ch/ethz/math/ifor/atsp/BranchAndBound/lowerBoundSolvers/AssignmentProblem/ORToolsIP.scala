@@ -6,7 +6,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.{LowerBoundSolver
 
 object ORToolsIP extends  LowerBoundSolver{
 
-  def compute(branchNode: BranchNode): (LowerBound, IsLeafNode) = ???
+  def compute(branchNode: BranchNode): Map[MPVariable, Boolean]  = ???
 
 
 
