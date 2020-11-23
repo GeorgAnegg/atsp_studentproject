@@ -2,6 +2,7 @@ package ch.ethz.math.ifor.atsp.BranchAndBound
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.ORToolsIP
 import ch.ethz.math.ifor.atsp.Input
+import ch.ethz.math.ifor.atsp.Site
 import com.google.ortools.linearsolver.MPVariable
 
 
@@ -11,7 +12,7 @@ import com.google.ortools.linearsolver.MPVariable
   * @param varAssignments contains information for which variables are already set to 0 or 1
   * @param level
   */
-abstract class Node(input: Input, varAssignments: Map[MPVariable, Option[Boolean]]) {
+abstract class Node(input: Input, varAssignments: Map[Site, Map[Site, Option[Boolean]]]) {
 
   assert(lowerBoundSolvers.variables == varAssignments.keys, "var assignments don't match input")
 

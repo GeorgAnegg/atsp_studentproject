@@ -5,6 +5,6 @@ import com.google.ortools.linearsolver.MPVariable
 
 package object lowerBoundSolvers{
 
-  val variables: Map[Site, Map[Site, MPVariable]] = ???
+  val variables: Map[Site, Map[Site, Boolean]] = ???
 
 }

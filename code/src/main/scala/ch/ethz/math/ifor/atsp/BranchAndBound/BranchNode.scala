@@ -1,16 +1,18 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
 
-import ch.ethz.math.ifor.atsp.Input
+import ch.ethz.math.ifor.atsp.{Input, Site}
 import com.google.ortools.linearsolver.MPVariable
 
 class BranchNode(input: Input,
-                 varAssignment: Map[MPVariable, Option[Boolean]]
+                 varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  )
   extends Node(input, varAssignment) {
+  val inputNode: Input = input
+  val costsMap: Map[Site, Map[Site, Double]] = input.distMat
+  val sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
-
-  val lowerBoundSolve: Map[MPVariable, Boolean] = lowerBoundSolver.compute(branchNode = this)
+  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
 
   //TODO: compute this from the variable assignment in returned by lowerBoundSolve
   val lowerBound: LowerBound  = ???
