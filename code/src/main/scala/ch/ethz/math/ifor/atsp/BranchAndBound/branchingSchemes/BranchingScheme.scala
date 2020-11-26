@@ -5,6 +5,6 @@ import ch.ethz.math.ifor.atsp.{Input, Output}
 
 trait BranchingScheme {
 
-  def chooseSubtour(branchNode: BranchNode): List[BranchNode]
+  def listChildren(branchNode: BranchNode): List[BranchNode]
 
 }

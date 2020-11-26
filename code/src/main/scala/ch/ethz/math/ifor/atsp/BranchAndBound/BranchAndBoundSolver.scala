@@ -6,10 +6,10 @@ object BranchAndBoundSolver extends Solver {
 
   // TODO: construct root node
   val numSites: Int = Input.toyExample.sites.length
-  var resultArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
-  val r : Map[Site, Map[Site, Option[Boolean]]] = Input.toyExample.sites.zip(resultArray).map{case (site, distRow) =>
+  var initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
+  val initAssignmentMap : Map[Site, Map[Site, Option[Boolean]]] = Input.toyExample.sites.zip(initAssignmentArray).map{case (site, distRow) =>
     site -> Input.toyExample.sites.zip(distRow).toMap}.toMap
-  val rootNode: BranchNode = new BranchNode(Input.toyExample, r)
+  val rootNode: BranchNode = new BranchNode(Input.toyExample, initAssignmentMap)
 
   def solve(input: Input): Output = {
 

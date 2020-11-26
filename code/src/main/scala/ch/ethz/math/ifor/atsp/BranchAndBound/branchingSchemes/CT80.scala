@@ -7,9 +7,9 @@ import scala.util.control.Breaks.{break, breakable}
 
 object CT80 extends BranchingScheme {
 
-  def chooseSubtour(branchNode: BranchNode):List[BranchNode]={
+  def listChildren(branchNode: BranchNode):List[BranchNode]={
 
-    var result: List[BranchNode] = List()
+    var listChildrenNodes: List[BranchNode] = List()
     var excludedArcs: Map[Site,Site] = Map()
     var includedArcs: Map[Site,Site] = Map()
 
@@ -40,20 +40,18 @@ object CT80 extends BranchingScheme {
       }
     }
 
-    for (arc <- bestSubtour){
+    val listArcs = bestSubtour.toList
+    for (i <- listArcs.indices){
       val childMap = collection.mutable.Map[Site,Map[Site,Option[Boolean]]]() ++= branchNode.sitesStatus
-      childMap(arc._1)(arc._2) = true //why...?
-
-
-
-
+      // add the jth arc to excluded arc set
+      childMap(listArcs(i)._1)(listArcs(i)._2) = false //why...?
+      // add the 1st to (j-1)th arcs to included arc set
+      for (j <- 0 until i){
+        childMap(listArcs(j)._1)(listArcs(j)._2) = true
+      }
+      // return a new branchnode with new updated varAssignment, and add to the result list
+      listChildrenNodes = new BranchNode(branchNode.inputNode, childMap) :: listChildrenNodes
     }
-
-
-
-
-
-    result
+    listChildrenNodes
   }
-
 }

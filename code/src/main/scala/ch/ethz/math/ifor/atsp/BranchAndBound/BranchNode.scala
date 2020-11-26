@@ -3,6 +3,8 @@ package ch.ethz.math.ifor.atsp.BranchAndBound
 
 import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
 import com.google.ortools.linearsolver.MPVariable
+
+import scala.collection.mutable
 /** class for node classes like branch node
  *
  * @param input
@@ -10,12 +12,12 @@ import com.google.ortools.linearsolver.MPVariable
  * @param
  */
 class BranchNode(input: Input,
-                 varAssignment: Map[Site, Map[Site, Option[Boolean]]]
+                 varAssignment: mutable.Map[Site, Map[Site, Option[Boolean]]]
                  ) {
 
   val inputNode: Input = input
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-  var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
+  var sitesStatus: mutable.Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
 
@@ -47,6 +49,7 @@ class BranchNode(input: Input,
       } else {
       // else, add the tour created, and staring tracking another remaining arc
         currentList  = currentList:::nextArc._1::Nil
+        currentList  = currentList:::nextArc._2::Nil
         val findTour = new Tour(input,currentList)
         listTours = listTours:::findTour::Nil
         currentList = currentList.drop(currentList.length)
