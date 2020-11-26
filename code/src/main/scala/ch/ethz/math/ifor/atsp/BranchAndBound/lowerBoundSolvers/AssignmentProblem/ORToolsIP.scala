@@ -1,11 +1,11 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 
-import ch.ethz.math.ifor.atsp.Site
+import ch.ethz.math.ifor.atsp.{Site,Input}
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, IsLeafNode, LowerBound}
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.{LowerBoundSolver, variables}
 
-object ORToolsIP extends  LowerBoundSolver{
+object ORToolsIP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): Map[Site, Map[Site, Boolean]]  = {
 
@@ -24,7 +24,7 @@ object ORToolsIP extends  LowerBoundSolver{
 
     for (i <- 0 until numSites) {
       for (j <- 0 until numSites) {
-        x(i)(j) = if (branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)).isEmpty) solver.makeIntVar(0, 1, "")
+        x(i)(j) = if (branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)) == null) solver.makeIntVar(0, 1, "")
         else if (branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)).contains(true)) solver.makeIntVar(1, 1, "")
         else solver.makeIntVar(0, 0, "")
         costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))

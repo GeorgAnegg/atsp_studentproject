@@ -1,16 +1,19 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-import ch.ethz.math.ifor.atsp.{Input, Output, Solver}
+import ch.ethz.math.ifor.atsp.{Input, Output, Solver,Site}
 
 object BranchAndBoundSolver extends Solver {
 
-
   // TODO: construct root node
-  val rootNode: BranchNode = ???
+  val numSites: Int = Input.toyExample.sites.length
+  var resultArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
+  val r : Map[Site, Map[Site, Option[Boolean]]] = Input.toyExample.sites.zip(resultArray).map{case (site, distRow) =>
+    site -> Input.toyExample.sites.zip(distRow).toMap}.toMap
+  val rootNode: BranchNode = new BranchNode(Input.toyExample, r)
 
   def solve(input: Input): Output = {
 
-    var currentBestNode: Option[LeafNode] = None
+    var currentBestNode: Option[BranchNode] = None
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
 
@@ -25,17 +28,16 @@ object BranchAndBoundSolver extends Solver {
 
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
-          if (leaf.upperBound < currentBestNode.get.upperBound) { //compare with current upper bound
+          if (leaf.lowerBound < currentBestNode.get.lowerBound) { //compare with current upper bound
             currentBestNode = Some(leaf)
-            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.upperBound) //prune remaining branches
+            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
           activeBranches = activeBranches ++ children //add children/new branches
       }
     }
 
-    val tour = currentBestNode.get.tour
+    val tour = currentBestNode.get.allTours.head
     new Output(input, tour)
   }
-
 }
