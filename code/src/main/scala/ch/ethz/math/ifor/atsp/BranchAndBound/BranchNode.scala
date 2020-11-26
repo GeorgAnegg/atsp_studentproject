@@ -1,6 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-
+import ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes
 import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
 import com.google.ortools.linearsolver.MPVariable
 
@@ -74,7 +74,7 @@ class BranchNode(input: Input,
       Left(this)
     }
     else { //else use branching rule to get subproblems
-      Right(List()) //list of children
+      Right(branchingScheme.listChildren(branchNode = this)) //list of children
     }
   }
 }
