@@ -6,13 +6,13 @@ import ch.ethz.math.ifor.atsp.Site
 import scala.util.control.Breaks.{break, breakable}
 
 object CT80 extends BranchingScheme {
-
+//TODO: implement choosing 'first' arc in subtour by computing weights w_j
   def listChildren(branchNode: BranchNode):List[BranchNode]={
 
     var listChildrenNodes: List[BranchNode] = List()
     var excludedArcs: Map[Site,Site] = Map()
     var includedArcs: Map[Site,Site] = Map()
-
+//TODO: use iterableObject.map instead of for (thing <- iterableObject) when possible
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
         // continue if value is null
@@ -26,6 +26,7 @@ object CT80 extends BranchingScheme {
 
     //choose the subtour with minimum number of arcs not included in includedArcs
     var bestSubtour: Map[Site,Site] = Map()
+    // TODO: use inf (defined in atsp.package)
     var currentBest = 9999
 
     for (tour <- branchNode.allTours){
