@@ -1,5 +1,5 @@
 package ch.ethz.math.ifor.atsp
 
-trait arcWise {
+abstract class arcWise[T] (entries: Map[Site, Map[Site, T]]) {
 
 }
