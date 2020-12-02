@@ -27,13 +27,13 @@ object Input {
     new Input(sites, distMat)
   }
 
-  def computeReducedDistVec(distVec: Vector[Vector[Double]]): Tuple[Vector[Vector[Double]], Double] = {
-
+  def computeReducedDistVec(distVec: Vector[Vector[Double]]): (Vector[Vector[Double]], Double) = {
     var reducedCost: Double = 0
 
     for (i <- distVec.indices){
       // set ii entry to a large number to avoid loops
-      distVec(i)(i) = 9999
+      distVec(i).updated(i, inf)
+
 
       //reduce each column
       val minCol = distVec.map{_(i)}.min
@@ -49,7 +49,7 @@ object Input {
     (distVec, reducedCost)
 
   }
-  
+
   //TODO:
   def reducedCostExcluded(distVec: Vector[Vector[Double]], arcsExcluded: Map[Site,Site])
 

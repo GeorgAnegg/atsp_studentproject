@@ -12,12 +12,12 @@ import scala.collection.mutable
  * @param
  */
 class BranchNode(input: Input,
-                 varAssignment: mutable.Map[Site, Map[Site, Option[Boolean]]]
+                 varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  ) {
 
   val inputNode: Input = input
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-  var sitesStatus: mutable.Map[Site, Map[Site, Option[Boolean]]] = varAssignment
+  var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
 
