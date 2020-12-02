@@ -34,7 +34,6 @@ object Input {
       // set ii entry to a large number to avoid loops
       distVec(i).updated(i, inf)
 
-
       //reduce each column
       val minCol = distVec.map{_(i)}.min
       distVec.foreach(vec => vec.foreach{case (vec(i)==dist) dist => dist-minCol})

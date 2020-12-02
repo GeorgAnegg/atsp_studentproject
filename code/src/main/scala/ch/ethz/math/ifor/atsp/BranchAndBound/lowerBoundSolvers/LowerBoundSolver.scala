@@ -7,6 +7,6 @@ import com.google.ortools.linearsolver.MPVariable
 trait LowerBoundSolver {
 
   //TODO: figure out of there is a better way to do this
-  def compute (branchNode: BranchNode) : Map[Site, Map[Site, Boolean]]
+  def compute (branchNode: BranchNode) : (Map[Site, Map[Site, Boolean]], LowerBound)
 
 }

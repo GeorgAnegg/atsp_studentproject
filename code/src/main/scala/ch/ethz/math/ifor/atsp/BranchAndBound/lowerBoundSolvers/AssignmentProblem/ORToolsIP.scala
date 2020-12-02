@@ -7,7 +7,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.{LowerBoundSolver
 
 object ORToolsIP extends LowerBoundSolver{
 
-  def compute(branchNode: BranchNode): Map[Site, Map[Site, Boolean]]  = {
+  def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]], LowerBound)  = {
 
     System.loadLibrary("jniortools")
 
@@ -75,6 +75,7 @@ object ORToolsIP extends LowerBoundSolver{
     }
     val resultBoolean : Map[Site, Map[Site, Boolean]] = inputN.sites.zip(resultArray).map{case (site, distRow) =>
       site -> inputN.sites.zip(distRow).toMap}.toMap
-    resultBoolean
+    val lb:LowerBound = resultBoolean.map({case(site1, map1) => branchNode.costsMap(site1)(map1.filter(_._2).head._1) }).sum
+    (resultBoolean,lb)
     }
   }

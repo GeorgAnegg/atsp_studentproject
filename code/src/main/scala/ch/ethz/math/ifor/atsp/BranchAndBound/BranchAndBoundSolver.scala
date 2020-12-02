@@ -4,21 +4,20 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Solver,Site}
 
 object BranchAndBoundSolver extends Solver {
 
-  // TODO: construct root node
-  val numSites: Int = Input.toyExample.sites.length
-  var initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
-  val initAssignmentMap : Map[Site, Map[Site, Option[Boolean]]] = Input.toyExample.sites.zip(initAssignmentArray).map{case (site, distRow) =>
-    site -> Input.toyExample.sites.zip(distRow).toMap}.toMap
-  val rootNode: BranchNode = new BranchNode(Input.toyExample, initAssignmentMap)
-
   def solve(input: Input): Output = {
+
+    // construct root node
+    val numSites: Int = input.sites.length
+    val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
+    val initAssignmentMap: Map[Site, Map[Site, Option[Boolean]]] = input.sites.zip(initAssignmentArray).map{case (site, distRow) =>
+      site -> input.sites.zip(distRow).toMap}.toMap
+    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap)
 
     var currentBestNode: Option[BranchNode] = None
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
 
     while (activeBranches.nonEmpty) {
-
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search  */
       val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
@@ -33,7 +32,11 @@ object BranchAndBoundSolver extends Solver {
             activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
-          activeBranches = activeBranches ++ children //add children/new branches
+          for (child <- children){
+            if (child.naiveLowerbound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
+              activeBranches = activeBranches ++ children //add children/new branches
+            }
+          }
       }
     }
 

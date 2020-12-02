@@ -19,13 +19,15 @@ class BranchNode(input: Input,
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
   var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
-  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
+  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)._1
 
   //TODO: compute this from the variable assignment in returned by lowerBoundSolve
 
-  val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+  val lowerBound: LowerBound  = lowerBoundSolver.compute(branchNode = this)._2
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
+
+  val naiveLowerBound: LowerBound = naiveLowerBoundSolver.compute(branchNode = this)._2
 
   def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
 
