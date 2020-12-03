@@ -24,24 +24,22 @@ object NaiveLB extends LowerBoundSolver{
       }
     }
 
+
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
-        // continue if value is null
-        breakable {
-          if (map2._2 == null) break
-        }
-        if (map2._2.get) {
-          val index1 = inputN.sites.indexOf(map1._1)
-          val index2 = inputN.sites.indexOf(map2._1)
-          for(i <- 0 until numSites){
-            costs(index1)(i) = inf // block the row
-            costs(i)(index2) = inf // block the column
+        if (map2._2 != null) {
+          if (map2._2.get) {
+            val index1 = inputN.sites.indexOf(map1._1)
+            val index2 = inputN.sites.indexOf(map2._1)
+            for(i <- 0 until numSites){
+              costs(index1)(i) = inf // block the row
+              costs(i)(index2) = inf // block the column
+            }
           }
+          else costs(inputN.sites.indexOf(map1._1))(inputN.sites.indexOf(map2._1)) = inf // block one block
         }
-        else costs(inputN.sites.indexOf(map1._1))(inputN.sites.indexOf(map2._1)) = inf // block one block
       }
     }
-
     for (i <- 0 until numSites){
       val min = costs(i).min
       costs(i).foreach(x=>x-min)
@@ -61,6 +59,7 @@ object NaiveLB extends LowerBoundSolver{
       val min = getColumn(costs,j).min
       resultLB += min
     }
+    println("resultlbb",resultLB)
   resultLB
   }
 }

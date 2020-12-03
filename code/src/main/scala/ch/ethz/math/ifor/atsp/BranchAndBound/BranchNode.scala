@@ -20,7 +20,6 @@ class BranchNode(input: Input,
 
   val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
-  println("check here", allTours.length == 1)
   val isLeafNode: IsLeafNode = allTours.length == 1
 
   val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
@@ -39,14 +38,14 @@ class BranchNode(input: Input,
       var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
       // if no tours created, keep tracking
       if (nextArc._2.id != currentList.head.id) {
-        currentList  = currentList:::nextArc._1::Nil
+        // currentList  = currentList:::nextArc._1::Nil
         currentList  = currentList:::nextArc._2::Nil
         pairMap = pairMap.removed(currentArc._1)
         currentArc  = nextArc
       } else {
       // else, add the tour created, and staring tracking another remaining arc
-        currentList  = currentList:::nextArc._1::Nil
-        currentList  = currentList:::nextArc._2::Nil
+        // currentList  = currentList:::nextArc._1::Nil
+        // currentList  = currentList:::nextArc._2::Nil
         val findTour = new Tour(input,currentList)
         listTours = listTours:::findTour::Nil
         currentList = currentList.drop(currentList.length)
@@ -59,7 +58,6 @@ class BranchNode(input: Input,
         }
       }
     }
-    println("end", pairMap.size,listTours.length)
     listTours
   }
 
@@ -73,7 +71,6 @@ class BranchNode(input: Input,
     // depending on what lowerBoundSolvers compute and output, adjust how LeafNodes are built
 
     if (isLeafNode) { //if lower bound is feasible tour, create leaf node
-      println("leaf here")
       Left(this)
     }
     else { //else use branching rule to get subproblems
