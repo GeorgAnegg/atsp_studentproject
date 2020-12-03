@@ -17,15 +17,12 @@ object CT80 extends BranchingScheme {
 //TODO: use iterableObject.map instead of for (thing <- iterableObject) when possible
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
-        // continue if value is null
-        breakable {
-          if (map2._2 == null) break
+        if (map2._2 == null) {
+          if (map2._2.get) excludedArcs += map1._1 -> map2._1
+          else includedArcs += map1._1 -> map2._1
         }
-        if (map2._2.get) excludedArcs += map1._1 -> map2._1
-        else includedArcs += map1._1 -> map2._1
       }
     }
-
     /*
     branchNode.sitesStatus.map((site1,map2)=>(site1,map2 match{ case (site2, null)=>(site2, null)
                                                               case (site2, true)=> excludedArcs += site1 -> map2._1
