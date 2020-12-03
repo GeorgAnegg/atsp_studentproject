@@ -57,14 +57,14 @@ object CT80 extends BranchingScheme {
     for (arc <- includedArcs){
       val a = listArcs.indexOf(arc)
       if (a != -1 && a!=0 && a!= list_h.length-1) {
-        list_h(a-1) += 1
-        list_h(a+1) += 1
+        list_h.patch(a-1, Seq(list_h(a-1) + 1), 1)
+        list_h.patch(a+1, Seq(list_h(a+1) + 1), 1)
       } else if (a == 0) {
-        list_h(a+1) += 1
-        list_h.last += 1
+        list_h.patch(a+1, Seq(list_h(a+1) + 1), 1)
+        list_h.patch(list_h.length-1, Seq(list_h.last+ 1), 1)
       } else if (a == list_h.length-1) {
-        list_h(a-1) += 1
-        list_h.head += 1
+        list_h.patch(a-1, Seq(list_h(a-1) + 1), 1)
+        list_h.patch(0, Seq(list_h.head+ 1), 1)
       }
       unwanted_index = unwanted_index ::: List(a)
     }
@@ -93,6 +93,7 @@ object CT80 extends BranchingScheme {
     var children_pair = listArcs zip list_w
     children_pair = children_pair.sortBy(_._2)
     listArcs = children_pair.map(_._1)
+
 
     // create children nodes
     for (i <- listArcs.indices){

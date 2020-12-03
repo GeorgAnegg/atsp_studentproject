@@ -27,13 +27,16 @@ object BranchAndBoundSolver extends Solver {
 
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
-          if (leaf.lowerBound < currentBestNode.get.lowerBound) { //compare with current upper bound
+          if (currentBestNode.isEmpty){
+            currentBestNode = Some(leaf)
+            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound)
+          } else if (leaf.lowerBound < currentBestNode.get.lowerBound) { //compare with current upper bound
             currentBestNode = Some(leaf)
             activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
           for (child <- children){
-            if (child.naiveLowerbound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
+            if (child.naiveLowerBound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
               activeBranches = activeBranches ++ children //add children/new branches
             }
           }

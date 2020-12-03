@@ -1,6 +1,9 @@
 package ch.ethz.math.ifor.atsp
 
 import com.google.ortools.linearsolver.MPVariable
+import com.google.ortools.linearsolver.MPConstraint;
+import com.google.ortools.linearsolver.MPObjective;
+import com.google.ortools.linearsolver.MPSolver;
 import ch.ethz.math.ifor.atsp.{Site, Tour}
 
 class Input(val sites: Vector[Site],
@@ -26,34 +29,6 @@ object Input {
 
     new Input(sites, distMat)
   }
-
-  def computeReducedDistVec(distVec: Vector[Vector[Double]]): (Vector[Vector[Double]], Double) = {
-    var reducedCost: Double = 0
-
-    for (i <- distVec.indices){
-      // set ii entry to a large number to avoid loops
-      distVec(i).updated(i, inf)
-
-      //reduce each column
-      val minCol = distVec.map{_(i)}.min
-      distVec.foreach(vec => vec.foreach{case (vec(i)==dist) dist => dist-minCol})
-      reducedCost += minCol
-
-      //reduce each row
-      val minRow = distVec(i).min
-      distVec(i).foreach(dist => dist - minRow)
-      reducedCost += minRow
-    }
-
-    (distVec, reducedCost)
-
-  }
-
-  //TODO:
-  def reducedCostExcluded(distVec: Vector[Vector[Double]], arcsExcluded: Map[Site,Site])
-
-  //TODO:
-  def reducedCostIncluded(distVec: Vector[Vector[Double]], arcsExcluded: Map[Site,Site])
 
 
   val toyExample: Input = {
