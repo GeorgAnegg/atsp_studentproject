@@ -17,7 +17,7 @@ object CT80 extends BranchingScheme {
 //TODO: use iterableObject.map instead of for (thing <- iterableObject) when possible
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
-        if (map2._2 == null) {
+        if (map2._2 != null) {
           if (map2._2.get) excludedArcs += map1._1 -> map2._1
           else includedArcs += map1._1 -> map2._1
         }
@@ -45,6 +45,7 @@ object CT80 extends BranchingScheme {
         currentBest = listArcs.size - count
       }
     }
+    println(bestSubtour)
 
     var listArcs = bestSubtour.toList
 
@@ -69,7 +70,6 @@ object CT80 extends BranchingScheme {
     list_h = list_h.zipWithIndex.collect {
       case (x,i) if !unwanted_index.contains(i) => x
     }
-
     val unwanted = includedArcs.toSet
     listArcs = listArcs.filterNot(unwanted)
 
@@ -77,7 +77,7 @@ object CT80 extends BranchingScheme {
     var list_w: List[Int] = List()
     for (index <- listArcs.indices){
       var init = 0
-      for(index1 <- index to listArcs.length){
+      for(index1 <- index until listArcs.length){
         init += list_h(index1)*(listArcs.length-1-index1+index)
       }
       for(index2 <- 1 to index-2){
@@ -85,12 +85,10 @@ object CT80 extends BranchingScheme {
       }
       list_w = list_w ::: List(init)
     }
-
     // sort children
     var children_pair = listArcs zip list_w
     children_pair = children_pair.sortBy(_._2)
     listArcs = children_pair.map(_._1)
-
 
     // create children nodes
     for (i <- listArcs.indices){
@@ -99,12 +97,20 @@ object CT80 extends BranchingScheme {
       for (item <- branchNode.sitesStatus){
           childMap += item
         }
+      //println(childMap)
       // add the ith arc to excluded arc set
-      childMap(listArcs(i)._1).updated(listArcs(i)._2, false)
+      childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
+        case site2-> _ if site1.id==listArcs(i)._1.id && site2.id==listArcs(i)._2.id => site2 ->Some(false)
+        case site2-> bool if site1.id!=listArcs(i)._1.id || site2.id!=listArcs(i)._2.id => site2 -> bool
+      }}
       // add the 1st to (i-1)th arcs to included arc set
       for (j <- 0 until i){
-        childMap(listArcs(j)._1).updated(listArcs(j)._2, true)
+        childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
+          case site2-> _ if site1.id==listArcs(j)._1.id && site2.id==listArcs(j)._2.id => site2 ->Some(true)
+          case site2-> bool if site1.id!=listArcs(j)._1.id || site2.id!=listArcs(j)._2.id => site2 -> bool
+        }}
       }
+      //println(childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
       listChildrenNodes = new BranchNode(branchNode.inputNode, childMap.toMap) :: listChildrenNodes
     }

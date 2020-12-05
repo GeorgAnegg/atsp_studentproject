@@ -44,4 +44,15 @@ object Input {
     fromDistVec(toyDistVec)
   }
 
+  val toyExample2: Input = {
+    val toyDistVec: Vector[Vector[Double]] =
+    Vector(
+      Vector(0.0, 10, 15, 20),
+      Vector(10, 0, 35, 25),
+      Vector(15, 35, 0, 30),
+      Vector(20, 25, 30, 0)
+    )
+    fromDistVec(toyDistVec)
+  }
+
 }

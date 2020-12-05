@@ -21,6 +21,8 @@ class BranchNode(input: Input,
   val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
+  println("tour length",allTours.length)
+  println("leafnode",isLeafNode)
 
   val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 

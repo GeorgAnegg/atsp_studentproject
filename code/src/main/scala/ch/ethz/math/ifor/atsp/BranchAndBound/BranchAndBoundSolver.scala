@@ -36,7 +36,9 @@ object BranchAndBoundSolver extends Solver {
           }
         case Right(children) => // current node gets branched
           for (child <- children){
-            if (child.naiveLowerBound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
+            if (currentBestNode.isEmpty){
+              activeBranches = activeBranches ++ children
+            } else if (child.naiveLowerBound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
               activeBranches = activeBranches ++ children //add children/new branches
             }
           }

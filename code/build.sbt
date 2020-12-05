@@ -8,8 +8,13 @@ ThisBuild / organizationName := "ETH Zurich"
 lazy val root = (project in file("."))
   .settings(
     name := "code",
-    libraryDependencies += scalaTest % Test
+    libraryDependencies += scalaTest % Test,
+    //libraryDependencies += sparkCore,
+    libraryDependencies += sparkPoi,
+    libraryDependencies += sparkPoiO,
+    libraryDependencies += sparkPoiOS
   )
 
 fork := true
 run / javaOptions += f"-Djava.library.path=${sys.env("OR_TOOLS_HOME")}/lib"
+run / javaOptions += f"-Djava.library.path=${sys.env("SPARK_HOME")}/lib"

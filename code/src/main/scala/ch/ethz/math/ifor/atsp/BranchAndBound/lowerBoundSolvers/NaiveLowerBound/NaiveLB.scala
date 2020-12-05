@@ -20,10 +20,13 @@ object NaiveLB extends LowerBoundSolver{
 
     for (i <- 0 until numSites) {
       for (j <- 0 until numSites) {
-        costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))
+        if (i == j){
+          costs(i)(j) = inf
+        } else {
+          costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))
+        }
       }
     }
-
 
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
