@@ -17,4 +17,3 @@ lazy val root = (project in file("."))
 
 fork := true
 run / javaOptions += f"-Djava.library.path=${sys.env("OR_TOOLS_HOME")}/lib"
-run / javaOptions += f"-Djava.library.path=${sys.env("SPARK_HOME")}/lib"

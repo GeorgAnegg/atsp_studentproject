@@ -35,7 +35,9 @@ object ORToolsIP extends LowerBoundSolver{
           x(i)(j) = solver.makeIntVar(0, 0, "")
         }
         costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))
+        //print(costs(i)(j)+"  ", i,j,inputN.sites(i),inputN.sites(j) )
       }
+      //println("\r\n")
     }
 
     // Each site has at most one out-degree.

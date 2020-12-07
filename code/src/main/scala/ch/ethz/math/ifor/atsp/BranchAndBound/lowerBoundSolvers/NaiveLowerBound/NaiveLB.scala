@@ -16,7 +16,7 @@ object NaiveLB extends LowerBoundSolver{
 
     val numSites = branchNode.sitesStatus.size
     val inputN = branchNode.inputNode
-    val costs = Array.ofDim[Double](numSites, numSites)
+    var costs = Array.ofDim[Double](numSites, numSites)
 
     for (i <- 0 until numSites) {
       for (j <- 0 until numSites) {
@@ -43,9 +43,21 @@ object NaiveLB extends LowerBoundSolver{
         }
       }
     }
+    /*
+    for (i<-costs){
+      for (j<-i){
+        print(j)
+    }
+      println("")
+    }
+    */
+
+
     for (i <- 0 until numSites){
       val min = costs(i).min
-      costs(i).foreach(x=>x-min)
+      //println("min row",min)
+
+      costs(i) = costs(i).map(x=>x-min)
       resultLB += min
     }
 
@@ -56,10 +68,20 @@ object NaiveLB extends LowerBoundSolver{
       }
       result
     }
+    /*
+    for (i<-costs){
+      for (j<-i){
+        print(j)
+      }
+      println("")
+    }
+
+     */
 
 
     for (j <- 0 until numSites){
       val min = getColumn(costs,j).min
+      //println("min col",min)
       resultLB += min
     }
     println("resultlbb",resultLB)
