@@ -13,6 +13,7 @@ object YuExampleTest extends App {
 
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/distance_matrix.csv")
   val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv")
 
   val output = BranchAndBoundSolver.solve(fromDistVec(input))
 

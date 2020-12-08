@@ -45,7 +45,7 @@ object CT80 extends BranchingScheme {
         currentBest = listArcs.size - count
       }
     }
-    //println(bestSubtour)
+    //println("best tour",bestSubtour)
 
     var listArcs = bestSubtour.toList
 
@@ -87,8 +87,14 @@ object CT80 extends BranchingScheme {
     }
     // sort children
     var children_pair = listArcs zip list_w
-    children_pair = children_pair.sortBy(_._2)
+    children_pair = children_pair.sortBy(_._2)(Ordering[Int].reverse)
     listArcs = children_pair.map(_._1)
+
+    println("w value")
+    for (i <- children_pair){
+      println(i._1,i._2)
+    }
+    //println("list arcs",listArcs)
 
     // create children nodes
     for (i <- listArcs.indices){
@@ -105,15 +111,19 @@ object CT80 extends BranchingScheme {
       }}
       // add the 1st to (i-1)th arcs to included arc set
       for (j <- 0 until i){
-        println("now some true, j=, i=",j,i)
+        //println("now some true, j=, i=",j,i)
         childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
           case site2-> _ if site1.id==listArcs(j)._1.id && site2.id==listArcs(j)._2.id => site2 ->Some(true)
           case site2-> bool if site1.id!=listArcs(j)._1.id || site2.id!=listArcs(j)._2.id => site2 -> bool
         }}
       }
-      //println(childMap)
+      //println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
       listChildrenNodes = new BranchNode(branchNode.inputNode, childMap.toMap) :: listChildrenNodes
+    }
+    // link children to parent
+    for (node <- listChildrenNodes){
+      node.parentNode = branchNode
     }
     listChildrenNodes
   }

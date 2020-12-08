@@ -1,6 +1,8 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-import ch.ethz.math.ifor.atsp.{Input, Output, Solver,Site}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver}
+
+import scala.util.control.Breaks.break
 
 object BranchAndBoundSolver extends Solver {
 
@@ -19,29 +21,53 @@ object BranchAndBoundSolver extends Solver {
 
     while (activeBranches.nonEmpty) {
 
+      println("active branches",activeBranches.length)
+      for (i <- activeBranches){
+        println(i)
+      }
+      println("\r\n")
+
       /** CT80 uses lowest-lower-bound search instead of depth-first search  */
       val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
 
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
+      println("active branches after sorted")
+      for (i <- activeBranches){
+        println(i)
+      }
+      println("\r\n")
+      println("current branchnode",currentBranchNode,"parent",currentBranchNode.parentNode)
+
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
           if (currentBestNode.isEmpty){
             currentBestNode = Some(leaf)
-            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound)
+            // println("current best",currentBestNode.get.lowerBound)
+            // println("length before",activeBranches.length)
+            activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) // > should be <= ?
+            // println("length after",activeBranches.length)
+            // activeBranches = activeBranches.drop(activeBranches.length)
           } else if (leaf.lowerBound < currentBestNode.get.lowerBound) { //compare with current upper bound
+            // println("compare", leaf.lowerBound, currentBestNode.get.lowerBound)
             currentBestNode = Some(leaf)
-            activeBranches = activeBranches.filter(_.lowerBound > currentBestNode.get.lowerBound) //prune remaining branches
+            activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
           for (child <- children){
             if (currentBestNode.isEmpty){
-              activeBranches = activeBranches ++ children
+              println("add this children",child)
+              activeBranches = activeBranches ++ List(child)
             } else if (child.naiveLowerBound < currentBestNode.get.lowerBound){ //first check a naive lower bound for child node
-              activeBranches = activeBranches ++ children //add children/new branches
+              activeBranches = activeBranches ++ List(child) //add children/new branches
             }
           }
+      }
+
+      println("end of branchstep of","num active",activeBranches.length)
+      for (i <- activeBranches){
+        println("activeb",i.lowerBound)
       }
     }
 

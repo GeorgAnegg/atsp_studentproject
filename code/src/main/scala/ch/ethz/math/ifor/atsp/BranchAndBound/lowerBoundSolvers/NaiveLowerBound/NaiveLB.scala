@@ -13,20 +13,35 @@ object NaiveLB extends LowerBoundSolver{
 
   def computeLB(branchNode: BranchNode): LowerBound  ={
     var resultLB: LowerBound = 0.0
-
     val numSites = branchNode.sitesStatus.size
     val inputN = branchNode.inputNode
     var costs = Array.ofDim[Double](numSites, numSites)
 
-    for (i <- 0 until numSites) {
-      for (j <- 0 until numSites) {
-        if (i == j){
-          costs(i)(j) = inf
-        } else {
-          costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))
+    if (branchNode.parentNode != branchNode){
+      resultLB = branchNode.parentNode.naiveLowerBound
+      costs = branchNode.parentNode.reducedCostMatrix
+    } else {
+      for (i <- 0 until numSites) {
+        for (j <- 0 until numSites) {
+          if (i == j){
+            costs(i)(j) = inf
+          } else {
+            costs(i)(j) = branchNode.costsMap(inputN.sites(i))(inputN.sites(j))
+          }
         }
       }
     }
+    /*
+
+    println("cost in naive lb")
+    for (i <-costs){
+      for(j <- i){
+        print(j+" ")
+      }
+      println("\r\n")
+    }
+
+     */
 
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
@@ -37,28 +52,35 @@ object NaiveLB extends LowerBoundSolver{
             for(i <- 0 until numSites){
               costs(index1)(i) = inf // block the row
               costs(i)(index2) = inf // block the column
+              //println("here we block the whole", map1._1,map2._1)
             }
           }
-          else costs(inputN.sites.indexOf(map1._1))(inputN.sites.indexOf(map2._1)) = inf // block one block
+          else {
+            costs(inputN.sites.indexOf(map1._1))(inputN.sites.indexOf(map2._1)) = inf // block one block
+            //println("here we block one", map1._1, map2._1)
+          }
         }
       }
     }
     /*
+    println("cost in naive lb after")
     for (i<-costs){
       for (j<-i){
         print(j)
     }
-      println("")
+      println("\r\n")
     }
-    */
+
+     */
 
 
     for (i <- 0 until numSites){
       val min = costs(i).min
       //println("min row",min)
-
-      costs(i) = costs(i).map(x=>x-min)
-      resultLB += min
+      if (min != inf) {
+        costs(i) = costs(i).map(x=>x-min)
+        resultLB += min
+      }
     }
 
     def getColumn(matrix:Array[Array[Double]],index:Int):Array[Double]={
@@ -68,6 +90,14 @@ object NaiveLB extends LowerBoundSolver{
       }
       result
     }
+
+    def substractColumn(matrix:Array[Array[Double]],index:Int,value:Double):Unit={
+      for (i <- matrix.indices){
+        matrix(i)(index) = matrix(i)(index) - value
+      }
+    }
+
+
     /*
     for (i<-costs){
       for (j<-i){
@@ -82,8 +112,14 @@ object NaiveLB extends LowerBoundSolver{
     for (j <- 0 until numSites){
       val min = getColumn(costs,j).min
       //println("min col",min)
-      resultLB += min
+      if (min != inf) {
+        resultLB += min
+        substractColumn(costs,j,min)
+      }
     }
+    // update the reduced cost matrix
+    branchNode.reducedCostMatrix = costs
+
     println("resultlbb",resultLB)
   resultLB
   }

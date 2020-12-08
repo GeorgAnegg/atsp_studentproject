@@ -14,7 +14,8 @@ class BranchNode(input: Input,
   var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
-
+  var parentNode: BranchNode = this
+  var reducedCostMatrix: Array[Array[LowerBound]] = Array.ofDim[Double](input.sites.length, input.sites.length)
   //TODO: compute this from the variable assignment in returned by lowerBoundSolve
 
 
@@ -22,6 +23,12 @@ class BranchNode(input: Input,
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
   println("tour length",allTours.length)
+  for(i <- allTours){
+    for(j <- i.sequence){
+      print(j+" ")
+    }
+    println("\r\n")
+  }
   println("leafnode",isLeafNode)
 
   val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)

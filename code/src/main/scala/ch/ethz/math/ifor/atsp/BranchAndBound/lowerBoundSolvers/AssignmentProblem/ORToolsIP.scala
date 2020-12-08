@@ -74,7 +74,7 @@ object ORToolsIP extends LowerBoundSolver{
       for (i <- 0 until numSites) {
         for (j <- 0 until numSites) {
           if (x(i)(j).solutionValue == 1) {
-            println("Site " + i + " assigned to task " + j + ".  Cost = " + costs(i)(j))
+            println("Site " + inputN.sites(i) + " assigned to Site " + inputN.sites(j) + ".  Cost = " + costs(i)(j))
             resultArray(i)(j) = true
           } else {
             resultArray(i)(j) = false
