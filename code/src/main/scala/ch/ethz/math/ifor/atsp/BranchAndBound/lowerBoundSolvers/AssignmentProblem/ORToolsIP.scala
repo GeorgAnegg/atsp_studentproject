@@ -1,7 +1,7 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 
 import ch.ethz.math.ifor.atsp.{Site, arcWise}
-import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound, arcVariables}
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPObjective
@@ -34,11 +34,11 @@ object ORToolsIP extends LowerBoundSolver{
         }
       }
 
-    val x: arcWise[MPVariable] = arcWise.construct(branchNode.input, constructVariable)
+    val x: arcWise[MPVariable] = arcWise[MPVariable](branchNode.input, constructVariable)
 
     //TODO: rewrite remaining section in terms of this x, maybe call them (active) variables or xs...
 
-    val costs:arcWise[Double] = arcWise.construct(branchNode.input,branchNode.input.distance)
+    val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
 
 
 

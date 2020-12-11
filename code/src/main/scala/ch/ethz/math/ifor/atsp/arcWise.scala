@@ -1,14 +1,15 @@
 package ch.ethz.math.ifor.atsp
 
-abstract class arcWise[T] (entries: Map[Site, Map[Site, T]]) {
+class arcWise[T] (val entries: Map[Site, Map[Site, T]]) {
 
 
 }
 
 object arcWise {
-  def construct[T](input:Input, function: (Site,Site)=> T):arcWise[T] =
-    arcWise[T](
-      input.sites.map(site1=> site1 -> input.sites.map(site2=> site2 -> function(site1,site2)).toMap).toMap
-    )
+
+  def apply[T](input: Input,function: (Site,Site)=> T): arcWise[T] = new arcWise(constructEntries(input, function))
+  
+  def constructEntries[T](input:Input, function: (Site,Site)=> T): Map[Site, Map[Site, T]] =
+  input.sites.map(  site1=> (site1, input.sites.map(   site2 => (site2,function(site1,site2)) ).toMap)   ).toMap
 
 }
