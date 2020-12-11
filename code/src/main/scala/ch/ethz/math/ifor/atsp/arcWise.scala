@@ -1,7 +1,9 @@
 package ch.ethz.math.ifor.atsp
 
 class arcWise[T] (val entries: Map[Site, Map[Site, T]]) {
-
+  def search(site1: Site,site2:Site):T = {
+    entries(site1)(site2)
+  }
 
 }
 

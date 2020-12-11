@@ -40,8 +40,6 @@ object ORToolsIP extends LowerBoundSolver{
 
     val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
 
-
-
 //    for (i <- 0 until numSites) {
 //      for (j <- 0 until numSites) {
 //        if(i != j) {
@@ -59,50 +57,40 @@ object ORToolsIP extends LowerBoundSolver{
 //    }
 
     // Each site has at most one out-degree.
-    for (i <- 0 until numSites) {
+    for (i <- branchNode.input.sites) {
       val constraint = solver.makeConstraint(1, 1, "")
-      for (j <- 0 until numSites) {
-        constraint.setCoefficient(x(i)(j), 1)
+      for (j <- branchNode.input.sites) {
+        constraint.setCoefficient(x.search(i,j), 1)
       }
     }
 
     // Each site has at most one in-degree.
-    for (j <- 0 until numSites) {
+    for (j <- branchNode.input.sites) {
       val constraint = solver.makeConstraint(1, 1, "")
-      for (i <- 0 until numSites) {
-        constraint.setCoefficient(x(i)(j), 1)
+      for (i <- branchNode.input.sites) {
+        constraint.setCoefficient(x.search(i,j), 1)
       }
     }
 
     // Create the objective function.
     val objective = solver.objective()
-    for (i <- 0 until numSites) {
-      for (j <- 0 until numSites) {
-        objective.setCoefficient(x(i)(j), costs(i)(j))
+    for (i <- branchNode.input.sites) {
+      for (j <- branchNode.input.sites) {
+        objective.setCoefficient(x.search(i,j), costs.search(i,j))
       }
     }
     objective.setMinimization()
 
-    val resultStatus = solver.solve()
-    val resultArray = Array.ofDim[Boolean](numSites, numSites)
+    //val resultStatus = solver.solve()
 
-    if (resultStatus == MPSolver.ResultStatus.OPTIMAL
-      || resultStatus == MPSolver.ResultStatus.FEASIBLE) {
-      println("Total cost: " + objective.value() + "\n")
-      for (i <- 0 until numSites) {
-        for (j <- 0 until numSites) {
-          if (x(i)(j).solutionValue == 1) {
-            println("Site " + branchNode.input.sites(i) + " assigned to Site " + branchNode.input.sites(j) + ".  Cost = " + costs(i)(j))
-            resultArray(i)(j) = true
-          } else {
-            resultArray(i)(j) = false
-          }
-        }
-      }
+    def constructResult(site1:Site ,site2:Site):Boolean= {
+      if (x.search(site1,site2).solutionValue == 1) {true}
+      else {false}
     }
-    val resultBoolean : Map[Site, Map[Site, Boolean]] = branchNode.input.sites.zip(resultArray).map{case (site, distRow) =>
-      site -> branchNode.input.sites.zip(distRow).toMap}.toMap
-    resultBoolean
+
+    val resultArray: arcWise[Boolean] = arcWise(branchNode.input, constructResult)
+
+    resultArray.entries
     }
 
   // not used
