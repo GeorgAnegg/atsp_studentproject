@@ -14,7 +14,7 @@ object NaiveLB extends LowerBoundSolver{
   def computeLB(branchNode: BranchNode): LowerBound  ={
     var resultLB: LowerBound = 0.0
     val numSites = branchNode.sitesStatus.size
-    val inputN = branchNode.inputNode
+    val inputN = branchNode.input
     var costs = Array.ofDim[Double](numSites, numSites)
 
     if (branchNode.parentNode != branchNode){

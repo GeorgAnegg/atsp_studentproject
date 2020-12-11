@@ -5,12 +5,14 @@ import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
  * @param input contains input
  * @param varAssignment contains information for which variables are already set to 0 or 1
  */
-class BranchNode(input: Input,
-                 varAssignment: Map[Site, Map[Site, Option[Boolean]]]
+class BranchNode(val input: Input,
+                 val varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  ) {
   var level = 0
-  val inputNode: Input = input
+
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
+
+  //TODO: decide on name (between varAssignment and arcStatus; then use one throughout
   var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
 
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)

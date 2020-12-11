@@ -7,7 +7,7 @@ object HungarianAP extends LowerBoundSolver{
   def compute(branchNode: BranchNode): Map[Site, Map[Site, Boolean]]  = {
 
     val numSites = branchNode.sitesStatus.size
-    val inputN = branchNode.inputNode
+    val inputN = branchNode.input
     val resultArray = Array.ofDim[Boolean](numSites, numSites)
 
     // TODO: implement the O(n^3) version Hungarian Method

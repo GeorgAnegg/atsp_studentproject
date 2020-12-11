@@ -14,4 +14,7 @@ package object BranchAndBound {
   val branchingScheme: BranchingScheme = CT80
   type IsLeafNode = Boolean
   type LowerBound = Double
+
+
+
 }
