@@ -28,6 +28,7 @@ object ORToolsIP extends LowerBoundSolver{
     for (i <- 0 until numSites) {
       for (j <- 0 until numSites) {
         if(i != j) {
+          //println("what happens",branchNode,branchNode.level,branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)))
           x(i)(j) = if (branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)) == null) solver.makeIntVar(0, 1, "")
           else if (branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)).contains(true)) solver.makeIntVar(1, 1, "")
           else solver.makeIntVar(0, 0, "")

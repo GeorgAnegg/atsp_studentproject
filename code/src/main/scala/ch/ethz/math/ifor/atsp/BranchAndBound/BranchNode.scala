@@ -8,7 +8,7 @@ import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
 class BranchNode(input: Input,
                  varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  ) {
-
+  var level = 0
   val inputNode: Input = input
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
   var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment

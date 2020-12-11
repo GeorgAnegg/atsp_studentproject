@@ -1,8 +1,9 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
-import ch.ethz.math.ifor.atsp.{Site, inf}
+import ch.ethz.math.ifor.atsp.{Site, Tour, inf}
 
+import scala.::
 import scala.util.control.Breaks.{break, breakable}
 import scala.collection.mutable
 
@@ -14,12 +15,20 @@ object CT80 extends BranchingScheme {
     var excludedArcs: Map[Site,Site] = Map()
     var includedArcs: Map[Site,Site] = Map()
 
+    println("parent node",branchNode.sitesStatus)
+    for (i <- branchNode.sitesStatus){
+      for (j<-i._2){
+        print(j._2+"  ")
+      }
+      println("  ")
+    }
+
 //TODO: use iterableObject.map instead of for (thing <- iterableObject) when possible
     for (map1 <- branchNode.sitesStatus){
       for (map2 <- map1._2){
         if (map2._2 != null) {
-          if (map2._2.get) excludedArcs += map1._1 -> map2._1
-          else includedArcs += map1._1 -> map2._1
+          if (map2._2.get) includedArcs += map1._1 -> map2._1
+          else excludedArcs += map1._1 -> map2._1
         }
       }
     }
@@ -117,14 +126,100 @@ object CT80 extends BranchingScheme {
           case site2-> bool if site1.id!=listArcs(j)._1.id || site2.id!=listArcs(j)._2.id => site2 -> bool
         }}
       }
-      //println("childmap",childMap)
+
+      // TODO: exclude additional arcs according to Little. 1963
+
+      def avoidPotentialCycle(lbSolve:mutable.Map[Site, Map[Site, Option[Boolean]]]): Unit = {
+
+        // pairMap contains pair of sites in Included Arc Set
+
+        println("do we have there",excludedArcs.size, includedArcs.size)
+        for (i <- lbSolve){
+          for (j<-i._2){
+            print(j._2+"  ")
+          }
+          println("  ")
+        }
+
+        var pairMap = scala.collection.mutable.Map[Site, Site]()
+        for (i <- lbSolve){
+          for (j<-i._2){
+            if (j._2 != null){
+              if (j._2.contains(true)){
+                pairMap =  pairMap + (i._1->j._1)
+              }
+            }
+          }
+        }
+        println("pair map size before",pairMap.size)
+
+        //var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2 != null).head._1 })
+        println("hello",pairMap.size)
+        //pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2.contains(true)).head._1 })
+        println("hello",pairMap.size)
+
+        var listTours: List[List[Site]] = List()
+        var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
+
+        var currentArc = pairMap.head
+
+
+        while (pairMap.size>1) {
+
+          pairMap = pairMap.-(currentArc._1)
+
+          while (pairMap.exists(_._2.id == currentArc._1.id)) {
+            val previousArc = pairMap.find(_._2.id == currentArc._1.id).get
+            currentList = previousArc._2::currentList
+            currentList = previousArc._1::currentList
+            pairMap = pairMap.-(previousArc._1)
+            currentArc = previousArc
+          }
+
+          currentArc = Map(currentList.lift(currentList.length-2).get->currentList.lastOption.get).head
+
+          while (pairMap.exists(_._1.id == currentArc._2.id)) {
+            val nextArc = pairMap.find(_._1.id == currentArc._2.id).get
+            currentList = currentList:::nextArc._1::Nil
+            currentList = currentList:::nextArc._2::Nil
+            pairMap = pairMap.-(nextArc._1)
+            currentArc = nextArc
+          }
+
+          listTours = listTours:::currentList::Nil
+          currentList = currentList.drop(currentList.length)
+
+          if (pairMap.nonEmpty) {
+            currentArc = pairMap.head
+            currentList = currentList ::: currentArc._1 :: Nil
+            currentList = currentList ::: currentArc._2 :: Nil
+          }
+        }
+
+        // exclude all arcs that could create a cycle if included
+        for (item <- listTours){
+          if (item.length > 2){
+            val fromSite = item.lastOption.get
+            val toSite = item.head
+            childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
+              case site2-> _ if site1.id==fromSite.id && site2.id==toSite.id => site2 ->Some(false)
+              case site2-> bool if site1.id!=listArcs(i)._1.id || site2.id!=listArcs(i)._2.id => site2 -> bool
+            }}
+          }
+        }
+      }
+
+      if (includedArcs.nonEmpty){avoidPotentialCycle(childMap)}
+
+      println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
-      listChildrenNodes = new BranchNode(branchNode.inputNode, childMap.toMap) :: listChildrenNodes
+      var newNode = new BranchNode(branchNode.inputNode, childMap.toMap)
+      // link children to parent, update level
+      newNode.parentNode = branchNode
+      newNode.level = branchNode.level + 1
+      listChildrenNodes = newNode :: listChildrenNodes
     }
-    // link children to parent
-    for (node <- listChildrenNodes){
-      node.parentNode = branchNode
-    }
+    // link children to parent, update level
     listChildrenNodes
   }
 }
