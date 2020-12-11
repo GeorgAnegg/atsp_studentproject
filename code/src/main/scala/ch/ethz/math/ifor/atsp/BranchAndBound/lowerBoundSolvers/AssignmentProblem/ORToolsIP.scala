@@ -14,7 +14,7 @@ object ORToolsIP extends LowerBoundSolver{
 
     System.loadLibrary("jniortools")
 
-    val numSites = branchNode.sitesStatus.size
+    //assert(branchNode.varAssignment.keys.toVector == branchNode.input.sites,"distance matrix incomplete" )
 
     val solver: MPSolver = new MPSolver("AssignmentProblem",
       MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING)
@@ -23,18 +23,18 @@ object ORToolsIP extends LowerBoundSolver{
     // if site i is assigned to site j.
     //val x = Array.ofDim[MPVariable](numSites, numSites)
 
-
     def constructVariable(site1:Site ,site2:Site):MPVariable=
-      if (site1==site2) {solver.makeIntVar(0,0,"")}
+      if (site1.id==site2.id) {solver.makeIntVar(0,0,"")}
       else {
+        //println("branchNode.varAssignment(site1)(site2)",branchNode.varAssignment(site1)(site2))
         branchNode.varAssignment(site1)(site2) match {
-          case null => solver.makeBoolVar("")
+          case null => solver.makeIntVar(0,1,"")
           case Some(true)=> solver.makeIntVar(1,1,"")
           case Some(false)=> solver.makeIntVar(0,0,"")
         }
       }
 
-    val x: arcWise[MPVariable] = arcWise[MPVariable](branchNode.input, constructVariable)
+    val x: arcWise[MPVariable] = arcWise(branchNode.input, constructVariable)
 
     //TODO: rewrite remaining section in terms of this x, maybe call them (active) variables or xs...
 
@@ -61,6 +61,7 @@ object ORToolsIP extends LowerBoundSolver{
       val constraint = solver.makeConstraint(1, 1, "")
       for (j <- branchNode.input.sites) {
         constraint.setCoefficient(x.search(i,j), 1)
+        //println("Number of constraints = " + solver.numConstraints(),i,j,x.search(i,j))
       }
     }
 
@@ -69,6 +70,7 @@ object ORToolsIP extends LowerBoundSolver{
       val constraint = solver.makeConstraint(1, 1, "")
       for (i <- branchNode.input.sites) {
         constraint.setCoefficient(x.search(i,j), 1)
+        //println("Number of constraints = " + solver.numConstraints(),i,j,x.search(i,j))
       }
     }
 
@@ -79,9 +81,11 @@ object ORToolsIP extends LowerBoundSolver{
         objective.setCoefficient(x.search(i,j), costs.search(i,j))
       }
     }
+    println("num variables",solver.numVariables())
     objective.setMinimization()
 
-    //val resultStatus = solver.solve()
+    val resultStatus = solver.solve()
+    println(resultStatus)
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {true}

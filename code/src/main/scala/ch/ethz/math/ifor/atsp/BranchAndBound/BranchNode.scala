@@ -13,7 +13,12 @@ class BranchNode(val input: Input,
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
 
   //TODO: decide on name (between varAssignment and arcStatus; then use one throughout
-  var sitesStatus: Map[Site, Map[Site, Option[Boolean]]] = varAssignment
+//  println("sitesStatus")
+//  for (i<-sitesStatus){
+//    for(j<-i._2){
+//      println(i,j._1,j._2)
+//    }
+//  }
 
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
   var parentNode: BranchNode = this

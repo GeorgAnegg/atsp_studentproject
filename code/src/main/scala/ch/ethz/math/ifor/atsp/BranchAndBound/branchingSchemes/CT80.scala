@@ -15,16 +15,8 @@ object CT80 extends BranchingScheme {
     var excludedArcs: Map[Site,Site] = Map()
     var includedArcs: Map[Site,Site] = Map()
 
-    println("parent node",branchNode.sitesStatus)
-    for (i <- branchNode.sitesStatus){
-      for (j<-i._2){
-        print(j._2+"  ")
-      }
-      println("  ")
-    }
-
 //TODO: use iterableObject.map instead of for (thing <- iterableObject) when possible
-    for (map1 <- branchNode.sitesStatus){
+    for (map1 <- branchNode.varAssignment){
       for (map2 <- map1._2){
         if (map2._2 != null) {
           if (map2._2.get) includedArcs += map1._1 -> map2._1
@@ -57,6 +49,10 @@ object CT80 extends BranchingScheme {
     //println("best tour",bestSubtour)
 
     var listArcs = bestSubtour.toList
+    println("bestSubtour")
+    for (i <- listArcs){
+      println(i._1,i._2)
+    }
 
     // compute h_j
     var list_h:List[Int] = List.fill(listArcs.length)(0)
@@ -81,6 +77,10 @@ object CT80 extends BranchingScheme {
     }
     val unwanted = includedArcs.toSet
     listArcs = listArcs.filterNot(unwanted)
+    println("unwanted")
+    for (i <- unwanted){
+      println(i._1,i._2)
+    }
 
     // compute w_j
     var list_w: List[Int] = List()
@@ -108,28 +108,24 @@ object CT80 extends BranchingScheme {
     // create children nodes
     for (i <- listArcs.indices){
       // create a varAssignment based on that of parent
+
+      val excluded = List(listArcs(i))
+      val included = listArcs.slice(0,i)
+
       var childMap = mutable.Map[Site, Map[Site, Option[Boolean]]]()
-      for (item <- branchNode.sitesStatus){
-          childMap += item
-        }
-      //println(childMap)
-      // add the ith arc to excluded arc set
-      childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
-        case site2-> _ if site1.id==listArcs(i)._1.id && site2.id==listArcs(i)._2.id => site2 ->Some(false)
-        case site2-> bool if site1.id!=listArcs(i)._1.id || site2.id!=listArcs(i)._2.id => site2 -> bool
-      }}
-      // add the 1st to (i-1)th arcs to included arc set
-      for (j <- 0 until i){
-        //println("now some true, j=, i=",j,i)
-        childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
-          case site2-> _ if site1.id==listArcs(j)._1.id && site2.id==listArcs(j)._2.id => site2 ->Some(true)
-          case site2-> bool if site1.id!=listArcs(j)._1.id || site2.id!=listArcs(j)._2.id => site2 -> bool
-        }}
+      for (item <- branchNode.varAssignment){
+        childMap = childMap + item
       }
+
+      val resultMap:Map[Site,Map[Site, Option[Boolean]]] = childMap.collect{case site1-> map1 => site1 -> map1.collect{
+        case site2-> _ if excluded.contains((site1,site2)) => site2 ->Some(false)
+        case site2-> _ if included.contains((site1,site2)) => site2 ->Some(true)
+        case site2-> bool if !excluded.contains((site1,site2)) && !included.contains((site1,site2)) => site2 -> bool
+      }}.toMap
 
       // TODO: exclude additional arcs according to Little. 1963
 
-      def avoidPotentialCycle(lbSolve:mutable.Map[Site, Map[Site, Option[Boolean]]]): Unit = {
+      def avoidPotentialCycle(lbSolve:Map[Site,Map[Site, Option[Boolean]]]): List[(Site,Site)] = {
 
         // pairMap contains pair of sites in Included Arc Set
 
@@ -157,6 +153,8 @@ object CT80 extends BranchingScheme {
         println("hello",pairMap.size)
         //pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2.contains(true)).head._1 })
         println("hello",pairMap.size)
+
+        var additionalExcluded: List[(Site,Site)] = List()
 
         var listTours: List[List[Site]] = List()
         var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
@@ -195,25 +193,35 @@ object CT80 extends BranchingScheme {
             currentList = currentList ::: currentArc._2 :: Nil
           }
         }
+        for (item <- listTours) {
+          if (item.length > 2) {
+            additionalExcluded = additionalExcluded ::: (item.lastOption.get,item.head) :: Nil
+          }
+        }
+      additionalExcluded
+      }
 
         // exclude all arcs that could create a cycle if included
-        for (item <- listTours){
-          if (item.length > 2){
-            val fromSite = item.lastOption.get
-            val toSite = item.head
-            childMap = childMap.collect{case site1-> map1 => site1 -> map1.collect{
-              case site2-> _ if site1.id==fromSite.id && site2.id==toSite.id => site2 ->Some(false)
-              case site2-> bool if site1.id!=listArcs(i)._1.id || site2.id!=listArcs(i)._2.id => site2 -> bool
-            }}
-          }
+
+      val additionalExcluded :List[(Site,Site)]= {
+        if (included.length+includedArcs.size>2){
+          avoidPotentialCycle(resultMap)
+        } else {
+          List()
         }
       }
 
-      if (includedArcs.nonEmpty){avoidPotentialCycle(childMap)}
+      val finalMap:Map[Site,Map[Site, Option[Boolean]]] = resultMap.collect{case site1-> map1 => site1 -> map1.collect{
+        case site2-> _ if additionalExcluded.contains((site1,site2)) => site2 ->Some(false)
+        case site2-> bool if !additionalExcluded.contains((site1,site2)) => site2 -> bool
+      }}
 
-      println("childmap",childMap)
+      println("childMap size",childMap.size)
+      //println(childMap)
+
+      //println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
-      var newNode = new BranchNode(branchNode.input, childMap.toMap)
+      var newNode = new BranchNode(branchNode.input, finalMap)
       // link children to parent, update level
       newNode.parentNode = branchNode
       newNode.level = branchNode.level + 1

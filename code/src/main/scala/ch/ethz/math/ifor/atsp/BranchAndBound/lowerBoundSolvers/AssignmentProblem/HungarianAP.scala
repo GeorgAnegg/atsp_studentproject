@@ -6,7 +6,7 @@ object HungarianAP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): Map[Site, Map[Site, Boolean]]  = {
 
-    val numSites = branchNode.sitesStatus.size
+    val numSites = branchNode.varAssignment.size
     val inputN = branchNode.input
     val resultArray = Array.ofDim[Boolean](numSites, numSites)
 
