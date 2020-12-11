@@ -45,7 +45,7 @@ object BranchAndBoundSolver extends Solver {
         case Left(leaf) => // current node is leaf
           if (currentBestNode.isEmpty) {
             currentBestNode = Some(leaf)
-            // println("current best",currentBestNode.get.lowerBound)
+            println("current best",currentBestNode.get.lowerBound)
             // println("length before",activeBranches.length)
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) // > should be <= ?
             // println("length after",activeBranches.length)
@@ -60,7 +60,7 @@ object BranchAndBoundSolver extends Solver {
             if (currentBestNode.isEmpty) {
               println("add this children", child)
               activeBranches = activeBranches ++ List(child)
-            } else if (child.naiveLowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
+            } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
               activeBranches = activeBranches ++ List(child) //add children/new branches
             }
           }

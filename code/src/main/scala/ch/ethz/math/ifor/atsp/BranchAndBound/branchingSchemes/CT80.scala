@@ -161,9 +161,7 @@ object CT80 extends BranchingScheme {
 
         var currentArc = pairMap.head
 
-
         while (pairMap.size>1) {
-
           pairMap = pairMap.-(currentArc._1)
 
           while (pairMap.exists(_._2.id == currentArc._1.id)) {
@@ -203,6 +201,7 @@ object CT80 extends BranchingScheme {
 
         // exclude all arcs that could create a cycle if included
 
+
       val additionalExcluded :List[(Site,Site)]= {
         if (included.length+includedArcs.size>2){
           avoidPotentialCycle(resultMap)
@@ -210,6 +209,10 @@ object CT80 extends BranchingScheme {
           List()
         }
       }
+
+
+
+      //val additionalExcluded = List()
 
       val finalMap:Map[Site,Map[Site, Option[Boolean]]] = resultMap.collect{case site1-> map1 => site1 -> map1.collect{
         case site2-> _ if additionalExcluded.contains((site1,site2)) => site2 ->Some(false)
