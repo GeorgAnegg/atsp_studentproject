@@ -9,36 +9,19 @@ class BranchNode(val input: Input,
                  val varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  ) {
   var level = 0
-
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-
-  //TODO: decide on name (between varAssignment and arcStatus; then use one throughout
-//  println("sitesStatus")
-//  for (i<-sitesStatus){
-//    for(j<-i._2){
-//      println(i,j._1,j._2)
-//    }
-//  }
-
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
   var parentNode: BranchNode = this
   var reducedCostMatrix: Array[Array[LowerBound]] = Array.ofDim[Double](input.sites.length, input.sites.length)
-  //TODO: compute this from the variable assignment in returned by lowerBoundSolve
+  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 
-
+  // TODO: find out the best way to prevent calculate AP lower bound if naiveLowerbound < currentBestNode.lowerbound
   val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
-  println("tour length",allTours.length)
-  for(i <- allTours){
-    for(j <- i.sequence){
-      print(j+" ")
-    }
-    println("\r\n")
-  }
-  println("leafnode",isLeafNode)
-
-  val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
+  //println("tour length",allTours.length)
+  //println("leafnode",isLeafNode)
 
   def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
 

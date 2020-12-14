@@ -13,6 +13,7 @@ object NaiveLB extends LowerBoundSolver{
 
   def computeLB(branchNode: BranchNode): LowerBound  ={
     var resultLB: LowerBound = 0.0
+    /*
     val numSites = branchNode.varAssignment.size
     val inputN = branchNode.input
     var costs = Array.ofDim[Double](numSites, numSites)
@@ -31,18 +32,6 @@ object NaiveLB extends LowerBoundSolver{
         }
       }
     }
-    /*
-
-    println("cost in naive lb")
-    for (i <-costs){
-      for(j <- i){
-        print(j+" ")
-      }
-      println("\r\n")
-    }
-
-     */
-
     for (map1 <- branchNode.varAssignment){
       for (map2 <- map1._2){
         if (map2._2 != null) {
@@ -62,18 +51,6 @@ object NaiveLB extends LowerBoundSolver{
         }
       }
     }
-    /*
-    println("cost in naive lb after")
-    for (i<-costs){
-      for (j<-i){
-        print(j)
-    }
-      println("\r\n")
-    }
-
-     */
-
-
     for (i <- 0 until numSites){
       val min = costs(i).min
       //println("min row",min)
@@ -82,7 +59,6 @@ object NaiveLB extends LowerBoundSolver{
         resultLB += min
       }
     }
-
     def getColumn(matrix:Array[Array[Double]],index:Int):Array[Double]={
       val result: Array[Double] = Array.fill(matrix.length)(0.0)
       for (i <- matrix.indices){
@@ -90,25 +66,11 @@ object NaiveLB extends LowerBoundSolver{
       }
       result
     }
-
     def substractColumn(matrix:Array[Array[Double]],index:Int,value:Double):Unit={
       for (i <- matrix.indices){
         matrix(i)(index) = matrix(i)(index) - value
       }
     }
-
-
-    /*
-    for (i<-costs){
-      for (j<-i){
-        print(j)
-      }
-      println("")
-    }
-
-     */
-
-
     for (j <- 0 until numSites){
       val min = getColumn(costs,j).min
       //println("min col",min)
@@ -119,8 +81,9 @@ object NaiveLB extends LowerBoundSolver{
     }
     // update the reduced cost matrix
     branchNode.reducedCostMatrix = costs
-
     println("resultlbb",resultLB)
+
+     */
   resultLB
   }
 }

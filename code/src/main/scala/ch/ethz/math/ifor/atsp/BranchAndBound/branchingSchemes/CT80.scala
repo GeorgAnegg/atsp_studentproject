@@ -219,7 +219,6 @@ object CT80 extends BranchingScheme {
         case site2-> bool if !additionalExcluded.contains((site1,site2)) => site2 -> bool
       }}
 
-      println("childMap size",childMap.size)
       //println(childMap)
 
       //println("childmap",childMap)
@@ -231,6 +230,7 @@ object CT80 extends BranchingScheme {
       listChildrenNodes = newNode :: listChildrenNodes
     }
     // link children to parent, update level
+    println("Number of children:" + listChildrenNodes.size)
     listChildrenNodes
   }
 }

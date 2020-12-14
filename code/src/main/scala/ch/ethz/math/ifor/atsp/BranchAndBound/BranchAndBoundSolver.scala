@@ -23,7 +23,7 @@ object BranchAndBoundSolver extends Solver {
     while (activeBranches.nonEmpty) {
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
-      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
+      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound).reverse
 
       println("sorte nodes", "num active", sortedNodes.length)
       for (i <- sortedNodes) {
@@ -56,6 +56,7 @@ object BranchAndBoundSolver extends Solver {
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
+          println("Number of Children to be added" + children.size)
           for (child <- children) {
             if (currentBestNode.isEmpty) {
               println("add this children", child)

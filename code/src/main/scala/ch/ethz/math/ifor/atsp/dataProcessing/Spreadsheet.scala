@@ -16,12 +16,12 @@ object Spreadsheet {
     println(numSites)
     try {
       for (line <- bufferedSource.getLines) {
-          var rows = line.split(" ").map(_.trim)
-          val rows_value = rows.tail
+          var rows = line.split(";").map(_.trim)
+          //val rows_value = rows.tail
           rows = rows.filter(_ != "")
           distMatrix = distMatrix ++ rows
           numSites += 1
-          //println(distMatrix.length, numSites,rows(0)=="",rows.mkString("Array(", ", ", ")"))
+          println(distMatrix.length, numSites,rows(0)=="",rows.mkString("Array(", ", ", ")"))
       }
     } catch {
       case e: FileNotFoundException => println("Couldn't find that file.")
