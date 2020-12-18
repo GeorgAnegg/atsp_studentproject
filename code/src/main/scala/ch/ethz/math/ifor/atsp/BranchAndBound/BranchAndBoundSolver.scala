@@ -20,6 +20,7 @@ object BranchAndBoundSolver extends Solver {
     val upperBound = computeUpperBound(rootNode)
     val reducedThreshold = upperBound - rootNode.lowerBound
 
+
     var currentBestNode: Option[BranchNode] = None
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
