@@ -1,5 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolver.Karp79.computeUpperBound
 import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver}
 
 import scala.util.control.Breaks.break
@@ -15,6 +16,9 @@ object BranchAndBoundSolver extends Solver {
       site -> input.sites.zip(distRow).toMap}.toMap
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap)
     rootNode.level = 0
+
+    val upperBound = computeUpperBound(rootNode)
+    val reducedThreshold = upperBound - rootNode.lowerBound
 
     var currentBestNode: Option[BranchNode] = None
 
