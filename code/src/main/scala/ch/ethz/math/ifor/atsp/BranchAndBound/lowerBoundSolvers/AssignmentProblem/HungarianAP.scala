@@ -13,11 +13,9 @@ object HungarianAP extends LowerBoundSolver{
 
     // TODO: implement the O(n^3) version Hungarian Method
 
-
     // create s, t nodes
     val start : Site = new Site("s")
     val destination : Site = new Site("t")
-
 
     // construct cost map
     val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)

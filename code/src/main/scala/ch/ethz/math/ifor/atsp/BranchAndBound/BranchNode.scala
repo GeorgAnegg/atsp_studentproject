@@ -1,6 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 import scala.util.control.Breaks._
-import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
+import ch.ethz.math.ifor.atsp.{Input, Site, Tour,arcWise}
 /** class for node classes like branch node
  * @param input contains input
  * @param varAssignment contains information for which variables are already set to 0 or 1
@@ -59,6 +59,7 @@ class BranchNode(val input: Input,
     }
     listTours
   }
+
 
 
   // implement branchStep
