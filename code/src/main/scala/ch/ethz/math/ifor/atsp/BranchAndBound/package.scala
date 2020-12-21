@@ -10,13 +10,11 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes.CT80
 
 package object BranchAndBound {
 
-  //val lowerBoundSolver: LowerBoundSolver = ORToolsIP
-  val lowerBoundSolver: LowerBoundSolver = HungarianAP
+  val lowerBoundSolver: LowerBoundSolver = ORToolsIP
+  //val lowerBoundSolver: LowerBoundSolver = HungarianAP
   val naiveLowerBoundSolver: LowerBoundSolver = NaiveLB
   val branchingScheme: BranchingScheme = CT80
   type IsLeafNode = Boolean
   type LowerBound = Double
-
-
 
 }

@@ -30,7 +30,7 @@ object BranchAndBoundSolver extends Solver {
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
       val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound).reverse
 
-      println("sorte nodes", "num active", sortedNodes.length)
+      println("num sortedNodes active", sortedNodes.length)
       for (i <- sortedNodes) {
         println("activeb", i.lowerBound, i.level)
       }
@@ -38,13 +38,15 @@ object BranchAndBoundSolver extends Solver {
 
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
-
+/*
       println("active branches after sorted")
       for (i <- activeBranches) {
         println(i, i.lowerBound, i.level)
       }
       println("\r\n")
       println("current branchnode", currentBranchNode.level, "parent", currentBranchNode.parentNode.level)
+
+ */
 
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf

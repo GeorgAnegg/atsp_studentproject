@@ -49,10 +49,13 @@ object CT80 extends BranchingScheme {
     //println("best tour",bestSubtour)
 
     var listArcs = bestSubtour.toList
+    /*
     println("bestSubtour")
     for (i <- listArcs){
       println(i._1,i._2)
     }
+
+     */
 
     // compute h_j
     var list_h:List[Int] = List.fill(listArcs.length)(0)
@@ -77,10 +80,13 @@ object CT80 extends BranchingScheme {
     }
     val unwanted = includedArcs.toSet
     listArcs = listArcs.filterNot(unwanted)
+    /*
     println("unwanted")
     for (i <- unwanted){
       println(i._1,i._2)
     }
+
+     */
 
     // compute w_j
     var list_w: List[Int] = List()
@@ -98,11 +104,13 @@ object CT80 extends BranchingScheme {
     var children_pair = listArcs zip list_w
     children_pair = children_pair.sortBy(_._2)(Ordering[Int].reverse)
     listArcs = children_pair.map(_._1)
-
+/*
     println("w value")
     for (i <- children_pair){
       println(i._1,i._2)
     }
+
+ */
     //println("list arcs",listArcs)
 
     // create children nodes
@@ -123,12 +131,10 @@ object CT80 extends BranchingScheme {
         case site2-> bool if !excluded.contains((site1,site2)) && !included.contains((site1,site2)) => site2 -> bool
       }}.toMap
 
-      // TODO: exclude additional arcs according to Little. 1963
-
       def avoidPotentialCycle(lbSolve:Map[Site,Map[Site, Option[Boolean]]]): List[(Site,Site)] = {
 
         // pairMap contains pair of sites in Included Arc Set
-
+/*
         println("do we have there",excludedArcs.size, includedArcs.size)
         for (i <- lbSolve){
           for (j<-i._2){
@@ -136,6 +142,8 @@ object CT80 extends BranchingScheme {
           }
           println("  ")
         }
+
+ */
 
         var pairMap = scala.collection.mutable.Map[Site, Site]()
         for (i <- lbSolve){
@@ -147,12 +155,15 @@ object CT80 extends BranchingScheme {
             }
           }
         }
+        /*
         println("pair map size before",pairMap.size)
 
         //var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2 != null).head._1 })
         println("hello",pairMap.size)
         //pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2.contains(true)).head._1 })
         println("hello",pairMap.size)
+
+         */
 
         var additionalExcluded: List[(Site,Site)] = List()
 
