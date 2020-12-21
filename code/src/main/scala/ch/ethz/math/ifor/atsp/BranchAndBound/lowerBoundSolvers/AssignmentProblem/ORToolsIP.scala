@@ -81,7 +81,7 @@ object ORToolsIP extends LowerBoundSolver{
         objective.setCoefficient(x.search(i,j), costs.search(i,j))
       }
     }
-    println("num variables",solver.numVariables())
+    // println("num variables",solver.numVariables())
     objective.setMinimization()
 
     val resultStatus = solver.solve()
@@ -93,6 +93,17 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
     val resultArray: arcWise[Boolean] = arcWise(branchNode.input, constructResult)
+/*
+    println("final matching")
+    for(i<-resultArray.entries){
+      for(j<-i._2){
+        if (j._2){
+          println(i._1.id,j._1.id,costs.entries(i._1)(j._1))
+        }
+      }
+    }
+
+ */
 
     resultArray.entries
     }

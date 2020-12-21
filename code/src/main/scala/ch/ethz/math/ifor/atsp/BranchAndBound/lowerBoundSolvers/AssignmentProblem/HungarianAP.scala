@@ -37,15 +37,74 @@ object HungarianAP extends LowerBoundSolver{
       result
     }
 
+    // construct matching map
+    var matching : Map[Site,Site] = Map()
+    var excluded : Map[Site,Site] = Map()
+
+    for (map1 <- branchNode.varAssignment){
+      for (map2 <- map1._2){
+        if (map2._2 != null) {
+          if (map2._2.get) {matching = matching + (map1._1 -> map2._1)}
+          else {excluded= excluded + (map1._1 -> map2._1)}
+        }
+      }
+    }
+/*
+    println("Need to be included")
+    matching.foreach(a => println(a._1.id, a._2.id, costs.entries(a._1)(a._2)))
+
+ */
+/*
+    println("Need to be excluded")
+    excluded.foreach(a => println(a._1.id, a._2.id, costs.entries(a._1)(a._2)))
+
+ */
+
+    val costPrime = costs.entries.map {
+      case (site1, map1) => (site1, map1.map {
+        case (site2, value) if matching.keys.exists(_==site1) || matching.values.exists(_ == site2) => (site2, inf)
+        case (site2, value) if !matching.keys.exists(_==site1) && !matching.values.exists(_ == site2) => (site2, value)
+      })
+    }
+    /*
+    println("map test")
+    for (item <- mapp) {
+      for (i <- item._2) {
+        println(item._1.id, i._1.id, i._2)
+      }
+      println("             ")
+    }
+
+     */
+
+
+
+/*
+    costs.entries.foreach{
+      case(site1,map1)=>(site1,map1.foreach{
+        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(true) => matching = matching + (site1->site2)
+      })
+    }
+
+ */
+
     // construct arc between left sites set and right sites set
-    val mapV1 = costs.entries.map{
+    val mapV1 = costPrime.map{
       case(site1,map1)=>(site1,map1.map{
-        case(site2,value) if branchNode.varAssignment(site1)(site2) == null
+        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
+        case(site2,value) if branchNode.varAssignment(site1)(site2) != Some(false) && site1 != site2
           && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
-        case(site2,value) if branchNode.varAssignment(site1)(site2) == Some(true)
-          && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
-        case(site2,value) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
       })}
+/*
+    println("current mapV1")
+    for (item <- mapV1) {
+      for (i <- item._2) {
+        println(item._1.id, i._1.id, i._2)
+      }
+      println("             ")
+    }
+
+ */
 
     // block ii entries
 
@@ -84,9 +143,6 @@ object HungarianAP extends LowerBoundSolver{
          site => site->0.0
       }.toMap
     }
-
-    // construct matching map
-    var matching : Map[Site,Site] = Map()
 
     // implement function to update potential
     def updatePotential(potential:Map[Site,Double],dijkstraDistance:Map[Site,Double]): Map[Site,Double]={
@@ -279,10 +335,18 @@ object HungarianAP extends LowerBoundSolver{
       case (site1,site2) => (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
     }
 
+    /*
+    println("final matching")
+    finalMatching.foreach(a => println(a._1.id, a._2.id, costs.entries(a._1)(a._2)))
+
+     */
+
+
+
 
     // construct the result assignment data structure
     def constructResult(site1:Site ,site2:Site):Boolean= {
-      if (finalMatching(site1).id==site2.id) {true}
+      if (finalMatching(site1)==site2) {true}
       else {false}
     }
 

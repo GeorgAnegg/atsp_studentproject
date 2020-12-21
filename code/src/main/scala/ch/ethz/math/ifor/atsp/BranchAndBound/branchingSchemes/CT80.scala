@@ -24,6 +24,10 @@ object CT80 extends BranchingScheme {
         }
       }
     }
+
+
+
+
     /*
     branchNode.sitesStatus.map((site1,map2)=>(site1,map2 match{ case (site2, null)=>(site2, null)
                                                               case (site2, true)=> excludedArcs += site1 -> map2._1
@@ -111,7 +115,7 @@ object CT80 extends BranchingScheme {
     }
 
  */
-    //println("list arcs",listArcs)
+    // println("list arcs",listArcs)
 
     // create children nodes
     for (i <- listArcs.indices){

@@ -28,7 +28,7 @@ object BranchAndBoundSolver extends Solver {
     while (activeBranches.nonEmpty) {
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
-      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound).reverse
+      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
 
       println("num sortedNodes active", sortedNodes.length)
       for (i <- sortedNodes) {

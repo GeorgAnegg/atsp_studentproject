@@ -16,7 +16,7 @@ object Spreadsheet {
     println(numSites)
     try {
       for (line <- bufferedSource.getLines) {
-          var rows = line.split(";").map(_.trim)
+          var rows = line.split(" ").map(_.trim)
           //val rows_value = rows.tail
           rows = rows.filter(_ != "")
           distMatrix = distMatrix ++ rows
