@@ -1,6 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 import ch.ethz.math.ifor.atsp.{Site, arcWise, inf}
-import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound, branchingScheme}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 
 import scala.collection.mutable
@@ -150,7 +150,7 @@ object HungarianAP extends LowerBoundSolver{
     }
 
     // implement function to update residual graph
-    def updateResidualGraph(graph: Map[Site,Map[Site,Double]], arcs :Map[Site,Site], potential:Map[Site,Double]): Map[Site,Map[Site,Double]] = {
+    def updateResidualGraph(graph: Map[Site,Map[Site,Double]], arcs :Map[Site,Site], currentDistance:Map[Site,Double]): Map[Site,Map[Site,Double]] = {
 
       val result :Map[Site, Map[Site, Double]]= graph.collect{
         case (site1,map1) if site1.id != "s" && site1.id != "t" && arcs.contains(site1)
@@ -163,7 +163,7 @@ object HungarianAP extends LowerBoundSolver{
       val result2: Map[Site, Map[Site, Double]]= result.map{ case(site1,map1) => (site1,map1.map{
         case (site2,value) if arcs.exists(x => x._1 == site1 && x._2 == site2) || arcs.exists(x => x._1 == site2 && x._2 == site1) => (site2,value)
         case (site2,value) if !arcs.exists(x => x._1 == site1 && x._2 == site2) && !arcs.exists(x => x._1 == site2 && x._2 == site1)
-          && site2.id != "t"=> (site2,potential(site1)+value-potential(site2))
+          && site2.id != "t"=> (site2,currentDistance(site1)+value-currentDistance(site2))
         case (site2,_) if !arcs.exists(x => x._1 == site1 && x._2 == site2) && !arcs.exists(x => x._1 == site2 && x._2 == site1) && site2.id == "t"=> (site2,0)
       })
       }
@@ -294,12 +294,22 @@ object HungarianAP extends LowerBoundSolver{
       val currentMatching = currentResult._3
       // update potential
       potential = updatePotential(potential,currentDistance)
+/*
+      println(" -------------------current dijkstraDist------------------")
+      currentDistance.foreach {
+        e => println(e._1.id, e._2)
+      }
+      println("-----------------------------------------------------------")
+
+ */
       /*
       print("current potential")
       potential.foreach{e=>println(e._1,e._1.id,e._2)}
 
       print("current Path")
       currentPath.foreach{e=>println(e._1,e._1.id,e._2,e._2.id)}
+
+
 
        */
 
@@ -328,6 +338,31 @@ object HungarianAP extends LowerBoundSolver{
        */
 
     }
+
+    // construct reduced cost matrix, c(i,j)' = c(i,j) + p(i) - p(j)
+    println("--------------------------reduced cost matrix using potential=======================")
+
+    val reducedCostMatrixAP : Map[Site, Map[Site, Double]] = costs.entries.map{
+      case (site1,map1) => (site1, map1.map{
+        case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(true) => (site2,0)
+        case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
+        case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
+        case (site2, value) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
+      })
+    }
+
+    branchNode.reducedCostMatrixAfterAP = reducedCostMatrixAP
+
+
+    for (item <- reducedCostMatrixAP) {
+      for (i <- item._2) {
+        print(i._2 + "  ")
+      }
+      println("\r\n")
+    }
+    println("--------------------------=======================")
+
+
 
 
     // construct final matching

@@ -13,6 +13,7 @@ class BranchNode(val input: Input,
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
   var parentNode: BranchNode = this
   var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
+  var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 
   // TODO: find out the best way to prevent calculate AP lower bound if naiveLowerbound < currentBestNode.lowerbound
