@@ -15,7 +15,7 @@ package object BranchAndBound {
   //val lowerBoundSolver: LowerBoundSolver = ORToolsIP
   val lowerBoundSolver: LowerBoundSolver = HungarianAP
   val naiveLowerBoundSolver: LowerBoundSolver = NaiveLB
-  val rSAPLowerBoundSolver: LowerBoundSolver = ChuLiuEdmonds
+  val rSAPLowerBoundSolver = ChuLiuEdmonds
   val branchingScheme: BranchingScheme = CT80
   type IsLeafNode = Boolean
   type LowerBound = Double

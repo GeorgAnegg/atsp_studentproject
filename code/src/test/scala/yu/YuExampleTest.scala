@@ -5,7 +5,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.Arborescence.ChuL
 import ch.ethz.math.ifor.atsp.dataProcessing
 import ch.ethz.math.ifor.atsp.dataProcessing.Spreadsheet
 import ch.ethz.math.ifor.atsp.{Input, Site}
-import ch.ethz.math.ifor.atsp.Input.fromDistVec
+import ch.ethz.math.ifor.atsp.Input.{fromDistVec, toyExample4, toyExample5}
 
 object YuExampleTest extends App {
   // execute this with 'test:run' in the sbt shell
@@ -13,26 +13,19 @@ object YuExampleTest extends App {
   val a = Spreadsheet
   val t1 = System.nanoTime
 
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/distance_matrix.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/gr17.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/p15.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/dantzig42.csv")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/distance_matrix.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/gr17.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/p15.csv",";")
+  val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv"," ")
+  // val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/dantzig42.csv"," ")
 
 
   // test r-SAP
-  val inputPrime = Input.toyExample4
-  val numSites = inputPrime.sites.length
-  val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
-  val initAssignmentMap: Map[Site, Map[Site, Option[Boolean]]] = inputPrime.sites.zip(initAssignmentArray).map{case (site, distRow) =>
-    site -> inputPrime.sites.zip(distRow).toMap}.toMap
-  val rootNode: BranchNode = new BranchNode(inputPrime, initAssignmentMap)
 
-  //val output = BranchAndBoundSolver.solve(fromDistVec(input))
-
-  val output = rSAPLowerBoundSolver.compute(rootNode)
+  val output = rSAPLowerBoundSolver.compute(fromDistVec(input))
+  //val output = rSAPLowerBoundSolver.compute(toyExample5)
   println("==========================output====================================")
   output.collect{
     case(site1,map1) => (site1,map1.collect{
@@ -41,6 +34,9 @@ object YuExampleTest extends App {
   }
   //val rSAPLB = output.map({case(site1, map1) => inputPrime.distMat(site1)(map1.filter(_._2).head._1) }).sum
   //println("Optimal length is: "+rSAPLB)
+
+
+  //val output = BranchAndBoundSolver.solve(fromDistVec(input))
 
   //output.print()
   val duration = (System.nanoTime - t1) / 1e9d

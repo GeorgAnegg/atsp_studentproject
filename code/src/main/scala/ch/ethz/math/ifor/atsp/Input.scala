@@ -28,7 +28,7 @@ object Input {
     val distMat = sites.zip(distVec).map{case (site, distRow) =>
     site -> sites.zip(distRow).toMap}.toMap
 
-    println(distMat)
+    // println(distMat)
 
     new Input(sites, distMat)
   }
@@ -67,7 +67,7 @@ object Input {
       )
     fromDistVec(toyDistVec)
   }
-
+  // test r-SAP
   val toyExample4: Input = {
     val toyDistVec: Vector[Vector[Double]] =
       Vector(
@@ -75,6 +75,20 @@ object Input {
         Vector(-8, 0, -10, -3),
         Vector(-2, -12, 0, -7),
         Vector(-11, -2, -6, 0)
+      )
+    fromDistVec(toyDistVec)
+  }
+
+  // test r-SAP
+  val toyExample5: Input = {
+    val toyDistVec: Vector[Vector[Double]] =
+      Vector(
+        Vector(inf,2.0,inf,7,inf,inf),
+        Vector(inf,inf,6,inf,5,inf),
+        Vector(inf,inf,inf,inf,inf,4),
+        Vector(inf,1,inf,inf,inf,inf),
+        Vector(inf,inf,inf,3,inf,2),
+        Vector(inf,2,inf,inf,inf,inf)
       )
     fromDistVec(toyDistVec)
   }

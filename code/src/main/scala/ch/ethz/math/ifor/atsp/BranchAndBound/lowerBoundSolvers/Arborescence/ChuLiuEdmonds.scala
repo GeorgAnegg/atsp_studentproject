@@ -4,15 +4,15 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
 
-object ChuLiuEdmonds extends LowerBoundSolver{
+object ChuLiuEdmonds {
 
-  def compute(branchNode:BranchNode):Map[Site, Map[Site, Boolean]]={
+  def compute(input: Input):Map[Site, Map[Site, Boolean]]={
 
     // choose an arbitrary root node
-    val rootSite = branchNode.input.sites(0)
+    val rootSite = input.sites(0)
     // println("rootnode is: " + rootSite.id)
     // construct cost graph
-    val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
+    val costs:arcWise[Double] = arcWise(input,input.distance)
     // block ii entries
     var costsPrime = costs.entries.map{
       case (site1,map1) => (site1,map1.map{
@@ -28,15 +28,19 @@ object ChuLiuEdmonds extends LowerBoundSolver{
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
     def chuLiuEdmonds(graph:Map[Site, Map[Site, Double]]): Map[Site, Map[Site, Boolean]] = {
 /*
-      println("graph")
+      println("=============================================graph=========================================")
       for(site1<-graph.keys){
         for (site2 <-graph(site1)){
           println(site1.id,site2._1.id,site2._2)
         }
       }
+      println("==============================================================================================")
+
+
 
  */
-      
+
+
       // for each node except root node, choose the min-cost in-site
       var minCost:Map[Site,Double]=Map()
       var minInDegreeMap:List[(Site,Site)]=List()
@@ -61,8 +65,10 @@ object ChuLiuEdmonds extends LowerBoundSolver{
  */
 
 
+
+      val inputHere = new Input(graph.keys.toVector,graph)
       // if minInDegreeMap does not contain a cycle, then it's the shortest spanning arborescence rooted at vertex r
-      val firstCycleFound = detectCycles(minInDegreeMap,branchNode.input)
+      val firstCycleFound = detectCycles(minInDegreeMap,inputHere)
 
       if (firstCycleFound.isEmpty){
         def constructArborescence(site1:Site ,site2:Site):Boolean=
@@ -70,13 +76,10 @@ object ChuLiuEdmonds extends LowerBoundSolver{
             true
           } else {false}
 
-        val inputHere = new Input(graph.keys.toVector,graph)
-
 
         val result: arcWise[Boolean] = arcWise(inputHere, constructArborescence)
 
-        /*
-
+/*
         println("==========================no cycles found, return a tree here====================================")
         result.entries.collect{
           case(site1,map1) => (site1,map1.collect{
@@ -85,7 +88,10 @@ object ChuLiuEdmonds extends LowerBoundSolver{
         }
         println("==============================================================")
 
-         */
+ */
+
+
+
 
         return result.entries
       }
@@ -128,6 +134,25 @@ object ChuLiuEdmonds extends LowerBoundSolver{
       var treeArcs : List[(Site,Site)]=List()
       var arcsInCycle:Map[Site,Site]= firstCycleFound.head.listArcs
 
+      val inputPrime = new Input(reducedCosts.keys.toVector,reducedCosts)
+/*
+      println("tree prime returned here")
+      treePrime.foreach{
+        case (site1, map1) => map1.collect{
+          case (site2, value) if value => println(site1.id,site2.id)
+        }
+      }
+
+ */
+      /*
+      println("minFromCycle here")
+      minFromCycle.foreach{
+        case (site1, map1) => map1.collect{
+          case (site2, value) => println(site1.id,site2.id,value)
+        }
+      }
+
+       */
 
       treePrime.foreach{
         case (site1, map1) => map1.collect{
@@ -139,26 +164,26 @@ object ChuLiuEdmonds extends LowerBoundSolver{
 
       // if in treePrime, supernode has an out-edge supernode->u, replace it with v->u, where v is a min-cost node in the supernode
       var outSites:List[Site]= List()
-      treeArcs.collect{
+      treeArcs = treeArcs.collect{
         case (site1,site2) if site1==supernode => (minFromCycle(site2).head._1,site2)
+        case (site1,site2) if site1!=supernode => (site1,site2)
       }
-      /*
-
+/*
       println("treeArcs before")
       treeArcs.foreach(map => println(map._1.id, map._2.id))
 
       println("arcsInCycle before")
-      arcsInCycle .foreach(map => println(map._1.id, map._2.id))
+      arcsInCycle.foreach(map => println(map._1.id, map._2.id))
 
-       */
-
-
+ */
 
       // in treePrime supernode has an in-edge u->supernode, replace it with u->v, where v is a min-cost node in the supernode
       var inSite = new Site()
+      //println("inSite",inSite.id,"supernode",supernode.id)
       treeArcs.collect{
         case (site1,site2) if site2==supernode => inSite = site1
       }
+      //println("inSite",inSite.id)
       val inEdgeInCycle = minToCycle(inSite).head._1
       treeArcs = treeArcs.filter(_!=(inSite,supernode))
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
@@ -176,6 +201,8 @@ object ChuLiuEdmonds extends LowerBoundSolver{
 
  */
 
+
+
       val resultArborescenceArcs = treeArcs.++(arcsInCycle.toList)
 /*
       println("resultArborescenceArcs")
@@ -189,7 +216,7 @@ object ChuLiuEdmonds extends LowerBoundSolver{
         } else {false}
       }
 
-      arcWise(branchNode.input, constructArborescence).entries
+      arcWise(inputPrime, constructArborescence).entries
     }
 
     // return the minimum cost in-site and the corresponding cost
@@ -234,39 +261,99 @@ object ChuLiuEdmonds extends LowerBoundSolver{
 
     def detectCycles(pairMap:List[(Site, Site)],input: Input):List[Tour] = {
 
-      var arcs = pairMap.toArray
+      /*
+      println("====================detect cycles=====================")
+      pairMap.foreach(map => println(map._1.id, map._2.id))
 
-      var listTours: List[Tour] = List()
-      var currentList :List[Site] = List(arcs.head._1, arcs.head._2)
+       */
 
-      var currentArc = arcs.head
 
-      while (arcs.length>1) {
+      var listTour: List[Tour] = List()
+      var reversedArc = false
 
-        if (!arcs.exists(_._1.id == currentArc._2.id)){
-          arcs = arcs.drop(1)
-        } else{
-          var nextArc = arcs.find(_._1.id == currentArc._2.id).get
-
-          if (nextArc._2.id != currentList.head.id){
-            currentList  = currentList:::nextArc._2::Nil
-            arcs = arcs.filter(_._1 != currentArc._1)
-            currentArc = nextArc
-          } else {
-            val findTour = new Tour(input,currentList)
-            listTours = listTours:::findTour::Nil
-            currentList = currentList.drop(currentList.length)
-            arcs = arcs.filter(_._1 != currentArc._1)
-            arcs = arcs.filter(_._1 != nextArc._1)
-            if (arcs.nonEmpty) {
-              currentArc = arcs.head
-              currentList = currentList ::: currentArc._1 :: Nil
-              currentList = currentList ::: currentArc._2 :: Nil
-            }
-          }
+      for(arc <- pairMap){
+        // println("current arc is " + arc._1.id,arc._2.id)
+        if (pairMap.contains((arc._2, arc._1))){
+          // println("find a reversed arc",(arc._2, arc._1))
+          val cycle = new Tour(input,List(arc._2, arc._1))
+          listTour = List(cycle)
+          return listTour
         }
       }
-      listTours
+
+      // println("didn't find a reversed arc, start DFS")
+
+      var visited:Map[Site,Boolean] = {
+        input.sites.map(site => (site -> false)).toMap
+      }
+      var recStack:Map[Site,Boolean] = {
+        input.sites.map(site => (site -> false)).toMap
+      }
+
+      var currentTour:List[Site]=List()
+
+      for(site <- input.sites){
+        if (isCyclicUtil(pairMap,site,visited,recStack)){
+          // println("=================find a tour using DFS=================",site.id)
+          currentTour = site :: currentTour
+        }
+
+      }
+      if(currentTour.nonEmpty) {
+        val tour = new Tour(input, currentTour)
+        listTour = listTour ::: tour :: Nil
+      }
+      listTour
+    }
+
+    /*
+    def isCyclicUtil(pairMap:List[(Site, Site)],site:Site, visited:Map[Site,Boolean],recStack:Map[Site,Boolean]) : Boolean = {
+      // Mark the current node as visited and
+      // part of recursion stack
+      if (recStack(site)) {
+        return true
+      }
+
+      if (visited(site)) {
+        return false
+      }
+
+      val visitedUpdated = visited.updated(site,true)
+      val recStackUpdated = recStack.updated(site,true)
+
+      val children:List[Site] = pairMap.filter(_._1 == site).collect{case (site1,site2)=>site2}
+      children.collect{
+        case child if isCyclicUtil(pairMap,child,visitedUpdated,recStackUpdated) => return true
+      }
+
+      val recStackUpdatedPrime = recStackUpdated.updated(site,false)
+
+      false
+    }
+
+     */
+    def isCyclicUtil(pairMap:List[(Site, Site)],site:Site, visited:Map[Site,Boolean],recStack:Map[Site,Boolean]): Boolean = {
+      // Mark the current node as visited and
+      // part of recursion stack
+      if (recStack(site)) {
+        return true
+      }
+
+      if (visited(site)) {
+        return false
+      }
+
+      val visitedUpdated = visited.updated(site,true)
+      val recStackUpdated = recStack.updated(site,true)
+
+      val children:List[Site] = pairMap.filter(_._1 == site).collect{case (site1,site2)=>site2}
+      children.collect{
+        case child if isCyclicUtil(pairMap,child,visitedUpdated,recStackUpdated) => return true
+      }
+
+      val recStackUpdatedPrime = recStackUpdated.updated(site,false)
+
+      false
     }
 
     def shrinkGraph(graph:Map[Site, Map[Site, Double]],cycle:List[Site],minCost:Map[Site,Double]):(Map[Site, Map[Site, Double]],Map[Site, Map[Site, Double]],Map[Site, Map[Site, Double]],Site)={

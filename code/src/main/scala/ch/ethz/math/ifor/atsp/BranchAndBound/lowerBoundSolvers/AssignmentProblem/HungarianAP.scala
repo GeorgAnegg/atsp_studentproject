@@ -66,16 +66,18 @@ object HungarianAP extends LowerBoundSolver{
         case (site2, value) if !matching.keys.exists(_==site1) && !matching.values.exists(_ == site2) => (site2, value)
       })
     }
-    /*
+/*
     println("map test")
-    for (item <- mapp) {
+    for (item <- costPrime) {
       for (i <- item._2) {
         println(item._1.id, i._1.id, i._2)
       }
       println("             ")
     }
 
-     */
+ */
+
+
 
 
 
@@ -88,23 +90,28 @@ object HungarianAP extends LowerBoundSolver{
 
  */
 
-    // construct arc between left sites set and right sites set
-    val mapV1 = costPrime.map{
-      case(site1,map1)=>(site1,map1.map{
-        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
-        case(site2,value) if branchNode.varAssignment(site1)(site2) != Some(false) && site1 != site2
-          && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
-      })}
-/*
-    println("current mapV1")
-    for (item <- mapV1) {
+    /*
+    println("branchNode.varAssignment")
+    for (item <- branchNode.varAssignment) {
       for (i <- item._2) {
         println(item._1.id, i._1.id, i._2)
       }
       println("             ")
     }
 
- */
+     */
+
+    // construct arc between left sites set and right sites set
+    val mapV1 = costPrime.map{
+      case(site1,map1)=>(site1,map1.map{
+        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
+        case(site2,value) if branchNode.varAssignment(site1)(site2) != Some(false) && site1 != site2
+          && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
+        case(site2,value) => (searchByID(sitesRight,site2.id+"Right"),value)
+      })}
+
+
+
 
     // block ii entries
 
