@@ -1,6 +1,7 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 
-import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolver.Karp79.computeUpperBound
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79.computeUpperBound
 import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver}
 
 import scala.util.control.Breaks.break
@@ -17,9 +18,7 @@ object BranchAndBoundSolver extends Solver {
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap)
     rootNode.level = 0
 
-    val upperBound = computeUpperBound(rootNode)
-    val reducedThreshold = upperBound - rootNode.lowerBound
-
+    val initUpperBound = upperBoundSolver.computeUpperBound(rootNode)
 
     var currentBestNode: Option[BranchNode] = None
 
@@ -28,7 +27,7 @@ object BranchAndBoundSolver extends Solver {
     while (activeBranches.nonEmpty) {
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
-      val sortedNodes: List[BranchNode] = activeBranches.sortBy(_.lowerBound)
+      val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
 
       println("num sortedNodes active", sortedNodes.length)
       for (i <- sortedNodes) {

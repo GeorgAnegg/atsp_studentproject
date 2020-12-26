@@ -1,6 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 
-import ch.ethz.math.ifor.atsp.{Site, arcWise}
+import ch.ethz.math.ifor.atsp.{Site, arcWise,inf}
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import com.google.ortools.linearsolver.MPConstraint
@@ -10,7 +10,7 @@ import com.google.ortools.linearsolver.MPVariable;
 
 object ORToolsIP extends LowerBoundSolver{
 
-  def compute(branchNode: BranchNode): Map[Site, Map[Site, Boolean]]  = {
+  def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
 
     System.loadLibrary("jniortools")
 
@@ -87,6 +87,22 @@ object ORToolsIP extends LowerBoundSolver{
     val resultStatus = solver.solve()
     println(resultStatus)
 
+    if(resultStatus == MPSolver.ResultStatus.INFEASIBLE){
+      val assignmentInfeasible : Map[Site,Map[Site,Boolean]] = branchNode.varAssignment.map{
+        case (site1, map1) => (site1, map1.map{
+          case (site2, value) if site1==site2 => (site2,true)
+          case (site2, value) if site1!=site2 => (site2,false)
+        })
+      }
+
+      val costInfeasible : Map[Site,Map[Site,Double]] = branchNode.costsMap.map{
+        case (site1, map1) => (site1, map1.map{
+          case (site2, value) => (site2,inf)
+        })
+      }
+      return (assignmentInfeasible,costInfeasible)
+    }
+
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {true}
       else {false}
@@ -104,8 +120,7 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
  */
-
-    resultArray.entries
+    (resultArray.entries,costs.entries)
     }
 
   // not used

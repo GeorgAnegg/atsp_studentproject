@@ -1,25 +1,26 @@
-package ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolver
-import ch.ethz.math.ifor.atsp.{Site, inf}
+package ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.UpperBoundSolver
+import ch.ethz.math.ifor.atsp.{Site, inf}
 
-object Karp79 {
+object Karp79 extends UpperBoundSolver {
 
   def computeUpperBound(branchNode: BranchNode): Double = {
 
-    var upperBound:Double = branchNode.lowerBound
+    var upperBound: Double = branchNode.lowerBound
 
-    var tours: List[Map[Site,Site]] = List()
-    branchNode.allTours.foreach(tour => tours = tours ::: tour.listArcs:: Nil)
+    var tours: List[Map[Site, Site]] = List()
+    branchNode.allTours.foreach(tour => tours = tours ::: tour.listArcs :: Nil)
 
-    def costPermute(arc1:(Site, Site), arc2:(Site, Site)):Double = {
+    def costPermute(arc1: (Site, Site), arc2: (Site, Site)): Double = {
       branchNode.costsMap(arc1._1)(arc2._2) + branchNode.costsMap(arc2._1)(arc1._2) -
         branchNode.costsMap(arc1._1)(arc1._2) - branchNode.costsMap(arc2._1)(arc2._2)
     }
 
-    var listPatched: List[Map[Site,Site]] = List()
+    var listPatched: List[Map[Site, Site]] = List()
 
-    while (tours.size>1){
+    while (tours.size > 1) {
 
       tours = tours.sortBy(_.size)
 
@@ -29,13 +30,13 @@ object Karp79 {
 
       tours = tours.drop(1)
 
-      var arcPairs:List[(Site,Site)] = List()
+      var arcPairs: List[(Site, Site)] = List()
       var cycles: List[Int] = List()
 
-      for (arc1 <- currentShortestCycle){
-        for (cycle <- tours){
-          for (arc2 <-cycle){
-            val costPermute12 = costPermute(arc1,arc2)
+      for (arc1 <- currentShortestCycle) {
+        for (cycle <- tours) {
+          for (arc2 <- cycle) {
+            val costPermute12 = costPermute(arc1, arc2)
             if (costPermute12 < minCostPermute && !listPatched.contains(arc1) && !listPatched.contains(arc2)) {
               minCostPermute = costPermute12
               arcPairs = arcPairs ::: arc1 :: Nil
@@ -45,16 +46,16 @@ object Karp79 {
           }
         }
       }
-      val arc1= arcPairs(arcPairs.size-2)
-      val arc2= arcPairs.last
+      val arc1 = arcPairs(arcPairs.size - 2)
+      val arc2 = arcPairs.last
 
       // construct new tour by combine two cycles and delete/add two arcs
-      var newTour:Map[Site,Site]=currentShortestCycle.++(tours(cycles.last))
-      newTour = newTour.updated(arc1._1,arc2._2)
-      newTour = newTour.updated(arc2._1,arc1._2)
+      var newTour: Map[Site, Site] = currentShortestCycle.++(tours(cycles.last))
+      newTour = newTour.updated(arc1._1, arc2._2)
+      newTour = newTour.updated(arc2._1, arc1._2)
 
       // update tours by deleting two such cycles and adding a new combined one
-      tours = tours.patch(cycles.last,Nil,1)
+      tours = tours.patch(cycles.last, Nil, 1)
       tours = tours ::: List(newTour)
 
       // add two such arcs in listParched to avoid being patched again
@@ -64,8 +65,6 @@ object Karp79 {
     }
     upperBound
   }
-
-
 
 
 }

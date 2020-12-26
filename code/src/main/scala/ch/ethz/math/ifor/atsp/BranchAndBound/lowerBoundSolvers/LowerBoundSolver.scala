@@ -6,7 +6,7 @@ import ch.ethz.math.ifor.atsp.Site
 trait LowerBoundSolver {
 
   //TODO: figure out of there is a better way to do this
-  def compute (branchNode: BranchNode) : Map[Site, Map[Site, Boolean]]
+  def compute (branchNode: BranchNode) : (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])
 
   def computeLB (branchNode: BranchNode) : LowerBound
 

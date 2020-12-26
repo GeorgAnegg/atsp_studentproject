@@ -6,17 +6,17 @@ import ch.ethz.math.ifor.atsp.{Input, Site, Tour,arcWise}
  * @param varAssignment contains information for which variables are already set to 0 or 1
  */
 class BranchNode(val input: Input,
-                 val varAssignment: Map[Site, Map[Site, Option[Boolean]]]
+                 var varAssignment: Map[Site, Map[Site, Option[Boolean]]]
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundSolver.compute(branchNode = this)
-  var parentNode: BranchNode = this
-  var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
-  var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = Map()
-  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
+  val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) =lowerBoundSolver.compute(branchNode = this)
+  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
+  var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
 
-  // TODO: find out the best way to prevent calculate AP lower bound if naiveLowerbound < currentBestNode.lowerbound
+  var parentNode: BranchNode = this
+  //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
+  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
   val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
 
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
@@ -60,8 +60,6 @@ class BranchNode(val input: Input,
     }
     listTours
   }
-
-
 
   // implement branchStep
   def branchStep: Either[BranchNode, List[BranchNode]] = {

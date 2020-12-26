@@ -7,8 +7,8 @@ import scala.util.control.Breaks.{break, breakable}
 
 object NaiveLB extends LowerBoundSolver{
 
-  def compute (branchNode: BranchNode) : Map[Site, Map[Site, Boolean]] = {
-    branchNode.lowerBoundSolve
+  def compute (branchNode: BranchNode) : (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])= {
+    (branchNode.lowerBoundSolve,branchNode.costsMap)
   }
 
   def computeLB(branchNode: BranchNode): LowerBound  ={

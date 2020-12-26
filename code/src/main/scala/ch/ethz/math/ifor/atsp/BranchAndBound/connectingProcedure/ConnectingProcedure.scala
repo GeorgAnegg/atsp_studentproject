@@ -11,7 +11,7 @@ object ConnectingProcedure {
 
     val numberOfZeros:Double={
       var count = 0
-      branchNode.reducedCostMatrix.foreach{
+      branchNode.reducedCostMatrixAfterAP.foreach{
         case (_,map1) => map1.foreach{ case (_,value) if value == 0 => count += 1}
       }
       count
@@ -23,7 +23,7 @@ object ConnectingProcedure {
       branchNode.allTours.foreach(tour => tours = tours ::: tour.listArcs :: Nil)
 
       def filterZeroArcs(arcs: Map[Site, Site]): Map[Site, Site] = {
-        arcs.collect { case (site1, site2) if branchNode.reducedCostMatrix(site1)(site2) == 0.0 => (site1, site2) }
+        arcs.collect { case (site1, site2) if branchNode.reducedCostMatrixAfterAP(site1)(site2) == 0.0 => (site1, site2) }
       }
 
       var zeroTours = tours.zipWithIndex.collect {

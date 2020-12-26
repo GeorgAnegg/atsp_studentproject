@@ -1,15 +1,31 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
-import ch.ethz.math.ifor.atsp.{Site, Tour, inf}
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79.computeUpperBound
 
-import scala.::
-import scala.util.control.Breaks.{break, breakable}
+import ch.ethz.math.ifor.atsp.{Site, inf}
 import scala.collection.mutable
 
 object CT80 extends BranchingScheme {
 
   def listChildren(branchNode: BranchNode):List[BranchNode]={
+
+
+
+    // if root node, apply patching procedure and exclude all arcs with reduced cost > upperbound - lowerbound
+
+    if (branchNode.level==0){
+      val reducedThreshold = computeUpperBound(branchNode) - branchNode.lowerBound
+      println("upper bound is:",computeUpperBound(branchNode),"lower bound is:",branchNode.lowerBound )
+      branchNode.varAssignment = branchNode.varAssignment.map{
+        case (site1, map1) => (site1, map1.collect{
+          case (site2, value) if branchNode.reducedCostMatrixAfterAP(site1)(site2)!=inf &&
+            branchNode.reducedCostMatrixAfterAP(site1)(site2) > reducedThreshold => (site2,Some(false))
+          case (site2, value) if branchNode.reducedCostMatrixAfterAP(site1)(site2)==inf ||
+            branchNode.reducedCostMatrixAfterAP(site1)(site2) <= reducedThreshold => (site2,value)
+        })
+      }
+    }
 
     var listChildrenNodes: List[BranchNode] = List()
     var excludedArcs: Map[Site,Site] = Map()
@@ -24,16 +40,6 @@ object CT80 extends BranchingScheme {
         }
       }
     }
-
-
-
-
-    /*
-    branchNode.sitesStatus.map((site1,map2)=>(site1,map2 match{ case (site2, null)=>(site2, null)
-                                                              case (site2, true)=> excludedArcs += site1 -> map2._1
-                                                              case (site2, false)=> includedArcs += site1 -> map2._1
-    }))
-    */
 
     // choose the subtour with minimum number of arcs not included in includedArcs
     var bestSubtour: Map[Site,Site] = Map()
@@ -53,13 +59,7 @@ object CT80 extends BranchingScheme {
     //println("best tour",bestSubtour)
 
     var listArcs = bestSubtour.toList
-    /*
-    println("bestSubtour")
-    for (i <- listArcs){
-      println(i._1,i._2)
-    }
 
-     */
 
     // compute h_j
     var list_h:List[Int] = List.fill(listArcs.length)(0)
@@ -84,13 +84,6 @@ object CT80 extends BranchingScheme {
     }
     val unwanted = includedArcs.toSet
     listArcs = listArcs.filterNot(unwanted)
-    /*
-    println("unwanted")
-    for (i <- unwanted){
-      println(i._1,i._2)
-    }
-
-     */
 
     // compute w_j
     var list_w: List[Int] = List()
@@ -108,13 +101,6 @@ object CT80 extends BranchingScheme {
     var children_pair = listArcs zip list_w
     children_pair = children_pair.sortBy(_._2)(Ordering[Int].reverse)
     listArcs = children_pair.map(_._1)
-/*
-    println("w value")
-    for (i <- children_pair){
-      println(i._1,i._2)
-    }
-
- */
     // println("list arcs",listArcs)
 
     // create children nodes
@@ -131,23 +117,13 @@ object CT80 extends BranchingScheme {
 
       val resultMap:Map[Site,Map[Site, Option[Boolean]]] = childMap.collect{case site1-> map1 => site1 -> map1.collect{
         case site2-> _ if excluded.contains((site1,site2)) => site2 ->Some(false)
-        case site2-> _ if included.contains((site1,site2)) => site2 ->Some(true)
-        case site2-> bool if !excluded.contains((site1,site2)) && !included.contains((site1,site2)) => site2 -> bool
+        case site2-> value if included.contains((site1,site2)) && value!=Some(false) => site2 ->Some(true)
+        case site2-> bool  => site2 -> bool
       }}.toMap
 
       def avoidPotentialCycle(lbSolve:Map[Site,Map[Site, Option[Boolean]]]): List[(Site,Site)] = {
 
         // pairMap contains pair of sites in Included Arc Set
-/*
-        println("do we have there",excludedArcs.size, includedArcs.size)
-        for (i <- lbSolve){
-          for (j<-i._2){
-            print(j._2+"  ")
-          }
-          println("  ")
-        }
-
- */
 
         var pairMap = scala.collection.mutable.Map[Site, Site]()
         for (i <- lbSolve){
@@ -159,15 +135,6 @@ object CT80 extends BranchingScheme {
             }
           }
         }
-        /*
-        println("pair map size before",pairMap.size)
-
-        //var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2 != null).head._1 })
-        println("hello",pairMap.size)
-        //pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2.contains(true)).head._1 })
-        println("hello",pairMap.size)
-
-         */
 
         var additionalExcluded: List[(Site,Site)] = List()
 
@@ -214,8 +181,7 @@ object CT80 extends BranchingScheme {
       additionalExcluded
       }
 
-        // exclude all arcs that could create a cycle if included
-
+      // exclude all arcs that could create a cycle if included
 
       val additionalExcluded :List[(Site,Site)]= {
         if (included.length+includedArcs.size>2){
@@ -224,8 +190,6 @@ object CT80 extends BranchingScheme {
           List()
         }
       }
-
-
 
       //val additionalExcluded = List()
 
