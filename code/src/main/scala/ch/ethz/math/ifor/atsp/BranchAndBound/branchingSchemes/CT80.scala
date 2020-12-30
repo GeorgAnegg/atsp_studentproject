@@ -2,16 +2,12 @@ package ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79.computeUpperBound
-
 import ch.ethz.math.ifor.atsp.{Site, inf}
 import scala.collection.mutable
 
 object CT80 extends BranchingScheme {
 
   def listChildren(branchNode: BranchNode):List[BranchNode]={
-
-
-
     // if root node, apply patching procedure and exclude all arcs with reduced cost > upperbound - lowerbound
 
     if (branchNode.level==0){

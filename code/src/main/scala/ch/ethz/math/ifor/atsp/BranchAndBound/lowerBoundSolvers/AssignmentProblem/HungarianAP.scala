@@ -8,6 +8,15 @@ import scala.util.control.Breaks.{break, breakable}
 object HungarianAP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
+/*
+    println("=========== costs before AP ==========")
+    branchNode.costsMap.foreach{
+      case (site1, map1) => (site1,map1.foreach{
+        case(site2, value) => println(site1.id,site2.id,value)
+      })
+    }
+
+ */
 
     val numSites = branchNode.varAssignment.size
 
@@ -81,6 +90,15 @@ object HungarianAP extends LowerBoundSolver{
     sitesRight.foreach{e=>
       stMap = stMap + (e -> Map(destination->0))
     }
+/*
+    println("=========== stMap ==========")
+    stMap.foreach{
+      case (site1, map1) => (site1,map1.foreach{
+        case(site2, value) => println(site1.id,site2.id,value)
+      })
+    }
+
+ */
 
     // construct array for all sites, i.e., s + left + right + t
     val allSites:Array[Site] = Array.concat( sitesLeft, sitesRight) :+ start :+ destination
@@ -194,6 +212,11 @@ object HungarianAP extends LowerBoundSolver{
         //println(path.last.id,path.length)
         path = path :+ dijkstraPre(path.last)
       }
+      /*
+      println("path here")
+      path.foreach{e => println(e.id)}
+
+       */
 
       val arcs: Map[Site, Site] = {
         path.zipWithIndex.collect {
@@ -239,18 +262,33 @@ object HungarianAP extends LowerBoundSolver{
 
       potential = updatePotential(potential,currentDistance)
 
-
       // update residual map
       stMap = updateResidualGraph(stMap, currentPath, currentDistance)
 
       // update matching
       matching = updateMatching(currentMatching, matching)
+      /*
+
+      println("=============currentDistance=============")
+      currentDistance.foreach{e => println(e._1.id,e._2)}
+      println("=============potential=============")
+      potential.foreach{e => println(e._1.id,e._2)}
+      println("=============path=============")
+      currentPath.foreach{e => println(e._1.id,e._2.id)}
+      println("=============matching=============")
+      matching.foreach{case(s1,s2) => println(s1.id,s2.id)}
+
+       */
 
     }
 
-    // construct reduced cost matrix, c(i,j)' = c(i,j) + p(i) - p(j)
+/*
+    println("=============potential=============")
+    potential.foreach{e => println(e._1.id,e._2)}
 
-    /*
+ */
+
+    // construct reduced cost matrix, c(i,j)' = c(i,j) + p(i) - p(j)
 
     val reducedCostMatrixAP : Map[Site, Map[Site, Double]] = costs.entries.map{
       case (site1,map1) => (site1, map1.map{
@@ -261,25 +299,31 @@ object HungarianAP extends LowerBoundSolver{
       })
     }
 
-     */
-
-/*
     println("--------------------------reduced cost matrix using potential=======================")
 
     for (item <- reducedCostMatrixAP) {
       for (i <- item._2) {
-        print(i._2 + "  ")
+        print(branchNode.costsMap(item._1)(i._1),i._2 + "  ")
       }
       println("\r\n")
     }
     println("--------------------------=======================")
 
- */
+
+
+
 
     // construct final matching
     val finalMatching = matching.map{
       case (site1,site2) => (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
     }
+    /*
+    println("===========final matching=======")
+    finalMatching.foreach{
+      case (site1,site2) => println(site1.id,site2.id,branchNode.costsMap(site1)(site2))
+    }
+
+     */
 
     // construct the result assignment data structure
     def constructResult(site1:Site ,site2:Site):Boolean= {
@@ -297,8 +341,8 @@ object HungarianAP extends LowerBoundSolver{
 
     // dij takes a residual graph, returns d(i) for all i
 
-    (resultAssignment.entries,costs.entries)
-    //(resultAssignment.entries,reducedCostMatrixAP)
+    //(resultAssignment.entries,costs.entries)
+    (resultAssignment.entries,reducedCostMatrixAP)
   }
 
   // not used

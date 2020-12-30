@@ -6,7 +6,18 @@ import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
 
 object ChuLiuEdmonds {
 
-  def compute(input: Input):Map[Site, Map[Site, Boolean]]={
+  def compute(input: Input):Double={
+
+    var infeasible = true
+    input.distMat.collect{
+      case (site, value) => (site,value.collect{
+        case (site, d) if d != inf => infeasible = false
+      })
+    }
+
+    if (infeasible){
+      return inf
+    }
 
     // choose an arbitrary root node
     val rootSite = input.sites(0)
@@ -27,7 +38,7 @@ object ChuLiuEdmonds {
 
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
     def chuLiuEdmonds(graph:Map[Site, Map[Site, Double]]): Map[Site, Map[Site, Boolean]] = {
-/*
+
       println("=============================================graph=========================================")
       for(site1<-graph.keys){
         for (site2 <-graph(site1)){
@@ -38,7 +49,7 @@ object ChuLiuEdmonds {
 
 
 
- */
+
 
 
       // for each node except root node, choose the min-cost in-site
@@ -428,8 +439,29 @@ object ChuLiuEdmonds {
       (newMap,minToCycle,minFromCycle,newSite)
     }
 
-    chuLiuEdmonds(costsPrime)
+    val resultAssignment:Map[Site,Map[Site,Boolean]] = chuLiuEdmonds(costsPrime)
 
+    var result:Double = 0.0
+
+    resultAssignment.collect{
+      case (site1,map1) => (site1, map1.collect{
+        case (site2, value) if value => result = result + input.distMat(site1)(site2)
+      })
+    }
+    println("rSAP result")
+    resultAssignment.collect{
+      case (site1,map1) => (site1, map1.collect{
+        case (site2, value) => println(input.distMat(site1)(site2))
+      })
+    }
+    println("rSAP result")
+    resultAssignment.collect{
+      case (site1,map1) => (site1, map1.collect{
+        case (site2, value) if value => println(site1.id,site2.id,input.distMat(site1)(site2))
+      })
+    }
+    println("===============lower bound rSAP is: ",result,"=======================")
+    result
   }
 
   // not used

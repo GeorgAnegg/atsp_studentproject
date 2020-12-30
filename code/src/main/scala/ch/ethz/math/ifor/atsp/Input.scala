@@ -33,6 +33,30 @@ object Input {
     new Input(sites, distMat)
   }
 
+  def twoNodesTSP(distVec: Vector[Vector[Double]]):Input = {
+
+    val sites = Vector.fill(2*distVec.length)(new Site)
+
+    val distVecPrime = distVec.zipWithIndex.map {
+      case (vec, index1) => vec.zipWithIndex.map {
+        case (value, index2) if index1 == index2 => -inf
+      }
+    }
+
+    val infMatrix: Vector[Vector[Double]] =Vector.fill(distVec.length, distVec.length)( inf )
+
+    val upperMatrix: Vector[Vector[Double]] = (infMatrix, distVecPrime.transpose).zipped.map(_ ++ _)
+    val lowerMatrix: Vector[Vector[Double]] = (distVecPrime,infMatrix).zipped.map(_ ++ _)
+
+    val finalMatrix: Vector[Vector[Double]] = upperMatrix ++ lowerMatrix
+
+    val distMat = sites.zip(finalMatrix).map{case (site, distRow) =>
+      site -> sites.zip(distRow).toMap}.toMap
+
+    new Input(sites, distMat)
+
+  }
+
 
   val toyExample: Input = {
 

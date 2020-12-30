@@ -13,6 +13,8 @@ class BranchNode(val input: Input,
   val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) =lowerBoundSolver.compute(branchNode = this)
   val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
+  val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
+  val lowerBoundrSAP:Double = rSAPLowerBoundSolver.compute(inputRSAP)
 
   var parentNode: BranchNode = this
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
