@@ -12,7 +12,12 @@ lazy val root = (project in file("."))
     //libraryDependencies += sparkCore,
     libraryDependencies += sparkPoi,
     libraryDependencies += sparkPoiO,
-    libraryDependencies += sparkPoiOS
+    libraryDependencies += sparkPoiOS,
+    libraryDependencies ++= Seq(
+          "com.github.vagmcs" %% "optimus" % "3.2.4",
+          "com.github.vagmcs" %% "optimus-solver-oj" % "3.2.4",
+          "com.github.vagmcs" %% "optimus-solver-lp" % "3.2.4"
+    )
   )
 
 fork := true
