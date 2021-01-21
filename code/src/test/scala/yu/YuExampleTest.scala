@@ -1,12 +1,11 @@
 package yu
 
-import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchAndBoundSolver, BranchNode, rSAPLowerBoundSolver,BranchAndCutSolver}
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchAndBoundSolver, BranchNode, rSAPLowerBoundSolver}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.Arborescence.ChuLiuEdmonds
 import ch.ethz.math.ifor.atsp.dataProcessing
 import ch.ethz.math.ifor.atsp.dataProcessing.Spreadsheet
 import ch.ethz.math.ifor.atsp.{Input, Site}
 import ch.ethz.math.ifor.atsp.Input.{fromDistVec, toyExample4, toyExample5}
-import ch.ethz.math.ifor.atsp.BranchAndBound.linearProgramming.ScalaLibrary
 
 object YuExampleTest extends App {
   // execute this with 'test:run' in the sbt shell
@@ -41,7 +40,7 @@ object YuExampleTest extends App {
  */
 
 
-  val output = BranchAndCutSolver.solve(fromDistVec(input))
+  val output = BranchAndBoundSolver.solve(fromDistVec(input))
 
   output.print()
   val duration = (System.nanoTime - t1) / 1e9d

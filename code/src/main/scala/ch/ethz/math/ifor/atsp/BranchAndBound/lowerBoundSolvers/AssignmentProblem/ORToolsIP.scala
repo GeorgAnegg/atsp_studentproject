@@ -6,7 +6,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPObjective
 import com.google.ortools.linearsolver.MPSolver
-import com.google.ortools.linearsolver.MPVariable;
+import com.google.ortools.linearsolver.MPVariable
 
 object ORToolsIP extends LowerBoundSolver{
 

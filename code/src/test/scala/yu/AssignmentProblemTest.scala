@@ -5,7 +5,6 @@ import ch.ethz.math.ifor.atsp.Input
 import ch.ethz.math.ifor.atsp.{Input, Site, Tour}
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, lowerBoundSolver}
 
-import ch.ethz.math.ifor.atsp.BranchAndBound.linearProgramming.ScalaLibrary
 
 object AssignmentProblemTest extends App {
   //val input = Input.toyExample
