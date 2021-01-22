@@ -1,7 +1,7 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut
 import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchNode, upperBoundSolver}
-import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour}
-import optimus.optimization.model.MPConstraint
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise}
+import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 object BranchAndCutSolver extends Solver {
   def solve(input: Input): Output = {
@@ -14,16 +14,14 @@ object BranchAndCutSolver extends Solver {
     }.toMap
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap)
     rootNode.level = 0
-
-    // initial constraints
-
+    rootNode.isRootNode = true
 
     def updateNode(node: BranchNode):BranchNode={
       //solve LP associated
-      val currentLPSolution: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(rootNode)
+      //val currentLPSolution: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(rootNode)
 
       // apply AP-pricing
-      val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(rootNode)
+      //val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(rootNode)
 
       // update core set
 
