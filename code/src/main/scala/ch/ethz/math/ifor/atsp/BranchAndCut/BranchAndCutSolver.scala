@@ -16,28 +16,24 @@ object BranchAndCutSolver extends Solver {
     rootNode.level = 0
     rootNode.isRootNode = true
 
-    def updateNode(node: BranchNode):BranchNode={
-      //solve LP associated
-      //val currentLPSolution: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(rootNode)
+    // Need a global cuts pool
+    var globalCuts: List[MPConstraint] = List()
 
-      // apply AP-pricing
-      //val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(rootNode)
-
-      // update core set
-
-      node
-    }
-
-    // apply separation procedure to find cuts
-    // if found, add to current LP
-    // if not, and if x integer, then update current optimal solution
-    // if not, and if x fractional, then branch
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
 
     val initUpperBound = upperBoundSolver.computeUpperBound(rootNode)
 
+    // TODO: Question, why in FT97, they didn't check if the solution is integer before applying separation algos?
 
+    //solve LP associated
+    // apply AP-pricing
+    // remove some cuts, update core set
+    // apply separation algorithm to find cuts tht cut off the current LP solution
+    // 1. check all cuts in global pool
+    // 2. if no cuts found, apply PR90 MINCUT algorithm for SEC separation
+    // 3. if no cuts found, shrink, apply separation algorithms for comb, D_k and odd CAT
+    // 4. if some cuts are found, add to the current LP and repeat, else if (...)
     while (activeBranches.nonEmpty) {
 
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound <= initUpperBound).sortBy(_.lowerBound)
@@ -46,40 +42,43 @@ object BranchAndCutSolver extends Solver {
 
       var currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
-      /*
-            println("active branches after sorted")
-            for (i <- activeBranches) {
-              println(i, i.lowerBound, i.level)
-            }
-            println("\r\n")
-            println("current branchnode", currentBranchNode.level, "parent", currentBranchNode.parentNode.level)
 
-       */
+      // apply AP-pricing
+      val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(currentBranchNode)
 
-      var newCuts: List[MPConstraint] = cuttingPlane.findCuts(currentBranchNode)
-      while (newCuts.nonEmpty){
-        currentBranchNode = updateNode(currentBranchNode)
-        newCuts = cuttingPlane.findCuts(currentBranchNode)
-      }
+      currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
-      if (currentBranchNode.isInteger){
-        currentBestNode = Some(currentBranchNode)
-        activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
+      val newCuts: List[MPConstraint] = cuttingPlane.findCuts(currentBranchNode)
+
+      if (newCuts.nonEmpty){
+        // add cuts to current node and add to the branch list
+        currentBranchNode.cuts = currentBranchNode.cuts ++ newCuts
+        globalCuts = globalCuts ++ newCuts
+        activeBranches = activeBranches ++ List(currentBranchNode)
+
       } else {
-        val children: List[BranchNode]=branchingScheme.listChildren(currentBranchNode)
-        for (child <- children) {
-          if (currentBestNode.isEmpty) {
-            println("add this children", child)
-            activeBranches = activeBranches ++ List(child)
-          } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
-            activeBranches = activeBranches ++ List(child) //add children/new branches
+        // check if current solution is integer
+        if (currentBranchNode.isInteger){
+          // if integer, update current best solution
+          currentBestNode = Some(currentBranchNode)
+          activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
+        } else {
+          // otherwise, branch and add to the branch list
+          val children: List[BranchNode]=branchingScheme.listChildren(currentBranchNode)
+          for (child <- children) {
+            if (currentBestNode.isEmpty) {
+              println("add this children", child)
+              activeBranches = activeBranches ++ List(child)
+            } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
+              activeBranches = activeBranches ++ List(child) //add children/new branches
+            }
           }
         }
       }
 
     }
 
-    val tour = new Tour(input,input.sites.toList) // TODO
+    val tour = currentBestNode.get.findTour(currentBestNode.get.lowerBoundSolve)
     new Output(input, tour)
 
   }

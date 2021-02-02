@@ -33,15 +33,37 @@ class BranchNode(val input: Input,
     else parentNode.variables
   }
   var reducedCosts:Map[Site, Map[Site, Double]]=Map()
-  val isInteger:Boolean = false
-
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-  val lowerBoundSolve: Map[Site, Map[Site, Double]] =linearProgrammingSolver.findSolution(variables,cuts,solverLP.objective())
+  var lowerBoundSolve: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(input, variables, solverLP)
+
+  val isInteger:Boolean = {
+    var result = true
+    lowerBoundSolve.foreach{
+      case (site1, map1) => (site1, map1.foreach{
+        case (site2, value) if (value != 0.0 && value != 1.0) => result = false
+      })
+    }
+    result
+  }
 
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
   val lowerBound: Double  = 0.0 // TODO
+
+  def findTour(solution:Map[Site, Map[Site, Double]]):Tour={
+    var pairMap = solution.map({ case (site1, map1) => site1 -> map1.filter(_._2 == 1.0).head._1 })
+    var siteList : List[Site] = List()
+    var currentSite = pairMap.head._1
+    siteList = siteList ++ List(currentSite)
+    while (pairMap.size > 1){
+      val nextSite = pairMap(currentSite)
+      siteList = siteList ++ List(nextSite)
+      pairMap = pairMap.removed(currentSite)
+      currentSite = nextSite
+    }
+    new Tour(input,siteList)
+  }
 
 
   def constructVariable(site1:Site ,site2:Site):MPVariable=
