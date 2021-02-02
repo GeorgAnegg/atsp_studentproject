@@ -65,7 +65,6 @@ class BranchNode(val input: Input,
     new Tour(input,siteList)
   }
 
-
   def constructVariable(site1:Site ,site2:Site):MPVariable=
     if (site1.id==site2.id) {solverLP.makeNumVar(0,0,"")}
     else {
