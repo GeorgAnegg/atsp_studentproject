@@ -9,6 +9,7 @@ class BranchNode(val input: Input,
   var isRootNode: Boolean = false
   var parentNode: BranchNode = this
 
+  // TODO: Question: Cannot get all constraints from solverLP directly? solver.constraints() doesn't work
   var solverLP:MPSolver = {
     if (isRootNode){
       new MPSolver("LinearProgramming",
@@ -19,13 +20,14 @@ class BranchNode(val input: Input,
     }
   }
 
-  var cuts: List[MPConstraint]= {
+  var cuts: List[(Map[MPVariable,Double],Double)]= {
     if (isRootNode){
       List()
     } else {
       parentNode.cuts
     }
   }
+  var constraints: List[MPConstraint] = List()
   var variables: arcWise[MPVariable]= {
     if (isRootNode){
       arcWise(input, constructVariable)
@@ -95,7 +97,7 @@ class BranchNode(val input: Input,
       listConstraintsIn = constraintIn::listConstraintsIn
       listConstraintsOut = constraintIn::listConstraintsOut
     }
-    cuts = listConstraintsIn ++ listConstraintsOut
+    constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
   }
   // construct the objective function.
   val objectiveFunction : MPObjective = solverLP.objective()
@@ -104,6 +106,18 @@ class BranchNode(val input: Input,
       case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
     })
   }
+
+  def fromCutToConstraint(cuts:List[(Map[MPVariable,Double],Double)]): Unit ={
+    for (cut <- cuts){
+      val constraint : MPConstraint = solverLP.makeConstraint(0, cut._2, "")
+      cut._1.foreach{
+        case (mpVariable,coefficient) => constraint.setCoefficient(mpVariable,coefficient)
+      }
+      constraints = constraints ++ List(constraint)
+    }
+  }
+
+
 
 
 

@@ -17,7 +17,7 @@ object BranchAndCutSolver extends Solver {
     rootNode.isRootNode = true
 
     // Need a global cuts pool
-    var globalCuts: List[MPConstraint] = List()
+    var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
@@ -48,11 +48,11 @@ object BranchAndCutSolver extends Solver {
 
       currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
-      val newCuts: List[MPConstraint] = cuttingPlane.findCuts(currentBranchNode)
+      val newCuts: List[(Map[MPVariable,Double],Double)] = cuttingPlane.findCuts(currentBranchNode)
 
       if (newCuts.nonEmpty){
         // add cuts to current node and add to the branch list
-        currentBranchNode.cuts = currentBranchNode.cuts ++ newCuts
+        currentBranchNode.fromCutToConstraint(newCuts)
         globalCuts = globalCuts ++ newCuts
         activeBranches = activeBranches ++ List(currentBranchNode)
 

@@ -18,7 +18,7 @@ object APPricing extends PricingScheme {
     }
 
     // update c_{ij}' row by row
-    for(rowConstraint <- branchNode.cuts){
+    for(rowConstraint <- branchNode.constraints){
       if (rowConstraint.dualValue()!=0.0){
         for(var1 <- branchNode.variables.entries){
           for(var2 <- var1._2){
