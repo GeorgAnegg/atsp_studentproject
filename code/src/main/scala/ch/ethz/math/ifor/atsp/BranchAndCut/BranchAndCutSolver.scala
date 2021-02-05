@@ -18,6 +18,9 @@ object BranchAndCutSolver extends Solver {
 
     // Need a global cuts pool
     var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
+    // Add degree constraints to the global cuts pool
+
+
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
@@ -48,7 +51,7 @@ object BranchAndCutSolver extends Solver {
 
       currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
-      val newCuts: List[(Map[MPVariable,Double],Double)] = cuttingPlane.findCuts(currentBranchNode)
+      val newCuts: List[(Map[MPVariable,Double],Double)] = cuttingPlane.findCuts(currentBranchNode,globalCuts)
 
       if (newCuts.nonEmpty){
         // add cuts to current node and add to the branch list
