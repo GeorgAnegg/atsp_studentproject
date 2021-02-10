@@ -1,7 +1,9 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut.cuttingPlanes
 
-import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchNode, BranchAndCutSolver}
+import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchAndCutSolver, BranchNode}
+import ch.ethz.math.ifor.atsp.{Site, inf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
+import ch.ethz.math.ifor.atsp.BranchAndCut.cuttingPlanes.MinCut
 
 object OddCAT extends CuttingPlane {
   def findCuts(branchNode:BranchNode,globalCuts:List[(Map[MPVariable,Double],Double)]):List[(Map[MPVariable,Double],Double)] = {
@@ -24,10 +26,23 @@ object OddCAT extends CuttingPlane {
 
     // 2. otherwise, apply PR90a MINCUT algorithm for SEC separation, i.e., check if there
     // exists a subset of vertices such that x*(\delta(S))<2, if found, exit the separation procedure
-
+    val resultCuts:List[(Map[MPVariable,Double],Double)] = List()
+    
 
     // 3. otherwise, shrink 1-arc paths of x* and apply separation algorithms for
     // comb, D_k and odd CAT
+    var superNodes:List[(Site,Site)]=List()
+
+    // shrink all 1-arc paths
+    branchNode.lowerBoundSolve.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) if value == 1 => superNodes = superNodes ::: (site1,site2) :: Nil
+      }
+    }
+
+    superNodes.foreach{
+      case (site1, site2) => new Site()
+    }
 
 
     // 3.1 for comb, first transform ATSP solution x* to TSP solution y* = x*_{ij} + x*_{ji}
