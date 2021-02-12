@@ -24,7 +24,7 @@ object MinCut {
     listSites.foreach(site => capacityNode = capacityNode ++ Map(site -> 0.0))
     branchNode.lowerBoundSolve.foreach{
       case (site1, map1) => map1.foreach{
-        case (site2, value) => capacityNode(site1) += value
+        case (site2, value) => capacityNode.updated(site1, capacityNode(site1)+value)
       }
     }
 
@@ -32,7 +32,8 @@ object MinCut {
     listSites.foreach(site => adjcentNodeList = adjcentNodeList ++ Map(site -> List()))
     branchNode.lowerBoundSolve.foreach{
       case (site1, map1) => map1.foreach{
-        case (site2, value) if value != 0 => adjcentNodeList = adjcentNodeList.updated(site1, adjcentNodeList(site1)::List(site2))
+        case (site2, value) if value != 0 =>
+          //adjcentNodeList = adjcentNodeList.updated(site1, adjcentNodeList(site1)::List(site2))
       }
     }
 
@@ -63,7 +64,7 @@ object MinCut {
       var tempNode:Map[Site, Double] = Map()
 
       capacityNode = capacityNode.updated(u,capacityNode(u)+capacityNode(v)-2*branchNode.lowerBoundSolve(u)(v))
-      clusterNode = clusterNode.updated(u, clusterNode(u)::List(v))
+      //clusterNode = clusterNode.updated(u, clusterNode(u)::List(v))
 
       for (node<-adjcentNodeList(u)){
         markNode = markNode.updated(node,true)
@@ -74,8 +75,8 @@ object MinCut {
         adjcentNodeList = adjcentNodeList.updated(v, adjcentNodeList(v).filter(site => site!=node))
         adjcentNodeList = adjcentNodeList.updated(node, adjcentNodeList(node).filter(site => site!=v))
         if (!markNode(node)){
-          adjcentNodeList = adjcentNodeList.updated(u, adjcentNodeList(u)::List(node))
-          adjcentNodeList = adjcentNodeList.updated(node, adjcentNodeList(node)::List(u))
+          //adjcentNodeList = adjcentNodeList.updated(u, adjcentNodeList(u)::List(node))
+          //adjcentNodeList = adjcentNodeList.updated(node, adjcentNodeList(node)::List(u))
         } else {
           costMap = costMap.collect{
             case (site1, map1)=> (site1,map1.collect{
@@ -148,7 +149,5 @@ object MinCut {
 
     List()
   }
-
-
 
 }

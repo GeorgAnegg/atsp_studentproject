@@ -27,7 +27,7 @@ object OddCAT extends CuttingPlane {
     // 2. otherwise, apply PR90a MINCUT algorithm for SEC separation, i.e., check if there
     // exists a subset of vertices such that x*(\delta(S))<2, if found, exit the separation procedure
     val resultCuts:List[(Map[MPVariable,Double],Double)] = List()
-    
+
 
     // 3. otherwise, shrink 1-arc paths of x* and apply separation algorithms for
     // comb, D_k and odd CAT
