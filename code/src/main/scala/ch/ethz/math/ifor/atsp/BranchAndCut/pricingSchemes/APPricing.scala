@@ -18,7 +18,7 @@ object APPricing extends PricingScheme {
     }
 
     // update c_{ij}' row by row
-    for(rowConstraint <- branchNode.constraints){
+    for(rowConstraint <- branchNode.constraintsInNode){
       if (rowConstraint.dualValue()!=0.0){
         for(var1 <- branchNode.variables.entries){
           for(var2 <- var1._2){
@@ -33,8 +33,8 @@ object APPricing extends PricingScheme {
 
     // calculate cardinality of arcs of negative reduced cost
     var mu :Int = 0
-    reducedCost.foreach{
-      case(site1, map1) => (site1,map1.foreach{
+    reducedCost.collect{
+      case(site1, map1) => (site1,map1.collect{
         case (site2,value) if value < 0 => mu += 1
       })
     }

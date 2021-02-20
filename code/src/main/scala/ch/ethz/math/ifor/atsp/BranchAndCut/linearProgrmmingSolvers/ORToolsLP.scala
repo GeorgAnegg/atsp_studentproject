@@ -8,6 +8,7 @@ object ORToolsLP extends LinearProgrammingSolver {
   def findSolution(input:Input,vars:arcWise[MPVariable],solver:MPSolver): Map[Site, Map[Site, Double]] = {
 
     val result = solver.solve()
+    print(result,"\r\n")
 
     // if (result == MPSolver.ResultStatus.OPTIMAL)
 
@@ -16,6 +17,11 @@ object ORToolsLP extends LinearProgrammingSolver {
     }
 
     val resultSol:arcWise[Double] = arcWise(input,constructVariable)
+    for (i <- input.sites) {
+      for (j <- input.sites) {
+        print("site: ",i, " to site: ",j," with cost ",vars.search(i,j).solutionValue+"\r\n")
+      }
+    }
 
     resultSol.entries
 

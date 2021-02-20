@@ -48,8 +48,8 @@ object naiveBranching extends BranchingSchemes {
       })
     }
 
-    val childLeft = new BranchNode(branchNode.input, childMapLeft)
-    val childRight = new BranchNode(branchNode.input, childMapRight)
+    val childLeft = new BranchNode(branchNode.input, childMapLeft,branchNode.solverLP,branchNode.variables,branchNode.cut)
+    val childRight = new BranchNode(branchNode.input, childMapRight,branchNode.solverLP,branchNode.variables,branchNode.cut)
 
     childLeft.parentNode = branchNode
     childLeft.level = branchNode.level + 1
