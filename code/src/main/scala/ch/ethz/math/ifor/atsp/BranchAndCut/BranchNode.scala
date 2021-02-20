@@ -1,32 +1,19 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut
 
-import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise}
+import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, negInf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
-                 var solverLP:MPSolver,
-                 var variables: arcWise[MPVariable],
-                 var cut: List[MPConstraint]
                 ) {
   var isRootNode: Boolean = false
   var parentNode: BranchNode = this
 
-  // TODO: Question: Cannot get all constraints from solverLP directly? solver.constraints() doesn't work
-  var solver:MPSolver = solverLP
+  System.loadLibrary("jniortools")
 
-  var cutsInNode: List[(Map[MPVariable,Double],Double)]= {
-    if (isRootNode){
-      List()
-    } else {
-      parentNode.cutsInNode
-    }
-  }
-  var constraintsInNode: List[MPConstraint] = cut
-  var variablesInNode: arcWise[MPVariable]= variables
-  var reducedCosts:Map[Site, Map[Site, Double]]=Map()
-  var level = 0
-  val costsMap: Map[Site, Map[Site, Double]] = input.distMat
+  val solverLP: MPSolver = new MPSolver("LinearProgramming",
+    MPSolver.OptimizationProblemType.GLOP_LINEAR_PROGRAMMING)
+
   def constructVariable(site1:Site ,site2:Site):MPVariable=
     if (site1.id==site2.id) {solverLP.makeNumVar(0,0,"")}
     else {
@@ -38,11 +25,46 @@ class BranchNode(val input: Input,
       }
     }
 
+  val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
   val costs:arcWise[Double] = arcWise(input,input.distance)
+
+  var constraints: List[MPConstraint] = List()
+
+  var listConstraintsIn: List[MPConstraint] = List()
+  var listConstraintsOut: List[MPConstraint] = List()
+
+  // construct in- & out-degree constraints
+  for (site1 <- input.sites){
+    val constraintIn:MPConstraint = solverLP.makeConstraint(1, 1, "")
+    val constraintOut:MPConstraint = solverLP.makeConstraint(1, 1, "")
+    for (site2 <- input.sites){
+      constraintIn.setCoefficient(variables.search(site1, site2),1)
+      constraintOut.setCoefficient(variables.search(site2, site1),1)
+    }
+    listConstraintsIn = constraintIn::listConstraintsIn
+    listConstraintsOut = constraintIn::listConstraintsOut
+  }
+  constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
+
+  // construct the objective function.
+  val objectiveFunction : MPObjective = solverLP.objective()
+  variables.entries.map{
+    case (site1, map1) => (site1, map1.map{
+      case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
+    })
+  }
+
+  // TODO: Question: Cannot get all constraints from solverLP directly? solver.constraints() doesn't work
+
+  var constraintsInNode: List[MPConstraint] = List()
+  var reducedCosts:Map[Site, Map[Site, Double]]=Map()
+  var level = 0
+  val costsMap: Map[Site, Map[Site, Double]] = input.distMat
+
 
   def fromCutToConstraint(cuts:List[(Map[MPVariable,Double],Double)]): Unit ={
     for (cut <- cuts){
-      val constraint : MPConstraint = solverLP.makeConstraint(0, cut._2, "")
+      val constraint : MPConstraint = solverLP.makeConstraint(negInf, cut._2, "")
       cut._1.foreach{
         case (mpVariable,coefficient) => constraint.setCoefficient(mpVariable,coefficient)
       }
@@ -50,9 +72,9 @@ class BranchNode(val input: Input,
     }
   }
 
-  var lowerBoundSolve: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(input, variablesInNode, solverLP)
+  var lowerBoundSolve: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(input, variables, solverLP)
 
-  val isInteger:Boolean = {
+  var isInteger:Boolean = {
     var result = true
     lowerBoundSolve.collect{
       case (site1, map1) => (site1, map1.collect{
@@ -81,6 +103,9 @@ class BranchNode(val input: Input,
   }
 
   def detectTours(lbSolve:Map[Site, Map[Site, Double]]):List[Tour] = {
+    if(!isInteger){
+      return List()
+    }
 
     var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2==1.0).head._1 })
 

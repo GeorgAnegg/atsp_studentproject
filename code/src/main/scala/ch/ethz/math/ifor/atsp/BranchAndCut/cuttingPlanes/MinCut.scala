@@ -14,6 +14,12 @@ object MinCut extends CuttingPlane {
         case (site2, value) => (site2, value + branchNode.lowerBoundSolve(site2)(site1))
       })
     }
+    print("costmap\r\n")
+    for (i<-costMap){
+      for (j<-i._2){
+        print(i._1,j._1,j._2,"\r\n")
+      }
+    }
 
     // MINCUT consists of five procedures
     // 2.1 setup
@@ -21,7 +27,7 @@ object MinCut extends CuttingPlane {
     var listEdges:List[(Site,Site)]=List()
     branchNode.lowerBoundSolve.collect{
       case (site1, map1) => map1.collect{
-        case (site2, value) if value != 0 => listEdges = listEdges ::: (site1,site2)::Nil
+        case (site2, value) if value != 0 && site1 != site2 => listEdges = listEdges ++ List((site1,site2),(site2,site1))
       }
     }
     //var costMap:Map[Site,Map[Site,Double]] = branchNode.lowerBoundSolve
@@ -33,8 +39,12 @@ object MinCut extends CuttingPlane {
     listSites.foreach(site => capacityNode = capacityNode ++ Map(site -> 0.0))
     costMap.foreach{
       case (site1, map1) => map1.foreach{
-        case (site2, value) => capacityNode.updated(site1, capacityNode(site1)+value)
+        case (site2, value) => capacityNode = capacityNode.updated(site1, capacityNode(site1)+value)
       }
+    }
+    print("capacity")
+    capacityNode.foreach{
+      case (site,value) => print(site,value+"\r\n")
     }
 
     var adjcentNodeList :Map[Site, List[Site]] = Map()
@@ -55,54 +65,59 @@ object MinCut extends CuttingPlane {
       }
     }
 
-    // Implement algorithm MIN_CUT
-    while (listSites.size>1){
-      var shrunk = false
-      shrunk = test1(shrunk)
-      if (!shrunk) {
-        shrunk = test2(shrunk)
-      }
-      if (!shrunk){
-        val edge = listEdges.head
-        maxFlow(edge._1,edge._2)
-        shrink(edge._1,edge._2)
-      }
-    }
+    print("initial upperBoundMinCut: ",upperBoundMinCut+"\r\n")
 
     // Implement the function shrink
     def shrink(u: Site,v:Site):Unit={
+      print("shrinking ",u," and ",v,"\r\n")
       var markNode:Map[Site,Boolean]=Map()
       var tempNode:Map[Site, Double] = Map()
 
       listSites.foreach(site => markNode = markNode ++ Map(site -> false))
 
       capacityNode = capacityNode.updated(u,capacityNode(u)+capacityNode(v)-2*costMap(u)(v))
-      clusterNode = clusterNode.updated(u, List.concat(clusterNode(u), List(v)))
+      // in PDD 1990, it's List(v) not clusterNode(v)
+      clusterNode = clusterNode.updated(u, List.concat(clusterNode(u), clusterNode(v)))
 
       for (node<-adjcentNodeList(u)){
         markNode = markNode.updated(node,true)
         tempNode = tempNode + (node -> costMap(u)(node))
       }
 
-      for (node<-adjcentNodeList(v)){
-        adjcentNodeList = adjcentNodeList.updated(v, adjcentNodeList(v).filter(site => site!=node))
-        adjcentNodeList = adjcentNodeList.updated(node, adjcentNodeList(node).filter(site => site!=v))
-        if (!markNode(node)){
-          adjcentNodeList = adjcentNodeList.updated(u, List.concat(adjcentNodeList(u), List(node)))
-          adjcentNodeList = adjcentNodeList.updated(node, List.concat(adjcentNodeList(node), List(u)))
-        } else {
-          costMap = costMap.collect{
-            case (site1, map1)=> (site1,map1.collect{
-              case (site2, value) if site1 == u && site2==node => (site2,tempNode(node) + costMap(v)(node))
-              case (site2, value) if site1 == node && site2==u => (site2,tempNode(node) + costMap(v)(node))
-              case (site2, value) => (site2, value)
-            })
+      adjcentNodeList = adjcentNodeList.updated(v, adjcentNodeList(v).filter(site => site!=u))
+      adjcentNodeList = adjcentNodeList.updated(u, adjcentNodeList(u).filter(site => site!=v))
+      listEdges = listEdges.filter(_!=(v,u))
+      listEdges = listEdges.filter(_!=(u,v))
+
+      if (adjcentNodeList(v).nonEmpty) {
+        for (node <- adjcentNodeList(v)) {
+          //print("adj node ", node, markNode(node))
+          adjcentNodeList = adjcentNodeList.updated(v, adjcentNodeList(v).filter(site => site != node))
+          adjcentNodeList = adjcentNodeList.updated(node, adjcentNodeList(node).filter(site => site != v))
+          listEdges = listEdges.filter(_ != (v, node))
+          listEdges = listEdges.filter(_ != (node, v))
+          if (!markNode(node)) {
+            //print("node ", node + " unmarked")
+            adjcentNodeList = adjcentNodeList.updated(u, List.concat(adjcentNodeList(u), List(node)))
+            adjcentNodeList = adjcentNodeList.updated(node, List.concat(adjcentNodeList(node), List(u)))
+            listEdges = listEdges ++ Map(u -> node)
+            listEdges = listEdges ++ Map(node -> u)
+          } else {
+            costMap = costMap.collect {
+              case (site1, map1) => (site1, map1.collect {
+                case (site2, value) if site1 == u && site2 == node => (site2, tempNode(node) + costMap(v)(node))
+                case (site2, value) if site1 == node && site2 == u => (site2, tempNode(node) + costMap(v)(node))
+                case (site2, value) => (site2, value)
+              })
+            }
           }
         }
       }
 
       if (upperBoundMinCut > capacityNode(u)){
         upperBoundMinCut = capacityNode(u)
+        print("capacityNode(u) here "+capacityNode(u)+"\r\n")
+        print("upperBoundMinCut here "+upperBoundMinCut+"\r\n")
         minimumCut = clusterNode(u)
       }
       // remove node v
@@ -111,13 +126,17 @@ object MinCut extends CuttingPlane {
 
     // test of Corollary. 2.2, PD1990a
     def test1(shrunk:Boolean):Boolean={
+      print("hello")
       var result= shrunk
       var localEdges = listEdges
+      print("number of edges in test 1: ", localEdges.size)
       while (localEdges.nonEmpty && !result) {
+        print("number of edges in test 1: ", localEdges.size)
         val edge = localEdges.head
         var y = adjcentNodeList(edge._1).intersect(adjcentNodeList(edge._2))
         // if y empty, then only test the following
         if (capacityNode(edge._1) <= 2 * costMap(edge._1)(edge._2) || capacityNode(edge._2) <= 2 * costMap(edge._2)(edge._1)) {
+          print("test1.1\r\n")
           shrink(edge._1, edge._2)
           result = true
         }
@@ -127,6 +146,7 @@ object MinCut extends CuttingPlane {
           val c2 = costMap(edge._2)(edge._1)
           val c3 = costMap(edge._2)(edge._1) + costMap(edge._2)(y.head)
           if (capacityNode(edge._1) <= 2 * c1 || capacityNode(edge._2) <= 2 * c2 || capacityNode(edge._2) <= 2 * c3) {
+            print("test1.2\r\n")
             shrink(edge._1, edge._2)
             result = true
           } else {
@@ -156,6 +176,7 @@ object MinCut extends CuttingPlane {
 
         y.foreach { site => lowerBound = lowerBound + min(costMap(edge._1)(site), costMap(edge._2)(site)) }
         if (lowerBound > upperBoundMinCut) {
+          print("test2\r\n")
           shrink(edge._1, edge._2)
           result = true
         }
@@ -164,7 +185,8 @@ object MinCut extends CuttingPlane {
       result
     }
 
-    def maxFlow(u: Site,v:Site):Unit={
+    var auCasOu:List[Site]=List()
+    def maxFlow(u: Site,v:Site):Boolean={
       // compute the max flow f from u to v
       var flow: Double = 0.0
       //var marked:Map[Site,Boolean]=Map()
@@ -173,7 +195,36 @@ object MinCut extends CuttingPlane {
       // Step 1: Transform the undirected graph to the corresponding directed graph
 
       var residualCost = costMap
+
+      //var auCasOu:List[Site]=List()
       def hasAugmentingPathUsingDijkstra(graph:Map[Site,Map[Site,Double]]): (Map[Site, Site],Double) = {
+        print("length of list sites is: ",listSites.size+"\r\n")
+
+        var allZero:Boolean=true
+        println("costmap")
+        for (i<-listSites){
+          for (j<-listSites){
+            println(i,j,graph(i)(j))
+            if (graph(i)(j)!=0){
+              allZero = false
+            }
+          }
+        }
+        if (allZero){
+          for (i<-listSites){
+            if (!clusterNode(i).contains(v)){
+              auCasOu = clusterNode(i)
+            }
+          }
+          return (Map(),0)
+        }
+
+        println("cluster")
+        for (i<-listSites){
+          for (j<-clusterNode(i)){
+            println(i,j,capacityNode(i))
+          }
+        }
 
         // construct a map to record max-weighted predecessors of sites
         val dijkstraPre: mutable.Map[Site, Site] = mutable.Map()
@@ -193,10 +244,10 @@ object MinCut extends CuttingPlane {
         var queue: List[(Site, Double)] = List((u, 0.0))
 
         // while all nodes are not visited, continue the process
-
         while (queue.nonEmpty && explored.length != listSites.length-1) {
+          print("loop")
 
-          // take the first element, i.e., lowest-weighted unvisited node
+          // take the first element, i.e., largest-weighted unvisited node
           queue = queue.sortBy(_._2).reverse
           val currentSite = queue.head
 
@@ -205,12 +256,18 @@ object MinCut extends CuttingPlane {
 
           explored = explored :+ currentSite._1
 
+          print("currentSite ",currentSite._1+"\r\n")
           // construct all the sites that can be reached from currentSite
-          val reachable = graph(currentSite._1).keys
+          val reachable = graph(currentSite._1).keys.toList.intersect(listSites)
+          print("reachable\r\n")
+          reachable.foreach{
+            site => print(site,"\r\n")
+          }
 
           // if min-distance can be updated, update; add all these sites to the queue
           reachable.foreach { nextsite =>
             if (dijkstraDist(nextsite) < dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
+              print("can now update\r\n")
               dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
               dijkstraPre.update(nextsite, currentSite._1)
               //println("add", (nextsite.id, dijkstraDist(nextsite)))
@@ -224,12 +281,14 @@ object MinCut extends CuttingPlane {
           }
         }
 
+        print("end of while\r\n")
 
         // construct a t-s path from dijkstraPre
         var path: Array[Site] = Array(v)
 
         // if infeasible
         if (!dijkstraPre.contains(v)){
+          print("infeasible\r\n")
           return (Map(),0.0)
         }
 
@@ -278,29 +337,36 @@ object MinCut extends CuttingPlane {
         result = hasAugmentingPathUsingDijkstra(residualCost)
       }
 
-      // when there's no more augmenting path, compute all reachable nodes from u in the residual graph
-      def reachableFromOneNode(u:Site,graph:Map[Site,Map[Site,Double]]):List[Site]={
-        var result :List[Site] = List()
-        var queue: List[Site] = List(u)
-        while (queue.nonEmpty){
-          val current = queue.head
-          queue = queue.drop(1)
-          graph(current).foreach{
-            case (site2, value) if value != 0 && !queue.contains(site2) => queue = queue ++ List(site2)
-            case (site2, value) if value != 0 && !queue.contains(site2) => result = result ++ List(site2)
+      if (auCasOu.nonEmpty) {
+        print("there're some fractional islands\r\n")
+        true
+      } else {
+        print("there's no more augmenting path\r\n")
+
+        // when there's no more augmenting path, compute all reachable nodes from u in the residual graph
+        def reachableFromOneNode(u: Site, graph: Map[Site, Map[Site, Double]]): List[Site] = {
+          var result: List[Site] = List()
+          var queue: List[Site] = List(u)
+          while (queue.nonEmpty) {
+            val current = queue.head
+            queue = queue.drop(1)
+            graph(current).collect {
+              case (site2, value) if value != 0 && !queue.contains(site2) => queue = queue ++ List(site2)
+              case (site2, value) if value != 0 && !queue.contains(site2) => result = result ++ List(site2)
+            }
           }
+          result
         }
-        result
-      }
 
+        print("flow here is: ", flow, " upperBoundMinCut: ", upperBoundMinCut + "\r\n")
 
-      if (flow < upperBoundMinCut){
-        upperBoundMinCut = flow
-        // minimumCut = minimum(u,v)-cut, which is computed by using Sleator-Tarjan Algorithm
-        // proposed in Tarjan(1983).
+        if (flow < upperBoundMinCut) {
+          upperBoundMinCut = flow
+          // minimumCut = minimum(u,v)-cut, which is computed by using Sleator-Tarjan Algorithm
+          // proposed in Tarjan(1983).
 
-        val set1 = reachableFromOneNode(u,residualCost)
-        /*
+          val set1 = reachableFromOneNode(u, residualCost)
+          /*
         var minCuts:Map[Site,Site]=Map()
         for(node1 <- set1){
           val reachable = costMap(node1).keys.toList
@@ -312,22 +378,130 @@ object MinCut extends CuttingPlane {
         }
 
          */
-        minimumCut = set1
-      }
-    }
-    // if mincut < 2, construct the corresponding violated SEC
-    if (upperBoundMinCut<2){
-      var resultMap:Map[MPVariable,Double] = Map()
-      val set2 = branchNode.input.sites.toList diff minimumCut
-      for (node1<-minimumCut){
-        for (node2 <- set2){
-          resultMap = resultMap ++ Map(branchNode.variables.search(node1,node2) -> -2.0)
+          minimumCut = set1
+        }
+
+        print("max flow: ", upperBoundMinCut)
+        // if mincut < 2, construct the corresponding violated SEC
+        if (upperBoundMinCut < 2) {
+          auCasOu = minimumCut
+          true
+        } else {
+          false
         }
       }
-      List((resultMap,-2.0))
-    } else{
-      List()
-    }
   }
 
+    // Implement algorithm MIN_CUT
+    while (listSites.size>1){
+
+      print("size of nodes: "+listSites.size+"\r\n")
+      listSites.foreach{
+        site => print(site+"\r\n")
+      }
+      listEdges.foreach{
+        edge => print(edge._1,edge._2+"\r\n")
+      }
+      listSites.foreach{
+        site => clusterNode(site).foreach{
+          case adjNode => print(site,"adj: "+adjNode+"\r\n")
+        }
+      }
+
+      minimumCut.foreach(cut => print("cut " + cut + "\r\n"))
+
+      if (listEdges.isEmpty){
+        var resultMap:Map[MPVariable,Double] = Map()
+        val set2 = branchNode.input.sites.toList diff minimumCut
+        for (node1<-minimumCut){
+          for (node2 <- set2){
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1,node2) -> -1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2,node1) -> -1.0)
+          }
+        }
+        return List((resultMap,-2.0))
+      }
+
+      var shrunk = false
+      print("start test 1 \r\n")
+      shrunk = test1(shrunk)
+
+      print("complete test 1, shrunk is ",shrunk+" \r\n")
+
+      if (upperBoundMinCut < 2.0) {
+        var resultMap: Map[MPVariable, Double] = Map()
+        val set2 = branchNode.input.sites.toList diff minimumCut
+        for (node1 <- minimumCut) {
+          for (node2 <- set2) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          }
+        }
+        return List((resultMap, -2.0))
+      }
+
+      if (!shrunk) {
+        print("test 1 fails\r\n",shrunk)
+        shrunk = test2(shrunk)
+      }
+
+      print("complete test 2, shrunk is ",shrunk+" \r\n")
+
+      if (upperBoundMinCut < 2.0) {
+        var resultMap: Map[MPVariable, Double] = Map()
+        val set2 = branchNode.input.sites.toList diff minimumCut
+        for (node1 <- minimumCut) {
+          for (node2 <- set2) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          }
+        }
+        return List((resultMap, -2.0))
+      }
+
+      if (!shrunk){
+        print("start maxFlow\r\n")
+        val edge = listEdges.head
+        val findCut = maxFlow(edge._1,edge._2)
+        if (findCut){
+          var resultMap: Map[MPVariable, Double] = Map()
+          val set2 = branchNode.input.sites.toList diff auCasOu
+          for (node1 <- auCasOu) {
+            for (node2 <- set2) {
+              resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
+              resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+            }
+          }
+          return List((resultMap, -2.0))
+        }
+        shrink(edge._1,edge._2)
+      }
+
+      if (upperBoundMinCut < 2.0) {
+        var resultMap: Map[MPVariable, Double] = Map()
+        val set2 = branchNode.input.sites.toList diff minimumCut
+        for (node1 <- minimumCut) {
+          for (node2 <- set2) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          }
+        }
+        return List((resultMap, -2.0))
+      }
+    }
+
+    if (upperBoundMinCut < 2.0) {
+      var resultMap: Map[MPVariable, Double] = Map()
+      val set2 = branchNode.input.sites.toList diff minimumCut
+      for (node1 <- minimumCut) {
+        for (node2 <- set2) {
+          resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
+          resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+        }
+      }
+      return List((resultMap, -2.0))
+    } else {
+    List()
+    }
+  }
 }

@@ -11,8 +11,8 @@ object BranchAndCutTest extends App{
   val t1 = System.nanoTime
 
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/distance_matrix.csv",";")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv",";")
-  val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv",";")
+  val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/gr17.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/p15.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv"," ")

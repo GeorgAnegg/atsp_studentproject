@@ -2,6 +2,7 @@ package ch.ethz.math.ifor.atsp.BranchAndCut.branchingSchemes
 
 import ch.ethz.math.ifor.atsp.BranchAndCut.BranchNode
 import ch.ethz.math.ifor.atsp.Site
+import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
 object naiveBranching extends BranchingSchemes {
 
@@ -33,6 +34,7 @@ object naiveBranching extends BranchingSchemes {
         }
       }
     }
+    print("branch on ",currentBestVariable.head._1," and " ,currentBestVariable.head._2+"\r\n")
 
     val childMapLeft:Map[Site,Map[Site, Option[Boolean]]] = branchNode.varAssignment.map{
       case (site1, map1) => (site1,map1.map{
@@ -48,8 +50,8 @@ object naiveBranching extends BranchingSchemes {
       })
     }
 
-    val childLeft = new BranchNode(branchNode.input, childMapLeft,branchNode.solverLP,branchNode.variables,branchNode.cut)
-    val childRight = new BranchNode(branchNode.input, childMapRight,branchNode.solverLP,branchNode.variables,branchNode.cut)
+    val childLeft = new BranchNode(branchNode.input, childMapLeft)
+    val childRight = new BranchNode(branchNode.input, childMapRight)
 
     childLeft.parentNode = branchNode
     childLeft.level = branchNode.level + 1

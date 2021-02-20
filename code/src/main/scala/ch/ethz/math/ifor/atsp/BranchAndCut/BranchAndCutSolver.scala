@@ -53,7 +53,7 @@ object BranchAndCutSolver extends Solver {
       })
     }
 
-    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap,solverLP,variables,constraints)
+    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap)
     rootNode.level = 0
     rootNode.isRootNode = true
 
@@ -90,6 +90,30 @@ object BranchAndCutSolver extends Solver {
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
         currentBestNode = Some(currentBranchNode)
         activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
+      } else if (currentBranchNode.isInteger){
+        var resultMap: Map[MPVariable, Double] = Map()
+        val set1 = currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).head.sequence
+        val set2 = input.sites.toList diff set1
+        for (node1 <- set1) {
+          for (node2 <- set2) {
+            resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> -1.0)
+            resultMap = resultMap ++ Map(currentBranchNode.variables.search(node2, node1) -> -1.0)
+          }
+        }
+        val newcut:List[(Map[MPVariable, Double], Double)] =  List((resultMap, -2.0))
+        globalCuts = globalCuts ++ newcut
+        currentBranchNode.fromCutToConstraint(newcut)
+        currentBranchNode.lowerBoundSolve = linearProgrammingSolver.findSolution(input, currentBranchNode.variables, currentBranchNode.solverLP)
+        currentBranchNode.isInteger = {
+          var result = true
+          currentBranchNode.lowerBoundSolve.collect{
+            case (site1, map1) => (site1, map1.collect{
+              case (site2, value) if (value != 0.0 && value != 1.0) => result = false
+            })
+          }
+          result
+        }
+        activeBranches = activeBranches ++ List(currentBranchNode)
       }
       else {
 
@@ -98,23 +122,43 @@ object BranchAndCutSolver extends Solver {
 
         //currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
+        // before applying MinCut, make sure that the solution graph is connected
+
         val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
 
         if (newCuts.nonEmpty) {
+          print("find cuts\r\n")
+
           // add cuts to current node and add to the branch list
-          currentBranchNode.fromCutToConstraint(newCuts)
           globalCuts = globalCuts ++ newCuts
+          currentBranchNode.fromCutToConstraint(newCuts)
+          currentBranchNode.lowerBoundSolve = linearProgrammingSolver.findSolution(input, currentBranchNode.variables, currentBranchNode.solverLP)
+          currentBranchNode.isInteger = {
+            var result = true
+            currentBranchNode.lowerBoundSolve.collect{
+              case (site1, map1) => (site1, map1.collect{
+                case (site2, value) if (value != 0.0 && value != 1.0) => result = false
+              })
+            }
+            result
+          }
           activeBranches = activeBranches ++ List(currentBranchNode)
 
         } else {
+          print("no cuts found\r\n")
           // check if current solution is integer
           if (currentBranchNode.isInteger) {
+            print("current node is integer\r\n")
             // if integer, update current best solution
             currentBestNode = Some(currentBranchNode)
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
           } else {
             // otherwise, branch and add to the branch list
+            print("current node is fractional\r\n")
+
             val children: List[BranchNode] = branchingScheme.listChildren(currentBranchNode)
+            print("children created\r\n")
+
             for (child <- children) {
               if (currentBestNode.isEmpty) {
                 println("add this children", child)
