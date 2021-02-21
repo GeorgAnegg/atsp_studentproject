@@ -53,13 +53,12 @@ object BranchAndCutSolver extends Solver {
       })
     }
 
-    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap)
-    rootNode.level = 0
-    rootNode.isRootNode = true
-
     // Need a global cuts pool
     var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
-    // Add degree constraints to the global cuts pool
+
+    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap,globalCuts)
+    rootNode.level = 0
+    rootNode.isRootNode = true
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
@@ -77,6 +76,7 @@ object BranchAndCutSolver extends Solver {
     // 3. if no cuts found, shrink, apply separation algorithms for comb, D_k and odd CAT
     // 4. if some cuts are found, add to the current LP and repeat, else if (...)
     while (activeBranches.nonEmpty) {
+      println("Number of active nodes: "+activeBranches.size)
 
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound <= initUpperBound).sortBy(_.lowerBound)
 
@@ -85,24 +85,31 @@ object BranchAndCutSolver extends Solver {
       var currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
-      print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
+      //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
         currentBestNode = Some(currentBranchNode)
         activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
+        println("Interger solution with one tour, num of cuts inside: ",currentBranchNode.globalConstraints.size)
+
       } else if (currentBranchNode.isInteger){
-        var resultMap: Map[MPVariable, Double] = Map()
-        val set1 = currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).head.sequence
-        val set2 = input.sites.toList diff set1
-        for (node1 <- set1) {
-          for (node2 <- set2) {
-            resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> -1.0)
-            resultMap = resultMap ++ Map(currentBranchNode.variables.search(node2, node1) -> -1.0)
+
+        // heuristic, if the solution is integer and contains some subtours, add corresponding DFJ SECs
+        for (subtour <- currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve)){
+          var resultMap: Map[MPVariable, Double] = Map()
+          val set1 = subtour.sequence
+          val set2 = input.sites.toList diff set1
+          for (node1 <- set1) {
+            for (node2 <- set2) {
+              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> -1.0)
+              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node2, node1) -> -1.0)
+            }
           }
+          val newcut:List[(Map[MPVariable, Double], Double)] =  List((resultMap, -2.0))
+          globalCuts = globalCuts ++ newcut
+          currentBranchNode.fromCutToConstraint(newcut)
+          currentBranchNode.globalConstraints = globalCuts
         }
-        val newcut:List[(Map[MPVariable, Double], Double)] =  List((resultMap, -2.0))
-        globalCuts = globalCuts ++ newcut
-        currentBranchNode.fromCutToConstraint(newcut)
         currentBranchNode.lowerBoundSolve = linearProgrammingSolver.findSolution(input, currentBranchNode.variables, currentBranchNode.solverLP)
         currentBranchNode.isInteger = {
           var result = true
@@ -113,7 +120,9 @@ object BranchAndCutSolver extends Solver {
           }
           result
         }
+        currentBranchNode.lowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
         activeBranches = activeBranches ++ List(currentBranchNode)
+        println("Interger solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
       }
       else {
 
@@ -122,16 +131,13 @@ object BranchAndCutSolver extends Solver {
 
         //currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
-        // before applying MinCut, make sure that the solution graph is connected
-
         val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
 
-        if (newCuts.nonEmpty) {
-          print("find cuts\r\n")
-
+        if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {
           // add cuts to current node and add to the branch list
           globalCuts = globalCuts ++ newCuts
           currentBranchNode.fromCutToConstraint(newCuts)
+          currentBranchNode.globalConstraints = globalCuts
           currentBranchNode.lowerBoundSolve = linearProgrammingSolver.findSolution(input, currentBranchNode.variables, currentBranchNode.solverLP)
           currentBranchNode.isInteger = {
             var result = true
@@ -142,10 +148,16 @@ object BranchAndCutSolver extends Solver {
             }
             result
           }
+          val oldLowerBound = currentBranchNode.lowerBound
+          val newLowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
+          if (newLowerBound <= oldLowerBound){
+            currentBranchNode.iteration += 1
+          }
+          currentBranchNode.lowerBound = newLowerBound
           activeBranches = activeBranches ++ List(currentBranchNode)
-
+          print("Fractional solution, cuts found, lower bound is:"+currentBranchNode.lowerBound+"\r\n")
         } else {
-          print("no cuts found\r\n")
+          print("No cuts found or attain max iteration for one node\r\n")
           // check if current solution is integer
           if (currentBranchNode.isInteger) {
             print("current node is integer\r\n")
@@ -161,9 +173,10 @@ object BranchAndCutSolver extends Solver {
 
             for (child <- children) {
               if (currentBestNode.isEmpty) {
-                println("add this children", child)
+                println("add this children", child, "num of cuts: "+child.globalConstraints.size)
                 activeBranches = activeBranches ++ List(child)
               } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
+                println("add this children", child, "num of cuts: "+child.globalConstraints.size)
                 activeBranches = activeBranches ++ List(child) //add children/new branches
               }
             }

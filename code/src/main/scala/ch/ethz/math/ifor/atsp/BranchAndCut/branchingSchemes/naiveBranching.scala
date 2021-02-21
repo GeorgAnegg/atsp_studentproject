@@ -50,13 +50,14 @@ object naiveBranching extends BranchingSchemes {
       })
     }
 
-    val childLeft = new BranchNode(branchNode.input, childMapLeft)
-    val childRight = new BranchNode(branchNode.input, childMapRight)
+    val childLeft = new BranchNode(branchNode.input, childMapLeft,branchNode.globalConstraints)
+    val childRight = new BranchNode(branchNode.input, childMapRight,branchNode.globalConstraints)
 
     childLeft.parentNode = branchNode
     childLeft.level = branchNode.level + 1
     childRight.parentNode = branchNode
     childRight.level = branchNode.level + 1
+    // TODO: add to these children global cuts
 
     List(childLeft,childRight)
 

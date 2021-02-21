@@ -5,9 +5,11 @@ import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPV
 
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
+                 var globalConstraints: List[(Map[MPVariable,Double],Double)]
                 ) {
   var isRootNode: Boolean = false
   var parentNode: BranchNode = this
+  var iteration:Int = 0
 
   System.loadLibrary("jniortools")
 
@@ -72,7 +74,16 @@ class BranchNode(val input: Input,
     }
   }
 
-  var lowerBoundSolve: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(input, variables, solverLP)
+  var lowerBoundSolve: Map[Site, Map[Site, Double]]= {
+    if (globalConstraints.nonEmpty){
+      for (cut<-globalConstraints){
+        fromCutToConstraint(List(cut))
+      }
+    }
+    linearProgrammingSolver.findSolution(input, variables, solverLP)
+  }
+
+  //var lowerBoundSolve: Map[Site, Map[Site, Double]] = linearProgrammingSolver.findSolution(input, variables, solverLP)
 
   var isInteger:Boolean = {
     var result = true
@@ -86,7 +97,17 @@ class BranchNode(val input: Input,
 
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
-  val lowerBound: Double  = 0.0 // TODO
+  def computeLowerBound(solution:Map[Site, Map[Site, Double]]):Double = {
+    var result = 0.0
+    solution.collect{
+      case (site1, map1) => (site1, map1.collect{
+        case (site2, value) if value!=0.0 => result += costsMap(site1)(site2)*value
+      })
+    }
+    result
+  }
+
+  var lowerBound: Double = computeLowerBound(lowerBoundSolve)
 
   def findTour(solution:Map[Site, Map[Site, Double]]):Tour={
     var pairMap = solution.map({ case (site1, map1) => site1 -> map1.filter(_._2 == 1.0).head._1 })

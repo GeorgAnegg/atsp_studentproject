@@ -17,11 +17,14 @@ object ORToolsLP extends LinearProgrammingSolver {
     }
 
     val resultSol:arcWise[Double] = arcWise(input,constructVariable)
+    /*
     for (i <- input.sites) {
       for (j <- input.sites) {
         print("site: ",i, " to site: ",j," with cost ",vars.search(i,j).solutionValue+"\r\n")
       }
     }
+
+     */
 
     resultSol.entries
 
