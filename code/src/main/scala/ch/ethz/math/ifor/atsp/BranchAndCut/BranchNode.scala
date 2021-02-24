@@ -1,11 +1,12 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut
 
-import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, negInf}
+import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf, negInf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
-                 var globalConstraints: List[(Map[MPVariable,Double],Double)]
+                 var globalConstraints: List[(Map[MPVariable,Double],Double)],
+                 val formulation: String
                 ) {
   var isRootNode: Boolean = false
   var parentNode: BranchNode = this
@@ -48,6 +49,28 @@ class BranchNode(val input: Input,
   }
   constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
 
+  if (formulation == "MTZ"){
+
+    // construct order variables
+    var orderVariables:Map[Site, MPVariable]=Map()
+    input.sites.foreach {
+      case site if (site!=input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(1, input.sites.length - 1, ""))
+      case site if (site==input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(negInf, inf, ""))
+    }
+    // Add the order constraints
+    for (i <- input.sites) {
+      for (j <-input.sites){
+        if (j != i && j!= input.sites.head){
+          val constraint  = solverLP.makeConstraint(negInf,input.sites.length-2)
+          constraint.setCoefficient(variables.search(i,j),input.sites.length-1)
+          constraint.setCoefficient(orderVariables(i),1)
+          constraint.setCoefficient(orderVariables(j),-1)
+        }
+      }
+    }
+
+  }
+
   // construct the objective function.
   val objectiveFunction : MPObjective = solverLP.objective()
   variables.entries.map{
@@ -55,6 +78,8 @@ class BranchNode(val input: Input,
       case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
     })
   }
+  objectiveFunction.setMinimization()
+
 
   // TODO: Question: Cannot get all constraints from solverLP directly? solver.constraints() doesn't work
 

@@ -4,7 +4,7 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 object BranchAndCutSolver extends Solver {
-  def solve(input: Input): Output = {
+  def solve(input: Input, formulation:String): Output = {
 
     // construct root node
     val numSites: Int = input.sites.length
@@ -56,7 +56,7 @@ object BranchAndCutSolver extends Solver {
     // Need a global cuts pool
     var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
 
-    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap,globalCuts)
+    val rootNode: BranchNode = new BranchNode(input,initAssignmentMap,globalCuts,formulation)
     rootNode.level = 0
     rootNode.isRootNode = true
 
@@ -125,7 +125,6 @@ object BranchAndCutSolver extends Solver {
         println("Interger solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
       }
       else {
-
         // apply AP-pricing
         //val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(currentBranchNode)
 
@@ -134,6 +133,7 @@ object BranchAndCutSolver extends Solver {
         val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
 
         if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {
+
           // add cuts to current node and add to the branch list
           globalCuts = globalCuts ++ newCuts
           currentBranchNode.fromCutToConstraint(newCuts)
@@ -157,6 +157,8 @@ object BranchAndCutSolver extends Solver {
           activeBranches = activeBranches ++ List(currentBranchNode)
           print("Fractional solution, cuts found, lower bound is:"+currentBranchNode.lowerBound+"\r\n")
         } else {
+          println("Here2?")
+
           print("No cuts found or attain max iteration for one node\r\n")
           // check if current solution is integer
           if (currentBranchNode.isInteger) {

@@ -8,7 +8,7 @@ import scala.util.control.Breaks.break
 
 object BranchAndBoundSolver extends Solver {
 
-  def solve(input: Input): Output = {
+  def solve(input: Input,formulation:String): Output = {
 
     // construct root node
     val numSites: Int = input.sites.length

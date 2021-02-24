@@ -21,7 +21,6 @@ object MinCut extends CuttingPlane {
         print(i._1,j._1,j._2,"\r\n")
       }
     }
-
      */
 
     // MINCUT consists of five procedures
@@ -205,6 +204,7 @@ object MinCut extends CuttingPlane {
 
       //var auCasOu:List[Site]=List()
       def hasAugmentingPathUsingDijkstra(graph:Map[Site,Map[Site,Double]]): (Map[Site, Site],Double) = {
+
         //print("length of list sites is: ",listSites.size+"\r\n")
 
         var allZero:Boolean=true
@@ -237,6 +237,19 @@ object MinCut extends CuttingPlane {
 
          */
 
+        /*
+
+        println("residual graph")
+        for (i<-listSites){
+          for (j<-listSites){
+            println(i,j,graph(i)(j))
+          }
+        }
+
+         */
+
+
+
         // construct a map to record max-weighted predecessors of sites
         val dijkstraPre: mutable.Map[Site, Site] = mutable.Map()
 
@@ -256,7 +269,11 @@ object MinCut extends CuttingPlane {
 
         // while all nodes are not visited, continue the process
         while (queue.nonEmpty && explored.length != listSites.length-1) {
-          //print("loop")
+          //println("size of queue: "+queue.size,"explored: "+explored.length, "list: "+listSites.length)
+
+          queue.foreach{
+            a => println(a._1,a._2)
+          }
 
           // take the first element, i.e., largest-weighted unvisited node
           queue = queue.sortBy(_._2).reverse
@@ -269,7 +286,8 @@ object MinCut extends CuttingPlane {
 
           //print("currentSite ",currentSite._1+"\r\n")
           // construct all the sites that can be reached from currentSite
-          val reachable = graph(currentSite._1).keys.toList.intersect(listSites)
+          var reachable = graph(currentSite._1).keys.toList.intersect(listSites)
+          reachable =reachable.filter(site => graph(currentSite._1)(site) > 0.0)
           //print("reachable\r\n")
           /*reachable.foreach{
             site => print(site,"\r\n")
@@ -277,7 +295,7 @@ object MinCut extends CuttingPlane {
 
            */
 
-          // if min-distance can be updated, update; add all these sites to the queue
+          // if max-distance can be updated, update; add all these sites to the queue
           reachable.foreach { nextsite =>
             if (dijkstraDist(nextsite) < dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
               //print("can now update\r\n")
@@ -305,14 +323,22 @@ object MinCut extends CuttingPlane {
           return (Map(),0.0)
         }
 
+        /*
+        println("pre")
+        dijkstraPre.foreach{
+          map => println(map._1,map._2)
+        }
+
+         */
+
         while (path.last != u) {
           //println(path.last.id,path.length)
           path = path :+ dijkstraPre(path.last)
         }
-        /*
-        println("path here")
-        path.foreach{e => println(e.id)}
-         */
+
+        //println("path here")
+        //path.foreach{e => println(e)}
+
         path = path.reverse
 
         val arcs: Map[Site, Site] = {
@@ -325,6 +351,10 @@ object MinCut extends CuttingPlane {
           if (graph(arc._1)(arc._2)<bottleNeckCapacity){
             bottleNeckCapacity = graph(arc._1)(arc._2)
           }
+        }
+
+        if (bottleNeckCapacity==0){
+          return (Map(),0.0)
         }
 
         // return a path map
@@ -345,6 +375,7 @@ object MinCut extends CuttingPlane {
       var result = hasAugmentingPathUsingDijkstra(residualCost)
 
       while (result._1.nonEmpty){
+        //println("loop in maxflow","arc size: "+result._1.size)
         residualCost = updateResidualGraph(residualCost,result._1,result._2)
         flow = flow + result._2
         result = hasAugmentingPathUsingDijkstra(residualCost)
@@ -393,8 +424,9 @@ object MinCut extends CuttingPlane {
     // Implement algorithm MIN_CUT
     while (listSites.size>1){
 
+
+      //print("size of nodes: "+listSites.size+"\r\n")
       /*
-      print("size of nodes: "+listSites.size+"\r\n")
       listSites.foreach{
         site => print(site,capacityNode(site)+"\r\n")
       }
@@ -478,6 +510,7 @@ object MinCut extends CuttingPlane {
         }
         shrink(edge._1,edge._2)
       }
+      //print("end maxFlow\r\n")
 
       if (upperBoundMinCut < 2.0) {
         var resultMap: Map[MPVariable, Double] = Map()
