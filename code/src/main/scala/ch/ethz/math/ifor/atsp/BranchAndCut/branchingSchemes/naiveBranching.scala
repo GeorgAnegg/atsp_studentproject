@@ -34,7 +34,7 @@ object naiveBranching extends BranchingSchemes {
         }
       }
     }
-    print("branch on ",currentBestVariable.head._1," and " ,currentBestVariable.head._2+"\r\n")
+    //print("branch on ",currentBestVariable.head._1," and " ,currentBestVariable.head._2+"\r\n")
 
     val childMapLeft:Map[Site,Map[Site, Option[Boolean]]] = branchNode.varAssignment.map{
       case (site1, map1) => (site1,map1.map{

@@ -8,7 +8,7 @@ object ORToolsLP extends LinearProgrammingSolver {
   def findSolution(input:Input,vars:arcWise[MPVariable],solver:MPSolver): Map[Site, Map[Site, Double]] = {
 
     val result = solver.solve()
-    print(result,"\r\n")
+    //println(result)
 
     // if (result == MPSolver.ResultStatus.OPTIMAL)
 

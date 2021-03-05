@@ -2,6 +2,8 @@ package georg
 
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchAndBoundSolver, BranchNode, rSAPLowerBoundSolver}
+import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchAndCutSolver, BranchNode}
+
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 
 object ImportTest extends App {
@@ -25,9 +27,9 @@ object ImportTest extends App {
     "rbg323.csv",
     "rbg443.csv")
 
-  val input = CSV.createInput("br17.csv")
+  val input = CSV.createInput("rbg443.csv")
   val t1 = System.nanoTime
-  val output = BranchAndBoundSolver.solve(input, "")
+  val output = BranchAndCutSolver.solve(input, "")
   val duration = (System.nanoTime - t1) / 1e9d
   //output.print()
 

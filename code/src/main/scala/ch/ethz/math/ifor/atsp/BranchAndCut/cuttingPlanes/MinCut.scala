@@ -192,7 +192,7 @@ object MinCut extends CuttingPlane {
 
     var auCasOu:List[Site]=List()
     def maxFlow(u: Site,v:Site):Boolean={
-      println("start computing max flow between "+u+" and "+v)
+      //println("start computing max flow between "+u+" and "+v)
       // compute the max flow f from u to v
       var flow: Double = 0.0
       //var marked:Map[Site,Boolean]=Map()
@@ -238,7 +238,7 @@ object MinCut extends CuttingPlane {
          */
 
 
-
+/*
         println("residual graph")
         for (i<-listSites){
           for (j<-listSites){
@@ -246,10 +246,7 @@ object MinCut extends CuttingPlane {
           }
         }
 
-
-
-
-
+ */
         // construct a map to record max-weighted predecessors of sites
         val dijkstraPre: mutable.Map[Site, Site] = mutable.Map()
 
@@ -271,9 +268,11 @@ object MinCut extends CuttingPlane {
         while (queue.nonEmpty && explored.length != listSites.length-1) {
           //println("size of queue: "+queue.size,"explored: "+explored.length, "list: "+listSites.length)
 
+          /*
           queue.foreach{
             a => println(a._1,a._2)
           }
+           */
 
           // take the first element, i.e., largest-weighted unvisited node
           queue = queue.sortBy(_._2).reverse
@@ -284,14 +283,16 @@ object MinCut extends CuttingPlane {
 
           explored = explored :+ currentSite._1
 
-          print("currentSite ",currentSite._1+"\r\n")
+          //print("currentSite ",currentSite._1+"\r\n")
           // construct all the sites that can be reached from currentSite
           var reachable = graph(currentSite._1).keys.toList.intersect(listSites)
           reachable =reachable.filter(site => graph(currentSite._1)(site) > 0.0)
-          print("reachable\r\n")
+          /*print("reachable\r\n")
           reachable.foreach{
             site => print(site,"\r\n")
           }
+
+           */
 
 
 
@@ -389,14 +390,14 @@ object MinCut extends CuttingPlane {
       var result = hasAugmentingPathUsingDijkstra(residualCost)
 
       while (result._1.nonEmpty){
-        println("loop in maxflow","arc size: "+result._1.size)
+        //println("loop in maxflow","arc size: "+result._1.size)
         residualCost = updateResidualGraph(residualCost,result._1,result._2)
         flow = flow + result._2
         result = hasAugmentingPathUsingDijkstra(residualCost)
       }
 
       if (auCasOu.nonEmpty) {
-        print("there're some fractional islands\r\n")
+        //print("there're some fractional islands\r\n")
         true
       } else {
         //print("there's no more augmenting path\r\n")
@@ -462,12 +463,12 @@ object MinCut extends CuttingPlane {
         var resultMap:Map[MPVariable,Double] = Map()
         val set2 = branchNode.input.sites.toList diff minimumCut
         for (node1<-minimumCut){
-          for (node2 <- set2){
-            resultMap = resultMap ++ Map(branchNode.variables.search(node1,node2) -> -1.0)
-            resultMap = resultMap ++ Map(branchNode.variables.search(node2,node1) -> -1.0)
+          for (node2 <- minimumCut){
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1,node2) -> 1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2,node1) -> 1.0)
           }
         }
-        return List((resultMap,-2.0))
+        return List((resultMap,minimumCut.size-1))
       }
 
       var shrunk = false
@@ -480,12 +481,12 @@ object MinCut extends CuttingPlane {
         var resultMap: Map[MPVariable, Double] = Map()
         val set2 = branchNode.input.sites.toList diff minimumCut
         for (node1 <- minimumCut) {
-          for (node2 <- set2) {
-            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
-            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          for (node2 <- minimumCut) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> 1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> 1.0)
           }
         }
-        return List((resultMap, -2.0))
+        return List((resultMap, minimumCut.size-1))
       }
 
       if (!shrunk) {
@@ -499,12 +500,12 @@ object MinCut extends CuttingPlane {
         var resultMap: Map[MPVariable, Double] = Map()
         val set2 = branchNode.input.sites.toList diff minimumCut
         for (node1 <- minimumCut) {
-          for (node2 <- set2) {
-            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
-            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          for (node2 <- minimumCut) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> 1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> 1.0)
           }
         }
-        return List((resultMap, -2.0))
+        return List((resultMap, minimumCut.size-1))
       }
 
       if (!shrunk){
@@ -515,12 +516,12 @@ object MinCut extends CuttingPlane {
           var resultMap: Map[MPVariable, Double] = Map()
           val set2 = branchNode.input.sites.toList diff auCasOu
           for (node1 <- auCasOu) {
-            for (node2 <- set2) {
-              resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
-              resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+            for (node2 <- auCasOu) {
+              resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> 1.0)
+              resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> 1.0)
             }
           }
-          return List((resultMap, -2.0))
+          return List((resultMap, auCasOu.size-1))
         }
         shrink(edge._1,edge._2)
       }
@@ -530,12 +531,12 @@ object MinCut extends CuttingPlane {
         var resultMap: Map[MPVariable, Double] = Map()
         val set2 = branchNode.input.sites.toList diff minimumCut
         for (node1 <- minimumCut) {
-          for (node2 <- set2) {
-            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
-            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+          for (node2 <- minimumCut) {
+            resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> 1.0)
+            resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> 1.0)
           }
         }
-        return List((resultMap, -2.0))
+        return List((resultMap, minimumCut.size-1))
       }
     }
 
@@ -543,12 +544,12 @@ object MinCut extends CuttingPlane {
       var resultMap: Map[MPVariable, Double] = Map()
       val set2 = branchNode.input.sites.toList diff minimumCut
       for (node1 <- minimumCut) {
-        for (node2 <- set2) {
-          resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> -1.0)
-          resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> -1.0)
+        for (node2 <- minimumCut) {
+          resultMap = resultMap ++ Map(branchNode.variables.search(node1, node2) -> 1.0)
+          resultMap = resultMap ++ Map(branchNode.variables.search(node2, node1) -> 1.0)
         }
       }
-      List((resultMap, -2.0))
+      List((resultMap, minimumCut.size-1))
     } else {
     List()
     }
