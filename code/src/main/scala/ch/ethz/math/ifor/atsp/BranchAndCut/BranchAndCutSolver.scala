@@ -13,6 +13,7 @@ object BranchAndCutSolver extends Solver {
       site -> input.sites.zip(distRow).toMap
     }.toMap
 
+    /*
     System.loadLibrary("jniortools")
 
     val solverLP: MPSolver = new MPSolver("LinearProgramming",
@@ -53,6 +54,16 @@ object BranchAndCutSolver extends Solver {
       })
     }
 
+    objectiveFunction.setMinimization()
+    val apAssignment = initAssignmentMap.map{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) if variables.search(site1,site2).solutionValue == 1.0 => (site2, value)
+        case (site2, value) => (site2, Some(false))
+      })
+    }
+
+     */
+
     // Need a global cuts pool
     var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
 
@@ -90,7 +101,7 @@ object BranchAndCutSolver extends Solver {
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
         currentBestNode = Some(currentBranchNode)
         activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
-        println("Interger solution with one tour, num of cuts inside: ",currentBranchNode.globalConstraints.size)
+        //println("Integer solution with one tour, num of cuts inside: ",currentBranchNode.globalConstraints.size)
 
       } else if (currentBranchNode.isInteger){
 
@@ -100,12 +111,12 @@ object BranchAndCutSolver extends Solver {
           val set1 = subtour.sequence
           val set2 = input.sites.toList diff set1
           for (node1 <- set1) {
-            for (node2 <- set2) {
-              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> -1.0)
-              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node2, node1) -> -1.0)
+            for (node2 <- set1) {
+              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> 1.0)
+              resultMap = resultMap ++ Map(currentBranchNode.variables.search(node2, node1) -> 1.0)
             }
           }
-          val newcut:List[(Map[MPVariable, Double], Double)] =  List((resultMap, -2.0))
+          val newcut:List[(Map[MPVariable, Double], Double)] =  List((resultMap, set1.size-1))
           globalCuts = globalCuts ++ newcut
           currentBranchNode.fromCutToConstraint(newcut)
           currentBranchNode.globalConstraints = globalCuts
@@ -122,16 +133,20 @@ object BranchAndCutSolver extends Solver {
         }
         currentBranchNode.lowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
         activeBranches = activeBranches ++ List(currentBranchNode)
-        println("Interger solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
+        //println("Integer solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
       }
       else {
         // apply AP-pricing
-        //val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(currentBranchNode)
+        if (numSites >= 2000) {
+          currentBranchNode = pricingScheme.updateColumns(currentBranchNode)
+        }
+        // val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(currentBranchNode)
 
-        //currentBranchNode.lowerBoundSolve = solutionAfterPricing
+        // currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
         val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
 
+        // TODO: check the slack of the cuts, if > 0.01 and number of cuts > 10, remove the cut
         if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {
 
           // add cuts to current node and add to the branch list
@@ -155,30 +170,30 @@ object BranchAndCutSolver extends Solver {
           }
           currentBranchNode.lowerBound = newLowerBound
           activeBranches = activeBranches ++ List(currentBranchNode)
-          print("Fractional solution, cuts found, lower bound is:"+currentBranchNode.lowerBound+"\r\n")
+          //print("Fractional solution, cuts found, lower bound is:"+currentBranchNode.lowerBound+"\r\n")
         } else {
-          println("Here2?")
+          //println("Here2?")
 
-          print("No cuts found or attain max iteration for one node\r\n")
+          //print("No cuts found or attain max iteration for one node\r\n")
           // check if current solution is integer
           if (currentBranchNode.isInteger) {
-            print("current node is integer\r\n")
+            //print("current node is integer\r\n")
             // if integer, update current best solution
             currentBestNode = Some(currentBranchNode)
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound)
           } else {
             // otherwise, branch and add to the branch list
-            print("current node is fractional\r\n")
+            //print("current node is fractional\r\n")
 
             val children: List[BranchNode] = branchingScheme.listChildren(currentBranchNode)
-            print("children created\r\n")
+            //print("children created\r\n")
 
             for (child <- children) {
               if (currentBestNode.isEmpty) {
-                println("add this children", child, "num of cuts: "+child.globalConstraints.size)
+                //println("add this children", child, "num of cuts: "+child.globalConstraints.size)
                 activeBranches = activeBranches ++ List(child)
               } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
-                println("add this children", child, "num of cuts: "+child.globalConstraints.size)
+                //println("add this children", child, "num of cuts: "+child.globalConstraints.size)
                 activeBranches = activeBranches ++ List(child) //add children/new branches
               }
             }
