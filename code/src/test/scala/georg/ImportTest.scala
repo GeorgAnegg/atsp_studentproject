@@ -29,7 +29,7 @@ object ImportTest extends App {
   val t1 = System.nanoTime
   val output = BranchAndBoundSolver.solve(input, "")
   val duration = (System.nanoTime - t1) / 1e9d
-  output.print()
+  //output.print()
 
   println("Run time:" + duration)
 
