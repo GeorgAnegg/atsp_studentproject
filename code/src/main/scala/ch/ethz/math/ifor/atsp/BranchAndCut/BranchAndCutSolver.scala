@@ -137,6 +137,7 @@ object BranchAndCutSolver extends Solver {
       }
       else {
         // apply AP-pricing
+        // set threshold to 2000 temporarily because it largely slows down the computational time for current instances
         if (numSites >= 2000) {
           currentBranchNode = pricingScheme.updateColumns(currentBranchNode)
         }

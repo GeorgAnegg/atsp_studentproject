@@ -27,7 +27,7 @@ object ImportTest extends App {
     "rbg323.csv",
     "rbg443.csv")
 
-  val input = CSV.createInput("rbg443.csv")
+  val input = CSV.createInput("rbg323.csv")
   val t1 = System.nanoTime
   val output = BranchAndCutSolver.solve(input, "")
   val duration = (System.nanoTime - t1) / 1e9d
