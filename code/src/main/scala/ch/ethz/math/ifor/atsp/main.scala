@@ -11,10 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 object main extends App {
 
 
-// TODO: write to spreadsheet
   val data = instanceAlgoMatrix.instanceAlgoData(3)
-
-  val data = instanceAlgoMatrix.instanceAlgoData(1)
 
 
   writeSheet()
@@ -58,14 +55,46 @@ object main extends App {
   }
 
 
-  def writeOptValues(workbook: XSSFWorkbook)= ???
+  def writeOptValues(workbook: XSSFWorkbook)= {
+
+
+    val sheet = workbook.createSheet("optValues")
+
+    //write header row
+    val headerRow = sheet.createRow(0)
+    val columns = List(" ") ::: namedSolvers.map(_._1)
+    for (i <- columns.indices) {
+      val cell = headerRow.createCell(i)
+      cell.setCellValue(columns(i))
+    }
+
+    var rowCounter = 1
+    //fill in data
+    data.foreach {
+      case (name, entries) => {
+        val row = sheet.createRow(rowCounter)
+        rowCounter += 1
+        val nameCell = row.createCell(0)
+        nameCell.setCellValue(name)
+
+        for (i <- entries.indices) {
+          val cell = row.createCell(i + 1)
+          cell.setCellValue(entries(i)._2 match {
+            case Left(pair) => pair._1.toString
+            case Right(s) => s
+          })
+        }
+      }
+
+    }
+  }
 
   def writeSheet()={
     val filename = System.getProperty("user.dir") + "/tests/allAlgos.xlsx"
     val workbook = new XSSFWorkbook()
 
     writeRunningTimes(workbook)
-    //writeOptValues(workbook)
+    writeOptValues(workbook)
 
     val fileOut = new FileOutputStream(filename)
     workbook.write(fileOut)
