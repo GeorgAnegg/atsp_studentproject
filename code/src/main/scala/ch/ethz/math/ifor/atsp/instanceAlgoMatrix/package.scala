@@ -47,7 +47,10 @@ package object instanceAlgoMatrix {
   }.toMap
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
-    case (name, solver) => (name , timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver))
+    case (name, solver) => {
+        println(s"Solving instance $input with $name")
+        (name , timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver))
+    }
   }
 
 
