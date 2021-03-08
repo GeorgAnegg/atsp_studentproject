@@ -25,6 +25,50 @@ class BranchNode(val input: Input,
   }
 
    */
+  var parentNode: BranchNode = this
+  //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
+  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
+
+  val allTours: List[Tour] = detectTours(lowerBoundSolve)
+  val isLeafNode: IsLeafNode = allTours.length == 1
+
+  def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
+
+    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
+
+    var listTours: List[Tour] = List()
+    var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
+
+    var currentArc = pairMap.head
+
+    while (pairMap.size>1) {
+
+      var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
+      // if no tours created, keep tracking
+      if (nextArc._2.id != currentList.head.id) {
+        // currentList  = currentList:::nextArc._1::Nil
+        currentList  = currentList:::nextArc._2::Nil
+        pairMap = pairMap.removed(currentArc._1)
+        currentArc  = nextArc
+      } else {
+        // else, add the tour created, and staring tracking another remaining arc
+        // currentList  = currentList:::nextArc._1::Nil
+        // currentList  = currentList:::nextArc._2::Nil
+        val findTour = new Tour(input,currentList)
+        listTours = listTours:::findTour::Nil
+        currentList = currentList.drop(currentList.length)
+        pairMap = pairMap.removed(currentArc._1)
+        pairMap = pairMap.removed(nextArc._1)
+        if (pairMap.nonEmpty) {
+          currentArc = pairMap.head
+          currentList = currentList ::: currentArc._1 :: Nil
+          currentList = currentList ::: currentArc._2 :: Nil
+        }
+      }
+    }
+    listTours
+  }
+
   val globalHeuristic:(Double,Tour) = {
     if (level == 0) {
       upperBoundSolver.computeUpperBound(this)
@@ -50,51 +94,9 @@ class BranchNode(val input: Input,
     }
   }
 
-  var parentNode: BranchNode = this
-  //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
-  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 
-  val allTours: List[Tour] = detectTours(lowerBoundSolve)
-  val isLeafNode: IsLeafNode = allTours.length == 1
   //println("tour length",allTours.length)
   //println("leafnode",isLeafNode)
-
-  def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
-
-    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
-
-    var listTours: List[Tour] = List()
-    var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
-
-    var currentArc = pairMap.head
-
-    while (pairMap.size>1) {
-
-      var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
-      // if no tours created, keep tracking
-      if (nextArc._2.id != currentList.head.id) {
-        // currentList  = currentList:::nextArc._1::Nil
-        currentList  = currentList:::nextArc._2::Nil
-        pairMap = pairMap.removed(currentArc._1)
-        currentArc  = nextArc
-      } else {
-      // else, add the tour created, and staring tracking another remaining arc
-        // currentList  = currentList:::nextArc._1::Nil
-        // currentList  = currentList:::nextArc._2::Nil
-        val findTour = new Tour(input,currentList)
-        listTours = listTours:::findTour::Nil
-        currentList = currentList.drop(currentList.length)
-        pairMap = pairMap.removed(currentArc._1)
-        pairMap = pairMap.removed(nextArc._1)
-        if (pairMap.nonEmpty) {
-          currentArc = pairMap.head
-          currentList = currentList ::: currentArc._1 :: Nil
-          currentList = currentList ::: currentArc._2 :: Nil
-        }
-      }
-    }
-    listTours
-  }
 
   // implement branchStep
   def branchStep: Either[BranchNode, List[BranchNode]] = {

@@ -83,6 +83,8 @@ object MTZ2020 extends CompactFormulation {
       else {false}
     }
 
+    /*
+
     for (i <- input.sites) {
       for (j <- input.sites) {
         print("site: ",i, " to site: ",j," with cost ",x.search(i,j).solutionValue+"\r\n")
@@ -93,9 +95,11 @@ object MTZ2020 extends CompactFormulation {
       print("order of ",i," is ",orderVariables(i).solutionValue()+"\r\n")
     }
 
-    //val resultArray: arcWise[Boolean] = arcWise(input, constructResult)
-    //resultArray.entries
-    Map()
+     */
+
+    val resultArray: arcWise[Boolean] = arcWise(input, constructResult)
+    resultArray.entries
+
   }
 
 
