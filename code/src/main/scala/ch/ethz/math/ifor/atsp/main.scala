@@ -10,13 +10,8 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 object main extends App {
 
 
-  def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
-    case (name, solver) => name -> timed(maxTime, input, solver)
-  }.toMap
 
-
-
-  
+// TODO: write to spreadsheet
 
   //THIS IS FOR TESTING
 

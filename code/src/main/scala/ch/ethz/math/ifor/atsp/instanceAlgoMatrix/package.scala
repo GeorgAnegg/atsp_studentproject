@@ -1,6 +1,10 @@
 package ch.ethz.math.ifor.atsp
 
+import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver
+import ch.ethz.math.ifor.atsp.BranchAndCut.BranchAndCutSolver
+import ch.ethz.math.ifor.atsp.CompactFormulations.{DL, GG, MTZ2020}
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
+import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 
 package object instanceAlgoMatrix {
 
@@ -31,9 +35,21 @@ package object instanceAlgoMatrix {
     namedInputs
   }
 
-  val namedSolvers :List[(String, Input=>Output)] = List(
-
-
+  val namedSolvers :List[(String, Input => Output)] = List(
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,true)),
+    ("FT92" , BranchAndCutSolver.solve(_, "",true,true)),
+    ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false))//,
+    //("MTZ_MIP", MTZ2020.solve(_)),
+    //("GG", GG.solve(_)),
+    //("DL", DL.solve(_))
   )
+
+
+  def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
+    case (name, solver) => name -> timed(maxTime, input, solver)
+  }.toMap
+
+
 
 }
