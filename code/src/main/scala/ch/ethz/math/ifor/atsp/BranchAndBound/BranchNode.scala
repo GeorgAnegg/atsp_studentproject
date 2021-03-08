@@ -1,13 +1,13 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 import scala.util.control.Breaks._
-import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf}
 /** class for node classes like branch node
  * @param input contains input
  * @param varAssignment contains information for which variables are already set to 0 or 1
  */
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
-                 val useAdditive:Boolean
+                 val useAdditive:Boolean,
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
@@ -15,7 +15,7 @@ class BranchNode(val input: Input,
   var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
   var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
-
+  val lowerBoundCostAP :Double = lowerBound
   /*
   println("print reduced cost matrix: ")
   reducedCostMatrixAfterAP.foreach{
@@ -25,12 +25,29 @@ class BranchNode(val input: Input,
   }
 
    */
+  val globalHeuristic:(Double,Tour) = {
+    if (level == 0) {
+      upperBoundSolver.computeUpperBound(this)
+    } else {
+      null
+    }
+  }
+
+  val globalUpperbound:Double = {
+    if (level == 0) {
+      globalHeuristic._1
+    } else {
+      inf
+    }
+  }
 
   var lowerBoundrSAP :Double= inf
   if (useAdditive){
-    val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
-    lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP)
-    lowerBound = lowerBound + lowerBoundrSAP
+    if (lowerBoundCostAP != globalUpperbound){
+      val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
+      lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP)
+      lowerBound = lowerBound + lowerBoundrSAP
+    }
   }
 
   var parentNode: BranchNode = this

@@ -81,9 +81,6 @@ object ChuLiuEdmonds {
       minInDegreeMap.foreach{map => println(map._1.id,map._2.id,graph(map._1)(map._2))}
 
  */
-
-
-
       val inputHere = new Input(graph.keys.toVector,graph)
       // if minInDegreeMap does not contain a cycle, then it's the shortest spanning arborescence rooted at vertex r
       val firstCycleFound = detectCycles(minInDegreeMap,inputHere)

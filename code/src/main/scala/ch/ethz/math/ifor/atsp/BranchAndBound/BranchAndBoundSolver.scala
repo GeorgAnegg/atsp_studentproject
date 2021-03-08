@@ -2,14 +2,13 @@ package ch.ethz.math.ifor.atsp.BranchAndBound
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79.computeUpperBound
-import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, inf}
 
 import scala.util.control.Breaks.break
 
 object BranchAndBoundSolver extends Solver {
 
   def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean): Output = {
-
     // construct root node
     val numSites: Int = input.sites.length
     val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
@@ -18,7 +17,7 @@ object BranchAndBoundSolver extends Solver {
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive)
     rootNode.level = 0
 
-    val iniHeuristic = upperBoundSolver.computeUpperBound(rootNode)
+    val iniHeuristic = rootNode.globalHeuristic
     val initUpperBound = iniHeuristic._1
     val initTour = iniHeuristic._2
 
@@ -30,6 +29,7 @@ object BranchAndBoundSolver extends Solver {
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
+      println("Number of active sortedNodes", sortedNodes.length)
 
       /*
       println("num sortedNodes active", sortedNodes.length)
@@ -43,7 +43,7 @@ object BranchAndBoundSolver extends Solver {
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
-      if (currentBranchNode.lowerBound == initUpperBound){
+      if (currentBranchNode.lowerBoundCostAP == initUpperBound || currentBranchNode.lowerBound == initUpperBound){
         return new Output(input, initTour)
       }
 /*

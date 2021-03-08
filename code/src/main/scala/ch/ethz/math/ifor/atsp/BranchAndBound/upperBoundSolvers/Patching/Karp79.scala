@@ -8,7 +8,7 @@ object Karp79 extends UpperBoundSolver {
 
   def computeUpperBound(branchNode: BranchNode): (Double,Tour) = {
 
-    var upperBound: Double = branchNode.lowerBound
+    var upperBound: Double = branchNode.lowerBoundCostAP
 
     var tours: List[Map[Site, Site]] = List()
     branchNode.allTours.foreach(tour => tours = tours ::: tour.listArcs :: Nil)
