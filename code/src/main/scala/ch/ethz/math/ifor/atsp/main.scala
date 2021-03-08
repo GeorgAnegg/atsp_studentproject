@@ -23,7 +23,7 @@ object main extends App {
 
     val sheet = workbook.createSheet("runningTimes")
     val headerRow = sheet.createRow(0)
-    val columns = List(" ") ::: namedSolvers.keys.toList
+    val columns = List(" ") ::: namedSolvers.map(_._1)
 
 
   }
