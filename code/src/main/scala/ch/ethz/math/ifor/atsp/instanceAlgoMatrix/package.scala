@@ -8,48 +8,51 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 
 package object instanceAlgoMatrix {
 
-  val filenames= List(
-    "br17.csv",
-    "ftv170.csv",
-    "ftv38.csv",
-    "ftv55.csv",
-    "kro124p.csv",
-    "rbg358.csv",
-    "ry48p.csv",
-    "ft53.csv",
-    "ftv33.csv",
-    "ftv44.csv",
-    "ftv64.csv",
-    "p43.csv",
-    "rbg403.csv",
-    "ft70.csv",
-    "ftv35.csv",
-    "ftv47.csv",
-    "ftv70.csv",
-    "rbg323.csv",
-    "rbg443.csv")
+  val instances = List(
+    "br17",
+    "ftv170",
+    "ftv38",
+    "ftv55",
+    "kro124p",
+    "rbg358",
+    "ry48p",
+    "ft53",
+    "ftv33",
+    "ftv44",
+    "ftv64",
+    "p43",
+    "rbg403",
+    "ft70",
+    "ftv35",
+    "ftv47",
+    "ftv70",
+    "rbg323",
+    "rbg443"
+  )
+  
+  val namedInputs:Map[String, Input] = instances.map(name => name -> CSV.createInput(name+".csv")).toMap
 
-  val namedInputs:List[(String, Input)] = {
-    val namedInputs = filenames.map(filename => (filename, CSV.createInput(filename)))
-    println("All Inputs created")
-    namedInputs
-  }
 
-  val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
+  val namedSolvers :Map[String, Input => Output] = List(
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,true)),
     ("FT92" , BranchAndCutSolver.solve(_, "",true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false))//,
     //("MTZ_MIP", MTZ2020.solve(_)),
     //("GG", GG.solve(_)),
     //("DL", DL.solve(_))
-  )
+  ).toMap
 
 
   def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
     case (name, solver) => name -> timed(maxTime, input, solver)
   }.toMap
 
+
+
+  // matrix of values
+  def instanceAlgoData(maxTime: Int): Map[ String, Map[String, Either[(Double, Runtime), String]]] = instances.map(name => name ->
+  runAll(maxTime, namedInputs(name))).toMap
 
 
 }
