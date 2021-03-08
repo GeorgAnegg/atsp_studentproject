@@ -90,7 +90,7 @@ object main extends App {
   }
 
   def writeSheet()={
-    val filename = System.getProperty("user.dir") + "/tests/allAlgos.xlsx"
+    val filename = System.getProperty("user.dir") + s"/tests/allAlgos+${System.currentTimeMillis()}.xlsx"
     val workbook = new XSSFWorkbook()
 
     writeRunningTimes(workbook)
