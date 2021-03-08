@@ -10,49 +10,52 @@ package object instanceAlgoMatrix {
 
   val instances = List(
     "br17",
-    "ftv170",
+    "ftv33",
+    "ftv35",
     "ftv38",
-    "ftv55",
-    "kro124p",
-    "rbg358",
+    "p43",
+    "ftv44",
+    "ftv47",
     "ry48p",
     "ft53",
-    "ftv33",
-    "ftv44",
+    "ftv55",
     "ftv64",
-    "p43",
-    "rbg403",
-    "ft70",
-    "ftv35",
-    "ftv47",
     "ftv70",
+    "ft70",
+    "kro124p",
+    "ftv170",
     "rbg323",
+    "rbg358",
+    "rbg403",
     "rbg443"
   )
-  
-  val namedInputs:Map[String, Input] = instances.map(name => name -> CSV.createInput(name+".csv")).toMap
 
+  val namedInputs:List[(String, Input)] = instances.map(name => name -> CSV.createInput(name+".csv"))
 
-  val namedSolvers :Map[String, Input => Output] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,true)),
+  val MTZoutput: Input=> Output = MTZ2020.solve(_)._2
+  val GGoutput: Input=> Output = GG.solve(_)._2
+  val DLoutput: Input=> Output = DL.solve(_)._2
+
+  val namedSolvers :List[(String, Input => Output)] = List(
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
     ("FT92" , BranchAndCutSolver.solve(_, "",true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false))//,
-    //("MTZ_MIP", MTZ2020.solve(_)),
-    //("GG", GG.solve(_)),
-    //("DL", DL.solve(_))
-  ).toMap
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false)),
+    ("MTZ", MTZoutput),
+    ("GG", GGoutput),
+    ("DL", DLoutput)
+  )
 
 
-  def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
-    case (name, solver) => name -> timed(maxTime, input, solver)
-  }.toMap
+  def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
+    case (name, solver) => name -> timed(maxTime, namedInputs.find( _._1 == name).get._2 , solver)
+  }
 
 
 
   // matrix of values
-  def instanceAlgoData(maxTime: Int): Map[ String, Map[String, Either[(Double, Runtime), String]]] = instances.map(name => name ->
-  runAll(maxTime, namedInputs(name))).toMap
+  def instanceAlgoData(maxTime: Int): List[(String, List[(String, Either[(Double, Runtime), String])])] = instances.map(name => name ->
+  runAll(maxTime, name))
 
 
 }

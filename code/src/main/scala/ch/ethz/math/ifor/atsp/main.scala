@@ -19,9 +19,13 @@ object main extends App {
 
 
   def writeRunningTimes(workbook: XSSFWorkbook)= {
+
+
     val sheet = workbook.createSheet("runningTimes")
     val headerRow = sheet.createRow(0)
     val columns = List(" ") ::: namedSolvers.keys.toList
+
+
   }
 
 
