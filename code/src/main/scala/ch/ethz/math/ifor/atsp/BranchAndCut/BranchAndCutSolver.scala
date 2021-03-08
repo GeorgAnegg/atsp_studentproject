@@ -1,10 +1,10 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut
-import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchNode, upperBoundSolver}
-import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise, inf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 object BranchAndCutSolver extends Solver {
-  def solve(input: Input, formulation:String): Output = {
+  def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean): Output = {
+    System.loadLibrary("jniortools")
 
     // construct root node
     val numSites: Int = input.sites.length
@@ -13,56 +13,95 @@ object BranchAndCutSolver extends Solver {
       site -> input.sites.zip(distRow).toMap
     }.toMap
 
-    /*
-    System.loadLibrary("jniortools")
+    var initUpperBound = inf
+    var initTour:Tour = new Tour(input,input.sites.toList)
 
-    val solverLP: MPSolver = new MPSolver("LinearProgramming",
-      MPSolver.OptimizationProblemType.GLOP_LINEAR_PROGRAMMING)
+    if (preprocessing){
+      // solve initial AP to get an upperbound and do reduction
+      val solverLP: MPSolver = new MPSolver("AssignmentProblem",
+        MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING)
 
-    def constructVariable(site1:Site ,site2:Site):MPVariable= {
-      if (site1.id==site2.id) {solverLP.makeNumVar(0,0,"")}
-      else {
-        solverLP.makeNumVar(0,1,"")
+      def constructVariable(site1:Site ,site2:Site):MPVariable= {
+        if (site1.id==site2.id) {solverLP.makeIntVar(0,0,"")}
+        else {
+          solverLP.makeIntVar(0,1,"")
         }
-    }
-
-    val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
-    val costs:arcWise[Double] = arcWise(input,input.distance)
-    var constraints: List[MPConstraint] = List()
-
-    var listConstraintsIn: List[MPConstraint] = List()
-    var listConstraintsOut: List[MPConstraint] = List()
-
-    // construct in- & out-degree constraints
-    for (site1 <- input.sites){
-      val constraintIn:MPConstraint = solverLP.makeConstraint(1, 1, "")
-      val constraintOut:MPConstraint = solverLP.makeConstraint(1, 1, "")
-      for (site2 <- input.sites){
-        constraintIn.setCoefficient(variables.search(site1, site2),1)
-        constraintOut.setCoefficient(variables.search(site2, site1),1)
       }
-      listConstraintsIn = constraintIn::listConstraintsIn
-      listConstraintsOut = constraintIn::listConstraintsOut
-    }
-    constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
 
-    // construct the objective function.
-    val objectiveFunction : MPObjective = solverLP.objective()
-    variables.entries.map{
-      case (site1, map1) => (site1, map1.map{
-        case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
-      })
-    }
+      val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
+      val costs:arcWise[Double] = arcWise(input,input.distance)
+      var constraints: List[MPConstraint] = List()
 
-    objectiveFunction.setMinimization()
-    val apAssignment = initAssignmentMap.map{
-      case (site1, map1) => (site1, map1.map{
-        case (site2, value) if variables.search(site1,site2).solutionValue == 1.0 => (site2, value)
-        case (site2, value) => (site2, Some(false))
-      })
-    }
+      var listConstraintsIn: List[MPConstraint] = List()
+      var listConstraintsOut: List[MPConstraint] = List()
 
-     */
+      // construct in- & out-degree constraints
+      for (site1 <- input.sites){
+        val constraintIn:MPConstraint = solverLP.makeConstraint(1, 1, "")
+        val constraintOut:MPConstraint = solverLP.makeConstraint(1, 1, "")
+        for (site2 <- input.sites){
+          constraintIn.setCoefficient(variables.search(site1, site2),1)
+          constraintOut.setCoefficient(variables.search(site2, site1),1)
+        }
+        listConstraintsIn = constraintIn::listConstraintsIn
+        listConstraintsOut = constraintIn::listConstraintsOut
+      }
+      constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
+
+      // construct the objective function.
+      val objectiveFunction : MPObjective = solverLP.objective()
+      variables.entries.map{
+        case (site1, map1) => (site1, map1.map{
+          case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
+        })
+      }
+
+      objectiveFunction.setMinimization()
+      val resultStatus = solverLP.solve()
+      val apAssignment = initAssignmentMap.map{
+        case (site1, map1) => (site1, map1.map{
+          case (site2, value) if variables.search(site1,site2).solutionValue == 1.0 => (site2, true)
+          case (site2, value) => (site2, false)
+        })
+      }
+
+      def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
+        var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
+        var listTours: List[Tour] = List()
+        var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
+        var currentArc = pairMap.head
+        while (pairMap.size>1) {
+          var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
+          if (nextArc._2.id != currentList.head.id) {
+            currentList  = currentList:::nextArc._2::Nil
+            pairMap = pairMap.removed(currentArc._1)
+            currentArc  = nextArc
+          } else {
+            val findTour = new Tour(input,currentList)
+            listTours = listTours:::findTour::Nil
+            currentList = currentList.drop(currentList.length)
+            pairMap = pairMap.removed(currentArc._1)
+            pairMap = pairMap.removed(nextArc._1)
+            if (pairMap.nonEmpty) {
+              currentArc = pairMap.head
+              currentList = currentList ::: currentArc._1 :: Nil
+              currentList = currentList ::: currentArc._2 :: Nil
+            }
+          }
+        }
+        listTours
+      }
+
+      val apTours = detectTours(apAssignment)
+      val apCost: Double  = apAssignment.map({case(site1, map1) => input.distMat(site1)(map1.filter(_._2).head._1) }).sum
+      val iniHeuristic = upperBoundSolver.computeUpperBound(apCost,apTours,input)
+      initUpperBound = iniHeuristic._1
+      initTour = iniHeuristic._2
+      if (apCost == initUpperBound){
+        return new Output(input, initTour)
+      }
+      println("ini upper: ", +initUpperBound)
+    }
 
     // Need a global cuts pool
     var globalCuts: List[(Map[MPVariable,Double],Double)] = List()
@@ -71,10 +110,9 @@ object BranchAndCutSolver extends Solver {
     rootNode.level = 0
     rootNode.isRootNode = true
 
+
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
-
-    val initUpperBound = upperBoundSolver.computeUpperBound(rootNode)
 
     // TODO: Question, why in FT97, they didn't check if the solution is integer before applying separation algos?
 
@@ -95,6 +133,10 @@ object BranchAndCutSolver extends Solver {
 
       var currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
+
+      if (currentBranchNode.lowerBound == initUpperBound){
+        return new Output(input, initTour)
+      }
 
       //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 

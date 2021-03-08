@@ -13,8 +13,8 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.UpperBoundSolver
 
 package object BranchAndBound {
 
-  //val lowerBoundSolver: LowerBoundSolver = ORToolsIP
-  val lowerBoundSolver: LowerBoundSolver = HungarianAP
+  val lowerBoundSolver: LowerBoundSolver = ORToolsIP
+  //val lowerBoundSolver: LowerBoundSolver = HungarianAP
   val naiveLowerBoundSolver: LowerBoundSolver = NaiveLB
   val rSAPLowerBoundSolver = ChuLiuEdmonds
   val branchingScheme: BranchingScheme = CT80

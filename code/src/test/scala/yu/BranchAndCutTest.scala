@@ -19,7 +19,7 @@ object BranchAndCutTest extends App{
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/dantzig42.csv"," ")
   val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/att48.csv"," ")
 
-  val output = BranchAndCutSolver.solve(fromDistVec(input),"")
+  val output = BranchAndCutSolver.solve(fromDistVec(input),"",true,false)
 
   output.print()
   val duration = (System.nanoTime - t1) / 1e9d

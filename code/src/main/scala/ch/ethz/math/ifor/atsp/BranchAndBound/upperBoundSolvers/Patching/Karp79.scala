@@ -2,11 +2,11 @@ package ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.UpperBoundSolver
-import ch.ethz.math.ifor.atsp.{Site, inf}
+import ch.ethz.math.ifor.atsp.{Output, Site, Tour, inf}
 
 object Karp79 extends UpperBoundSolver {
 
-  def computeUpperBound(branchNode: BranchNode): Double = {
+  def computeUpperBound(branchNode: BranchNode): (Double,Tour) = {
 
     var upperBound: Double = branchNode.lowerBound
 
@@ -63,7 +63,11 @@ object Karp79 extends UpperBoundSolver {
       listPatched = listPatched ::: Map(arc2) :: Nil
       upperBound += minCostPermute
     }
-    upperBound
+
+    val finalCircle = tours.head
+    val listTour : List[Site] = finalCircle.keys.toList
+    val tour = new Tour(branchNode.input,listTour)
+    (upperBound,tour)
   }
 
 

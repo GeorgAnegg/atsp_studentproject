@@ -11,7 +11,7 @@ class Input(val sites: Vector[Site],
 
   //require distMat to be complete wrt sites
   //TODO: distance from point to itself should be 0 but can be ignored. require it to be present?
-  println(distMat.size, sites.length)
+  //println(distMat.size, sites.length)
   //assert(distMat.keys.toVector == sites && distMat.values.forall(_.keys.toVector == sites), "distance matrix incomplete")
 
   def distance(fromSite: Site, toSite: Site): Double = distMat(fromSite)(toSite)

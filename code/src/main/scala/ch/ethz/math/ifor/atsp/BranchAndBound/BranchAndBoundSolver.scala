@@ -8,17 +8,19 @@ import scala.util.control.Breaks.break
 
 object BranchAndBoundSolver extends Solver {
 
-  def solve(input: Input,formulation:String): Output = {
+  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean): Output = {
 
     // construct root node
     val numSites: Int = input.sites.length
     val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
     val initAssignmentMap: Map[Site, Map[Site, Option[Boolean]]] = input.sites.zip(initAssignmentArray).map{case (site, distRow) =>
       site -> input.sites.zip(distRow).toMap}.toMap
-    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap)
+    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive)
     rootNode.level = 0
 
-    val initUpperBound = upperBoundSolver.computeUpperBound(rootNode)
+    val iniHeuristic = upperBoundSolver.computeUpperBound(rootNode)
+    val initUpperBound = iniHeuristic._1
+    val initTour = iniHeuristic._2
 
     var currentBestNode: Option[BranchNode] = None
 
@@ -29,14 +31,21 @@ object BranchAndBoundSolver extends Solver {
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
 
+      /*
       println("num sortedNodes active", sortedNodes.length)
       for (i <- sortedNodes) {
-        println("activeb", i.lowerBound, i.level)
+        //println("activeb", i.lowerBound, i.level)
       }
       println("\r\n")
 
+       */
+
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
+
+      if (currentBranchNode.lowerBound == initUpperBound){
+        return new Output(input, initTour)
+      }
 /*
       println("active branches after sorted")
       for (i <- activeBranches) {
@@ -51,7 +60,7 @@ object BranchAndBoundSolver extends Solver {
         case Left(leaf) => // current node is leaf
           if (currentBestNode.isEmpty) {
             currentBestNode = Some(leaf)
-            println("current best",currentBestNode.get.lowerBound)
+            //println("current best",currentBestNode.get.lowerBound)
             // println("length before",activeBranches.length)
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) // > should be <= ?
             // println("length after",activeBranches.length)
@@ -62,10 +71,10 @@ object BranchAndBoundSolver extends Solver {
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) //prune remaining branches
           }
         case Right(children) => // current node gets branched
-          println("Number of Children to be added" + children.size)
+          //println("Number of Children to be added" + children.size)
           for (child <- children) {
             if (currentBestNode.isEmpty) {
-              println("add this children", child)
+              //println("add this children", child)
               activeBranches = activeBranches ++ List(child)
             } else if (child.lowerBound < currentBestNode.get.lowerBound) { //first check a naive lower bound for child node
               activeBranches = activeBranches ++ List(child) //add children/new branches
@@ -75,6 +84,7 @@ object BranchAndBoundSolver extends Solver {
     }
 
     val tour = currentBestNode.get.allTours.head
+    //println("optimal length: ", tour.length)
     new Output(input, tour)
   }
 }

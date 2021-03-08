@@ -5,8 +5,6 @@ import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 import scala.concurrent._
 import scala.concurrent.duration._
 
-
-
 object main extends App {
 
   val filenames= List("br17.csv",
@@ -46,19 +44,14 @@ object main extends App {
   }
 
 
-  val input = CSV.createInput(filenames(0))
+  val input = CSV.createInput(filenames(2))
 
   val output = {
     //val timeout = 8.seconds.fromNow
-    deadlineWrapper(BranchAndCut.BranchAndCutSolver.solve(_,""), input, timeout)
+    deadlineWrapper(BranchAndCut.BranchAndCutSolver.solve(_,"",true,false), input, timeout)
   }
 
   println(output)
-
-
-
-
-  
 
  /* set up spreadsheet, check car rental
 

@@ -8,7 +8,7 @@ object BranchAndBoundTest extends App {
 
   val input = Input.toyExample2
 
-  val output = BranchAndBoundSolver.solve(input,"")
+  val output = BranchAndBoundSolver.solve(input,"",true,false)
 
   output.print()
 

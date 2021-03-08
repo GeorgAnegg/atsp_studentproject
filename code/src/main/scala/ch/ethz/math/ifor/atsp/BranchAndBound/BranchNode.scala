@@ -1,25 +1,41 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
 import scala.util.control.Breaks._
-import ch.ethz.math.ifor.atsp.{Input, Site, Tour,arcWise}
+import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
 /** class for node classes like branch node
  * @param input contains input
  * @param varAssignment contains information for which variables are already set to 0 or 1
  */
 class BranchNode(val input: Input,
-                 var varAssignment: Map[Site, Map[Site, Option[Boolean]]]
+                 var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
+                 val useAdditive:Boolean
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
   val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) =lowerBoundSolver.compute(branchNode = this)
-  val lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
+  var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
-  val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
-  val lowerBoundrSAP:Double = rSAPLowerBoundSolver.compute(inputRSAP)
+  var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+
+  /*
+  println("print reduced cost matrix: ")
+  reducedCostMatrixAfterAP.foreach{
+    case (site1, map1) => (site1, map1.map{
+      case (site2, value) => println(site1, site2, value)
+    })
+  }
+
+   */
+
+  var lowerBoundrSAP :Double= inf
+  if (useAdditive){
+    val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
+    lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP)
+    lowerBound = lowerBound + lowerBoundrSAP
+  }
 
   var parentNode: BranchNode = this
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
-  val lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
 
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1

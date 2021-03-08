@@ -31,6 +31,15 @@ object ChuLiuEdmonds {
         case (site2, value) if site1!=site2 => (site2,value)
       })
     }
+    /*
+    println("ChuLiuEdmonds print reduced cost matrix: ")
+    costsPrime.foreach{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) => println(site1, site2, value)
+      })
+    }
+
+     */
     // root node should have no in-edges
     costsPrime = costsPrime.map{
       case (site1,map1) => (site1,map1-rootSite)
@@ -39,6 +48,7 @@ object ChuLiuEdmonds {
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
     def chuLiuEdmonds(graph:Map[Site, Map[Site, Double]]): Map[Site, Map[Site, Boolean]] = {
 
+      /*
       println("=============================================graph=========================================")
       for(site1<-graph.keys){
         for (site2 <-graph(site1)){
@@ -47,10 +57,7 @@ object ChuLiuEdmonds {
       }
       println("==============================================================================================")
 
-
-
-
-
+       */
 
       // for each node except root node, choose the min-cost in-site
       var minCost:Map[Site,Double]=Map()
@@ -448,6 +455,7 @@ object ChuLiuEdmonds {
         case (site2, value) if value => result = result + input.distMat(site1)(site2)
       })
     }
+    /*
     println("rSAP result")
     resultAssignment.collect{
       case (site1,map1) => (site1, map1.collect{
@@ -460,7 +468,9 @@ object ChuLiuEdmonds {
         case (site2, value) if value => println(site1.id,site2.id,input.distMat(site1)(site2))
       })
     }
-    println("===============lower bound rSAP is: ",result,"=======================")
+
+     */
+    //println("===============lower bound rSAP is: ",result,"=======================")
     result
   }
 

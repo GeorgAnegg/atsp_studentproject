@@ -17,7 +17,7 @@ object ORToolsIP extends LowerBoundSolver{
     //assert(branchNode.varAssignment.keys.toVector == branchNode.input.sites,"distance matrix incomplete" )
 
     val solver: MPSolver = new MPSolver("AssignmentProblem",
-      MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING)
+      MPSolver.OptimizationProblemType.GLOP_LINEAR_PROGRAMMING)
 
     // x(i)(j) is an array of 0-1 variables, which will be 1
     // if site i is assigned to site j.
@@ -56,6 +56,7 @@ object ORToolsIP extends LowerBoundSolver{
 //      //println("\r\n")
 //    }
 
+    /*
     // Each site has at most one out-degree.
     for (i <- branchNode.input.sites) {
       val constraint = solver.makeConstraint(1, 1, "")
@@ -74,6 +75,22 @@ object ORToolsIP extends LowerBoundSolver{
       }
     }
 
+     */
+    var constraintInMap: Map[Site,MPConstraint] = Map()
+    var constraintOutMap: Map[Site,MPConstraint] = Map()
+
+    // construct in- & out-degree constraints
+    for (site1 <- branchNode.input.sites){
+      val constraintIn:MPConstraint = solver.makeConstraint(1, 1, "")
+      val constraintOut:MPConstraint = solver.makeConstraint(1, 1, "")
+      for (site2 <- branchNode.input.sites){
+        constraintIn.setCoefficient(x.search(site1, site2),1)
+        constraintOut.setCoefficient(x.search(site2, site1),1)
+      }
+      constraintInMap = constraintInMap ++ Map(site1->constraintIn)
+      constraintOutMap = constraintOutMap ++ Map(site1->constraintOut)
+    }
+
     // Create the objective function.
     val objective = solver.objective()
     for (i <- branchNode.input.sites) {
@@ -85,7 +102,7 @@ object ORToolsIP extends LowerBoundSolver{
     objective.setMinimization()
 
     val resultStatus = solver.solve()
-    println(resultStatus)
+    //println(resultStatus)
 
     if(resultStatus == MPSolver.ResultStatus.INFEASIBLE){
       val assignmentInfeasible : Map[Site,Map[Site,Boolean]] = branchNode.varAssignment.map{
@@ -104,11 +121,22 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
-      if (x.search(site1,site2).solutionValue == 1) {true}
+      if (x.search(site1,site2).solutionValue == 1) {
+        //println(site1,site2)
+        true}
       else {false}
     }
 
     val resultArray: arcWise[Boolean] = arcWise(branchNode.input, constructResult)
+
+
+    //compute reduced cost
+    val reducedCost = branchNode.costsMap.map{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) => (site2, value - constraintInMap(site1).dualValue() - constraintOutMap(site2).dualValue())
+      })
+    }
+
 /*
     println("final matching")
     for(i<-resultArray.entries){
@@ -120,7 +148,7 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
  */
-    (resultArray.entries,costs.entries)
+    (resultArray.entries,reducedCost)
     }
 
   // not used

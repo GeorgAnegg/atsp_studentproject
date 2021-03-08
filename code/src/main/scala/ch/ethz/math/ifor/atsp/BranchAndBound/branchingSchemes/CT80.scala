@@ -11,8 +11,8 @@ object CT80 extends BranchingScheme {
     // if root node, apply patching procedure and exclude all arcs with reduced cost > upperbound - lowerbound
 
     if (branchNode.level==0){
-      val reducedThreshold = computeUpperBound(branchNode) - branchNode.lowerBound
-      println("upper bound is:",computeUpperBound(branchNode),"lower bound is:",branchNode.lowerBound )
+      val reducedThreshold = computeUpperBound(branchNode)._1 - branchNode.lowerBound
+      //println("upper bound is:",computeUpperBound(branchNode),"lower bound is:",branchNode.lowerBound )
       branchNode.varAssignment = branchNode.varAssignment.map{
         case (site1, map1) => (site1, map1.collect{
           case (site2, value) if branchNode.reducedCostMatrixAfterAP(site1)(site2)!=inf &&
@@ -198,14 +198,14 @@ object CT80 extends BranchingScheme {
 
       //println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
-      var newNode = new BranchNode(branchNode.input, finalMap)
+      var newNode = new BranchNode(branchNode.input, finalMap,branchNode.useAdditive)
       // link children to parent, update level
       newNode.parentNode = branchNode
       newNode.level = branchNode.level + 1
       listChildrenNodes = newNode :: listChildrenNodes
     }
     // link children to parent, update level
-    println("Number of children:" + listChildrenNodes.size)
+    //println("Number of children:" + listChildrenNodes.size)
     listChildrenNodes
   }
 }
