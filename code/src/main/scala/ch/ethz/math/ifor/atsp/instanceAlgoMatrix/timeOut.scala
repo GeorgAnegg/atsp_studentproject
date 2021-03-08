@@ -6,8 +6,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 
-object timeOut extends App {
-
+object timeOut {
 
   /** runs solver and returns (optimal value, running time) or DNF if it timed out or ERROR if there was an error
     *
@@ -46,7 +45,7 @@ object timeOut extends App {
 
 
 
-
+/*
 
   def timedToy(solver: Int=> Double, input:Int, maxTime:Int): Option[Double]= {
     val timeout = maxTime.seconds
@@ -62,5 +61,5 @@ object timeOut extends App {
     x+0.5+10*y}
 
   val res = timedToy(fun(_,0), 1, 5)
-
+*/
 }
