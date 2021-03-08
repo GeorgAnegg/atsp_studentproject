@@ -5,11 +5,7 @@ import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.namedSolvers
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 
-
-
 object main extends App {
-
-
 
 // TODO: write to spreadsheet
 

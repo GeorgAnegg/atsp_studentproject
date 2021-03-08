@@ -4,7 +4,7 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf}
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
 object DL extends CompactFormulation {
-  def solve(input: Input): (Map[Site,Map[Site,Boolean]],Output)={
+  def solve(input: Input): Output={
 
     System.loadLibrary("jniortools")
 
@@ -100,16 +100,20 @@ object DL extends CompactFormulation {
 
     val resultArray: arcWise[Boolean] = arcWise(input, constructResult)
 
-    var listSites : List[Site] = List()
-    resultArray.entries.foreach{
-      case (site1, map1) => (site1, map1.foreach{
-        case (site2, value) if value => listSites = listSites :+ site1
-      })
+    var pairMap = resultArray.entries.map({ case (site1, map1) => site1 -> map1.filter(_._2 == true).head._1 })
+    var siteList : List[Site] = List()
+    var currentSite = pairMap.head._1
+    siteList = siteList ++ List(currentSite)
+    while (pairMap.size > 1){
+      val nextSite = pairMap(currentSite)
+      siteList = siteList ++ List(nextSite)
+      pairMap = pairMap.removed(currentSite)
+      currentSite = nextSite
     }
-    val tour = new Tour(input, listSites)
+    val tour = new Tour(input,siteList)
     val optOutput = new Output(input, tour)
 
-    (resultArray.entries,optOutput)
+    optOutput
   }
 
 }

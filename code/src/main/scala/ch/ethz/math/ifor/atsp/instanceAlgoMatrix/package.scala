@@ -45,11 +45,7 @@ package object instanceAlgoMatrix {
     //("DL", DL.solve(_))
   )
 
-
   def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
     case (name, solver) => name -> timed(maxTime, input, solver)
   }.toMap
-
-
-
 }

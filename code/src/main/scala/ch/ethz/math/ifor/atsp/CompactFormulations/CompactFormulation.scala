@@ -4,5 +4,5 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
 import ch.ethz.math.ifor.atsp.{Input, Output, Site}
 
 trait CompactFormulation {
-  def solve(input: Input): (Map[Site,Map[Site,Boolean]],Output)
+  def solve(input: Input): Output
 }
