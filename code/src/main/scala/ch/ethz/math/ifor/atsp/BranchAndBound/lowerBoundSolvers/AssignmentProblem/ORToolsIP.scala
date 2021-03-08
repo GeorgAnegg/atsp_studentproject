@@ -36,8 +36,6 @@ object ORToolsIP extends LowerBoundSolver{
 
     val x: arcWise[MPVariable] = arcWise(branchNode.input, constructVariable)
 
-    //TODO: rewrite remaining section in terms of this x, maybe call them (active) variables or xs...
-
     val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
 
 //    for (i <- 0 until numSites) {
