@@ -10,14 +10,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 object main extends App {
 
-<<<<<<< HEAD
 // TODO: write to spreadsheet
-=======
   val data = instanceAlgoMatrix.instanceAlgoData(3)
 
   writeSheet()
 
->>>>>>> babd24e850b567f63130e00aa8cfb6e65f836eef
 
 
   def writeRunningTimes(workbook: XSSFWorkbook)= {
@@ -51,11 +48,6 @@ object main extends App {
     println(filename)
     println("====================")
   }
-
-
-
-
-
 
 
 

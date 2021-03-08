@@ -100,7 +100,7 @@ object BranchAndCutSolver extends Solver {
       if (apCost == initUpperBound){
         return new Output(input, initTour)
       }
-      println("ini upper: ", +initUpperBound)
+      //println("ini upper: ", +initUpperBound)
     }
 
     // Need a global cuts pool
@@ -125,7 +125,7 @@ object BranchAndCutSolver extends Solver {
     // 3. if no cuts found, shrink, apply separation algorithms for comb, D_k and odd CAT
     // 4. if some cuts are found, add to the current LP and repeat, else if (...)
     while (activeBranches.nonEmpty) {
-      println("Number of active nodes: "+activeBranches.size)
+      //println("Number of active nodes: "+activeBranches.size)
 
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound <= initUpperBound).sortBy(_.lowerBound)
 
