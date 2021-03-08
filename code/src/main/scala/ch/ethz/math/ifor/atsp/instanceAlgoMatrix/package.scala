@@ -10,7 +10,7 @@ package object instanceAlgoMatrix {
 
   val instances = List(
     "br17",
-    "ftv33",
+    "ftv33")/*,
     "ftv35",
     "ftv38",
     "p43",
@@ -28,9 +28,9 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
-  )
+  )*/
 
-  val namedInputs:List[(String, Input)] = instances.map(name => name -> CSV.createInput(name+".csv"))
+  val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val MTZoutput: Input=> Output = MTZ2020.solve(_)._2
   val GGoutput: Input=> Output = GG.solve(_)._2
@@ -48,7 +48,7 @@ package object instanceAlgoMatrix {
 
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
-    case (name, solver) => name -> timed(maxTime, namedInputs.find( _._1 == name).get._2 , solver)
+    case (name, solver) => (name , timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver))
   }
 
 

@@ -4,7 +4,7 @@ import java.io.FileOutputStream
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
-import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.namedSolvers
+import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{namedSolvers,instances}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
@@ -12,7 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 object main extends App {
 
-  val data = instanceAlgoMatrix.instanceAlgoData(3)
+  val data = instanceAlgoMatrix.instanceAlgoData(1)
 
   writeSheet()
 
@@ -22,8 +22,34 @@ object main extends App {
 
 
     val sheet = workbook.createSheet("runningTimes")
+
+    //write header row
     val headerRow = sheet.createRow(0)
     val columns = List(" ") ::: namedSolvers.map(_._1)
+    for (i<- columns.indices) {
+      val cell = headerRow.createCell(i)
+      cell .setCellValue(columns(i))
+    }
+
+    var rowCounter = 1
+    //fill in data
+    data.foreach {
+      case (name, entries) => {
+        val row = sheet.createRow(rowCounter)
+        rowCounter+=1
+        val nameCell = row.createCell(0)
+        nameCell.setCellValue(name)
+
+        for (i<- entries.indices){
+          val cell = row.createCell(i+1)
+          cell.setCellValue(entries(i)._2 match {
+            case Left(pair)=> pair._2.toString
+            case Right(s) => s
+          } )
+        }
+      }
+
+    }
 
 
   }
@@ -36,7 +62,7 @@ object main extends App {
     val workbook = new XSSFWorkbook()
 
     writeRunningTimes(workbook)
-    writeOptValues(workbook)
+    //writeOptValues(workbook)
 
     val fileOut = new FileOutputStream(filename)
     workbook.write(fileOut)
