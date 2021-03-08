@@ -10,7 +10,7 @@ package object instanceAlgoMatrix {
 
   val instances = List(
     "br17",
-    "ftv33"),
+    "ftv33",
     "ftv35",
     "ftv38",
     "p43",
