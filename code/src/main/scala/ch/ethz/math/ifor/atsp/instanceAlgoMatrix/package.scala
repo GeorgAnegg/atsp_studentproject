@@ -36,7 +36,7 @@ package object instanceAlgoMatrix {
   }
 
   val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,true)),
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
     ("FT92" , BranchAndCutSolver.solve(_, "",true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false))//,
