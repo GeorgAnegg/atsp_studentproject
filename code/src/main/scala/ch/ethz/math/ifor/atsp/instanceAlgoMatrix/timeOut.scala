@@ -9,7 +9,13 @@ import ExecutionContext.Implicits.global
 object timeOut extends App {
 
 
-
+  /** runs solver and returns (optimal value, running time) or DNF if it timed out or ERROR if there was an error
+    *
+    * @param maxTime
+    * @param input
+    * @param solver
+    * @return
+    */
   def timed(maxTime:Int, input:Input, solver: Input=> Output ): Either[(Double,Runtime), String]= {
     try {
       val timeout = maxTime.seconds
