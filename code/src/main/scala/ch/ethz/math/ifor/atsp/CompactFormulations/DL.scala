@@ -16,9 +16,9 @@ object DL extends CompactFormulation {
     //val x = Array.ofDim[MPVariable](numSites, numSites)
 
     def constructVariable(site1:Site ,site2:Site):MPVariable= {
-      if (site1.id==site2.id) {solver.makeNumVar(0,0,"")}
+      if (site1.id==site2.id) {solver.makeIntVar(0,0,"")}
       else {
-        solver.makeNumVar(0,1,"")
+        solver.makeIntVar(0,1,"")
       }
     }
 
@@ -77,7 +77,7 @@ object DL extends CompactFormulation {
     objective.setMinimization()
 
     val resultStatus = solver.solve()
-    println("Result status: "+resultStatus)
+    //println("Result status: "+resultStatus)
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {true}
