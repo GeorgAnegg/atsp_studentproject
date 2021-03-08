@@ -1,11 +1,11 @@
 package ch.ethz.math.ifor.atsp.CompactFormulations
 
-import ch.ethz.math.ifor.atsp.{Input, Site, arcWise, inf, negInf}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf}
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
 object GG extends CompactFormulation {
 
-  def solve(input: Input): Map[Site,Map[Site,Boolean]]={
+  def solve(input: Input): (Map[Site,Map[Site,Boolean]],Output)={
 
     System.loadLibrary("jniortools")
 
@@ -135,8 +135,19 @@ object GG extends CompactFormulation {
      */
 
     val resultArray: arcWise[Boolean] = arcWise(input, constructResult)
-    resultArray.entries
+
+    var listSites : List[Site] = List()
+    resultArray.entries.foreach{
+      case (site1, map1) => (site1, map1.foreach{
+        case (site2, value) if value => listSites = listSites :+ site1
+      })
+    }
+    val tour = new Tour(input, listSites)
+    val optOutput = new Output(input, tour)
+
+    (resultArray.entries,optOutput)
 
   }
+
 
 }
