@@ -33,7 +33,7 @@ class BranchNode(val input: Input,
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 
-  val allTours: List[Tour] = detectTours(lowerBoundSolve)
+  val allTours: List[Tour] = detectToursV2(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
 
   val globalHeuristic:(Double,Tour) = {
@@ -61,6 +61,66 @@ class BranchNode(val input: Input,
     }
   }
 
+  def detectToursV2(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
+    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
+    //println("====pairmap init=====")
+    //pairMap.foreach{e => println(e._1,e._2)}
+    var currentList : List[Site] =List()
+    var listTours: List[Tour] = List()
+    var currentArc = pairMap.head
+    currentList = currentList :+ currentArc._1
+    currentList = currentList :+ currentArc._2
+    pairMap = pairMap - currentArc._1
+
+    while (pairMap.nonEmpty){
+      //println("====pairmap status=====")
+      //pairMap.foreach{e => println(e._1,e._2)}
+
+      if (pairMap.contains(currentList.last)){
+        val nextArc = pairMap.find(_._1==currentList.last).get
+        if (nextArc._2!=currentList.head){
+          currentList = currentList :+ nextArc._2
+          pairMap = pairMap - nextArc._1
+          currentArc = nextArc
+        } else {
+          pairMap = pairMap - nextArc._1
+          //println("=========")
+          //currentList.foreach{e => println(e)}
+          val findTour = new Tour(input,currentList)
+          listTours = listTours :+ findTour
+          currentList = currentList.drop(currentList.length)
+          if (pairMap.nonEmpty){
+            currentArc = pairMap.head
+            currentList = currentList :+ currentArc._1
+            currentList = currentList :+ currentArc._2
+            pairMap = pairMap - currentArc._1
+          }
+        }
+      } else {
+        //println("=========")
+        //currentList.foreach{e => println(e)}
+        val findTour = new Tour(input,currentList)
+        listTours = listTours :+ findTour
+        currentList = currentList.drop(currentList.length)
+        if (pairMap.nonEmpty){
+          currentArc = pairMap.head
+          currentList = currentList :+ currentArc._1
+          currentList = currentList :+ currentArc._2
+          pairMap = pairMap - currentArc._1
+        }
+      }
+    }
+    /*
+    var a = 0
+    listTours.foreach{e => a= a+ e.sequence.length}
+    println("a", a)
+
+     */
+    listTours
+
+  }
+/*
+
   def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
 
     var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
@@ -83,6 +143,8 @@ class BranchNode(val input: Input,
         // else, add the tour created, and staring tracking another remaining arc
         // currentList  = currentList:::nextArc._1::Nil
         // currentList  = currentList:::nextArc._2::Nil
+        //println("=========")
+        //currentList.foreach{e => println(e)}
         val findTour = new Tour(input,currentList)
         listTours = listTours:::findTour::Nil
         currentList = currentList.drop(currentList.length)
@@ -95,11 +157,16 @@ class BranchNode(val input: Input,
         }
       }
     }
+    /*
     var a = 0
     listTours.foreach{e => a= a+ e.sequence.length}
     println("a", a)
+
+     */
     listTours
   }
+
+ */
 
 
 

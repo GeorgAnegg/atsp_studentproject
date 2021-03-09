@@ -363,15 +363,18 @@ object HungarianV2 extends LowerBoundSolver{
       case (site1, site2) => (site1, site2)
     }
     //println(" length of matching: ",finalMatching.size)
+
     /*
     println("finalMatching=========")
 
     finalMatching.foreach{
-      e => println(e._1.id,e._2.id)
+      e => println(e._1,e._2)
     }
     println("=====")
 
      */
+
+
     /*
     println("===========final matching=======")
     finalMatching.foreach{

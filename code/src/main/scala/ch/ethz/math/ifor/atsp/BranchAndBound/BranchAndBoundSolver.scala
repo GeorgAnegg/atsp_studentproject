@@ -12,15 +12,22 @@ object BranchAndBoundSolver extends Solver {
     // construct root node
     val numSites: Int = input.sites.length
     val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
-    val initAssignmentMap: Map[Site, Map[Site, Option[Boolean]]] = input.sites.zip(initAssignmentArray).map{case (site, distRow) =>
-      site -> input.sites.zip(distRow).toMap}.toMap
+    var initAssignmentMap: Map[Site, Map[Site, Option[Boolean]]] = input.sites.zip(initAssignmentArray).map { case (site, distRow) =>
+      site -> input.sites.zip(distRow).toMap
+    }.toMap
+    initAssignmentMap = initAssignmentMap.map{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) if site1==site2 => (site2,Some(false))
+        case (site2, value) => (site2,value)
+      })
+    }
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true)
     rootNode.level = 0
 
     val iniHeuristic = rootNode.globalHeuristic
     val initUpperBound = iniHeuristic._1
     val initTour = iniHeuristic._2
-    println("init upper bound",initUpperBound)
+    //println("init upper bound",initUpperBound)
 
     var currentBestNode: Option[BranchNode] = None
 
@@ -32,7 +39,7 @@ object BranchAndBoundSolver extends Solver {
       //println("init upper bound",initUpperBound)
 
       if (activeBranches.minBy(_.lowerBound).lowerBound >= initUpperBound){
-        println("here1?")
+        //println("here1?")
         return new Output(input, initTour)
       }
 
@@ -52,10 +59,10 @@ object BranchAndBoundSolver extends Solver {
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
       if (currentBranchNode.lowerBoundCostAP >= initUpperBound || currentBranchNode.lowerBound >= initUpperBound){
-        println("here2?")
+        //println("here2?")
         return new Output(input, initTour)
       }
-      //println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
+      println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
       /*
             println("active branches after sorted")
@@ -70,7 +77,7 @@ object BranchAndBoundSolver extends Solver {
       currentBranchNode.branchStep match {
         case Left(leaf) => // current node is leaf
           if (currentBestNode.isEmpty) {
-            println("here3?")
+            //println("here3?")
             currentBestNode = Some(leaf)
             //println("current best",currentBestNode.get.lowerBound)
             // println("length before",activeBranches.length)
@@ -79,7 +86,7 @@ object BranchAndBoundSolver extends Solver {
             // activeBranches = activeBranches.drop(activeBranches.length)
           } else if (leaf.lowerBound < currentBestNode.get.lowerBound) { //compare with current upper bound
             // println("compare", leaf.lowerBound, currentBestNode.get.lowerBound)
-            println("here4?")
+            //println("here4?")
             currentBestNode = Some(leaf)
             activeBranches = activeBranches.filter(_.lowerBound <= currentBestNode.get.lowerBound) //prune remaining branches
           }
