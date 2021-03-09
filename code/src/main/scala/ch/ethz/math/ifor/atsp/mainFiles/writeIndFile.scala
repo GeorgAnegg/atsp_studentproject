@@ -11,7 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 object writeIndFile extends App {
 
-  writeFile("ftv64", 1)
+  writeFile("br17", 20)
 
   val instances = List(
     "br17",
