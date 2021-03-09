@@ -15,7 +15,7 @@ object writeMatrix extends App {
   val data = instanceAlgoMatrix.instanceAlgoData(60)
 
 
-  writeSheet()
+  writeFile()
 
 
 
@@ -89,7 +89,7 @@ object writeMatrix extends App {
     }
   }
 
-  def writeSheet()={
+  def writeFile()={
     val filename = System.getProperty("user.dir") + s"/tests/allAlgos+${System.currentTimeMillis()}.xlsx"
     val workbook = new XSSFWorkbook()
 

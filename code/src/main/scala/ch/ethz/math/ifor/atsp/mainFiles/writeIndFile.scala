@@ -9,9 +9,9 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{instances, namedSolvers}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-object writeIndSheets extends App {
+object writeIndFile extends App {
 
-  writeSheet("ftv64", 5)
+  writeFile("ftv64", 1)
 
   val instances = List(
     "br17",
@@ -85,8 +85,8 @@ object writeIndSheets extends App {
   }
 
 
-  def writeSheet(input: String, maxTime: Int) = {
-    val filename = System.getProperty("user.dir") + s"/tests/$input.xlsx"
+  def writeFile(input: String, maxTime: Int) = {
+    val filename = System.getProperty("user.dir") + s"/tests/$input,$maxTime.xlsx"
     val workbook = new XSSFWorkbook()
 
     writeRows(workbook, input, maxTime)
