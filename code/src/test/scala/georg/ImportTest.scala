@@ -9,7 +9,7 @@ import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 
 object ImportTest extends App {
 
-  val input = CSV.createInput("br17.csv")
+  val input = CSV.createInput("ftv70.csv")
   val t1 = System.nanoTime
   val output = BranchAndBoundSolver.solve(input, "",true,false)
   //val output = DL.solve(input)

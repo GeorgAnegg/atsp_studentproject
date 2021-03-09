@@ -9,7 +9,7 @@ object Karp79V2 extends UpperBoundSolver {
 
     var upperBound: Double = branchNode.lowerBoundCostAP
 
-    branchNode.allTours.foreach(e => e.listArcsOrdered.foreach { e => println(e._1, e._2,branchNode.costsMap(e._1)(e._2)) })
+    //branchNode.allTours.foreach(e => e.listArcsOrdered.foreach { e => println(e._1, e._2,branchNode.costsMap(e._1)(e._2)) })
 
     var tours: List[List[(Site, Site)]] = List()
     branchNode.allTours.foreach(tour => tours = tours :+ tour.listArcsOrdered)
@@ -88,7 +88,6 @@ object Karp79V2 extends UpperBoundSolver {
     finalCircle.foreach{
       case (site1,site2) => listTour = listTour :+ site1
     }
-    listTour.foreach{e => println(e)}
     val tour = new Tour(branchNode.input,listTour)
     (upperBound,tour)
   }

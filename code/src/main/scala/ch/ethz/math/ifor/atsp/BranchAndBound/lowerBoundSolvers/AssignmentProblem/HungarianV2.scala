@@ -341,6 +341,7 @@ object HungarianV2 extends LowerBoundSolver{
       })
     }
 
+    /*
 
     println("--------------------------reduced cost matrix using potential=======================")
 
@@ -350,6 +351,8 @@ object HungarianV2 extends LowerBoundSolver{
       } )
     }
     println("--------------------------=======================")
+
+     */
 
     /*
     matching.foreach{

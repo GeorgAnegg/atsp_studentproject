@@ -57,7 +57,6 @@ object main extends App {
 
   def writeOptValues(workbook: XSSFWorkbook)= {
 
-
     val sheet = workbook.createSheet("optValues")
 
     //write header row

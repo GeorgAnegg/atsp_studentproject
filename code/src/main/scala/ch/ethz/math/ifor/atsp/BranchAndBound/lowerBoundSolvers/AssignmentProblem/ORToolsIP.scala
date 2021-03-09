@@ -24,10 +24,13 @@ object ORToolsIP extends LowerBoundSolver{
         case (site2, value) if value == Some(true) => included = included :+ (site1,site2)
       })
     }
+    /*
     println("excluded=====")
     excluded.foreach(e => println(e._1,e._2))
     println("included=====")
     included.foreach(e => println(e._1,e._2))
+
+     */
 
 
     //assert(branchNode.varAssignment.keys.toVector == branchNode.input.sites,"distance matrix incomplete" )
@@ -124,7 +127,7 @@ object ORToolsIP extends LowerBoundSolver{
     objective.setMinimization()
 
     val resultStatus = solver.solve()
-    println(resultStatus)
+    //println(resultStatus)
 
     if(resultStatus == MPSolver.ResultStatus.INFEASIBLE){
       val assignmentInfeasible : Map[Site,Map[Site,Boolean]] = branchNode.varAssignment.map{
@@ -144,7 +147,7 @@ object ORToolsIP extends LowerBoundSolver{
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {
-        println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
+        //println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
         true}
       else {false}
     }
@@ -197,12 +200,16 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
  */
+
+    /*
     println("===============reduced cost V2===================")
     reducedCost2.foreach{
       case (site1, map1) => map1.foreach{
         case (site2, value) => println(site1,site2,value)
       }
     }
+
+     */
 
 
 
