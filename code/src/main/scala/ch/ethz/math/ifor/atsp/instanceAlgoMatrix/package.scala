@@ -23,11 +23,11 @@ package object instanceAlgoMatrix {
     "ftv70",
     "ft70",
     "kro124p",
-    "ftv170",
+    "ftv170"/*,
     "rbg323",
     "rbg358",
     "rbg403",
-    "rbg443"
+    "rbg443"*/
   )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
@@ -36,10 +36,12 @@ package object instanceAlgoMatrix {
     ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
     ("FT92" , BranchAndBoundSolver.solve(_, "",true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
-    //("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false)),
+
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false))/*,
+
     ("MTZ", MTZ2020.solve),
     ("GG", GG.solve),
-    ("DL", DL.solve)
+    ("DL", DL.solve)*/
   )
 
   def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
@@ -49,7 +51,9 @@ package object instanceAlgoMatrix {
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
-        (name , timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver))
+      val result = timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
+      Thread.sleep(300*1000)
+      (name, result)
     }
   }
 
