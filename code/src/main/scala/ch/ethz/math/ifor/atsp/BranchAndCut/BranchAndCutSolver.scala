@@ -100,7 +100,7 @@ object BranchAndCutSolver extends Solver {
       if (apCost == initUpperBound){
         return new Output(input, initTour)
       }
-      //println("ini upper: ", +initUpperBound)
+      println("ini upper: ", +initUpperBound)
     }
 
     // Need a global cuts pool
@@ -110,12 +110,10 @@ object BranchAndCutSolver extends Solver {
     rootNode.level = 0
     rootNode.isRootNode = true
 
-
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
 
     // TODO: Question, why in FT97, they didn't check if the solution is integer before applying separation algos?
-
     // solve LP associated
     // apply AP-pricing
     // remove some cuts, update core set
@@ -146,7 +144,6 @@ object BranchAndCutSolver extends Solver {
         //println("Integer solution with one tour, num of cuts inside: ",currentBranchNode.globalConstraints.size)
 
       } else if (currentBranchNode.isInteger){
-
         // heuristic, if the solution is integer and contains some subtours, add corresponding DFJ SECs
         for (subtour <- currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve)){
           var resultMap: Map[MPVariable, Double] = Map()

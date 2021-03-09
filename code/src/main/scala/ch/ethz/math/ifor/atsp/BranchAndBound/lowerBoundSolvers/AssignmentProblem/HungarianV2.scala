@@ -8,7 +8,6 @@ import scala.util.control.Breaks.{break, breakable}
 object HungarianV2 extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
-
     /*
     println("=========== assign before AP V2==========")
     branchNode.varAssignment.foreach{
@@ -25,7 +24,6 @@ object HungarianV2 extends LowerBoundSolver{
     }
 
      */
-
     val numSites = branchNode.varAssignment.size
 
     // construct matching map
@@ -51,8 +49,6 @@ object HungarianV2 extends LowerBoundSolver{
     }
 
      */
-    // TODO: improve the O(n^3) version Hungarian Method to O(n^2) parametric one
-
     // create s, t nodes
     val start : Site = new Site("s")
     val destination : Site = new Site("t")

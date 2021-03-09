@@ -55,12 +55,15 @@ object ChuLiuEdmonds {
       })
     }
 
+    /*
     println("===============costsPrime in ChuLiuEdmonds===================")
     costsPrime.foreach{
       case (site1, map1) => map1.foreach{
         case (site2, value) => println(site1,site2,value)
       }
     }
+
+     */
 
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
     def chuLiuEdmonds(graph:Map[Site, Map[Site, Double]]): Map[Site, Map[Site, Boolean]] = {
@@ -121,10 +124,6 @@ object ChuLiuEdmonds {
         println("==============================================================")
 
  */
-
-
-
-
         return result.entries
       }
 
@@ -137,7 +136,6 @@ object ChuLiuEdmonds {
 
       // construct the reduced cost graph
       //val reducedCosts:Map[Site, Map[Site, Double]] = reducedCostMap(graph,minCost)
-
       val reducedCosts:Map[Site, Map[Site, Double]]  = graph.map{
         case (site1,map1) => (site1,map1.map{
           case (site2, value) if firstCycleFound.head.sequence.contains(site2) => (site2, value-minCost(site2))
@@ -153,7 +151,6 @@ object ChuLiuEdmonds {
       }
 
  */
-
       // construct the shrinked graph, by contracting cycle to a single supernode
       val shrinkingResult = shrinkGraph(reducedCosts,firstCycleFound.head.sequence,minCost)
       val shrinkingGraph :Map[Site, Map[Site, Double]] = shrinkingResult._1
@@ -220,7 +217,9 @@ object ChuLiuEdmonds {
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
 
       // then delete v' that v'->v in the cycle
-      arcsInCycle = arcsInCycle - arcsInCycle.find(_._2==inEdgeInCycle).get._1
+      if (arcsInCycle.find(_._2==inEdgeInCycle) != null) {
+        arcsInCycle = arcsInCycle - arcsInCycle.find(_._2 == inEdgeInCycle).get._1
+      }
 
 /*
       println("treeArcs after")
@@ -263,9 +262,6 @@ object ChuLiuEdmonds {
       //println("site: "+site.id, "in site: ",minInSite.id)
       (List((minInSite,site)),Map(site->minInCost))
     }
-
-
-
 /*
     // subtract each in degree by min cost
     def subtractInDegree(graph:Map[Site, Map[Site, Double]],site:Site,cost:Double):Map[Site, Map[Site, Double]]={
@@ -284,7 +280,6 @@ object ChuLiuEdmonds {
     }
 
  */
-
     def detectCycles(pairMap:List[(Site, Site)],input: Input):List[Tour] = {
 
       /*
@@ -292,8 +287,6 @@ object ChuLiuEdmonds {
       pairMap.foreach(map => println(map._1.id, map._2.id))
 
        */
-
-
       var listTour: List[Tour] = List()
       var reversedArc = false
 
@@ -411,7 +404,6 @@ object ChuLiuEdmonds {
       }
 
  */
-
       // Is it necessary to keep only the min-cost out-arc of the supernode?
       // if the supernode has multiple out-arcs to a node outside the circle, then just keep the minimum-cost one
       val minFromCycle:Map[Site, Map[Site,Double]]={
@@ -438,7 +430,6 @@ object ChuLiuEdmonds {
       }
 
  */
-
       //
       var newMap = graph.collect{
         case (site1,map1) => (site1,map1.collect{

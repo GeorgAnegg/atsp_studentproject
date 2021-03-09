@@ -57,11 +57,7 @@ object naiveBranching extends BranchingSchemes {
     childLeft.level = branchNode.level + 1
     childRight.parentNode = branchNode
     childRight.level = branchNode.level + 1
-    // TODO: add to these children global cuts
-
     List(childLeft,childRight)
-
-    // TODO: Add Heuristic rule: prefer variables between 0.4 and 0.8
   }
 
 }

@@ -9,9 +9,12 @@ class Output (val input: Input,
 
   def value:Double = tour.length
 
-  def print(): Unit =
+  def print(): Unit = {
+    println("List of arcs on optimal solution:")
+    tour.listArcsOrdered.foreach(e => println(e._1,e._2))
     println(s"""The optimal tour is
-    ${tour.sequence}
+    ${tour.listArcsOrdered}
     which has length
     ${tour.length}""")
+  }
 }
