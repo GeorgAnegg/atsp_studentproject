@@ -341,7 +341,7 @@ object HungarianV2 extends LowerBoundSolver{
       })
     }
 
-    /*
+
     println("--------------------------reduced cost matrix using potential=======================")
 
     reducedCostMatrixAP.foreach{
@@ -351,6 +351,7 @@ object HungarianV2 extends LowerBoundSolver{
     }
     println("--------------------------=======================")
 
+    /*
     matching.foreach{
       e => println(e._1.id,e._2.id)
     }

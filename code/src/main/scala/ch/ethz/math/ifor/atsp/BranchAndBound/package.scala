@@ -7,18 +7,18 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.NaiveLowerBound.N
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes.BranchingScheme
 import ch.ethz.math.ifor.atsp.BranchAndBound.branchingSchemes.CT80
-import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79
+import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.{Karp79,Karp79V2}
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.UpperBoundSolver
 
 
 package object BranchAndBound {
 
-  //val lowerBoundSolver: LowerBoundSolver = ORToolsIP
-  val lowerBoundSolver: LowerBoundSolver = HungarianV2
+  val lowerBoundSolver: LowerBoundSolver = ORToolsIP
+  //val lowerBoundSolver: LowerBoundSolver = HungarianV2
   val naiveLowerBoundSolver: LowerBoundSolver = NaiveLB
   val rSAPLowerBoundSolver = ChuLiuEdmonds
   val branchingScheme: BranchingScheme = CT80
-  val upperBoundSolver: UpperBoundSolver= Karp79
+  val upperBoundSolver: UpperBoundSolver= Karp79V2
 
   type IsLeafNode = Boolean
   type LowerBound = Double

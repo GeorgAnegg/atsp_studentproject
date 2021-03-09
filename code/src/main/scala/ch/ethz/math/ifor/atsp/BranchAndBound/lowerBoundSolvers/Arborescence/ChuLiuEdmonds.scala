@@ -6,7 +6,8 @@ import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
 
 object ChuLiuEdmonds {
 
-  def compute(input: Input):Double={
+  def compute(input: Input,branchNode: BranchNode):Double={
+    // first check var assignment
 
     var infeasible = true
     input.distMat.collect{
@@ -24,11 +25,12 @@ object ChuLiuEdmonds {
     // println("rootnode is: " + rootSite.id)
     // construct cost graph
     val costs:arcWise[Double] = arcWise(input,input.distance)
-    // block ii entries
-    var costsPrime = costs.entries.map{
+    // block ii entries and some(false) entries
+    val costsPrime3:Map[Site, Map[Site, Double]] = costs.entries.map{
       case (site1,map1) => (site1,map1.map{
-        case (site2, _) if site1==site2 => (site2,inf)
-        case (site2, value) if site1!=site2 => (site2,value)
+        case (site2, _) if site1==site2 || branchNode.varAssignment(site1)(site2)==Some(false)  => (site2,inf)
+        case (site2, value) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
+        case (site2, value) => (site2,value)
       })
     }
     /*
@@ -41,8 +43,23 @@ object ChuLiuEdmonds {
 
      */
     // root node should have no in-edges
-    costsPrime = costsPrime.map{
+    /*
+    val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.map{
       case (site1,map1) => (site1,map1-rootSite)
+    }
+
+     */
+    val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.collect{
+      case (site1,map1) => (site1,map1.collect{
+        case (site2, value) if site2!=rootSite => (site2,value)
+      })
+    }
+
+    println("===============costsPrime in ChuLiuEdmonds===================")
+    costsPrime.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) => println(site1,site2,value)
+      }
     }
 
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
@@ -191,7 +208,6 @@ object ChuLiuEdmonds {
       arcsInCycle.foreach(map => println(map._1.id, map._2.id))
 
  */
-
       // in treePrime supernode has an in-edge u->supernode, replace it with u->v, where v is a min-cost node in the supernode
       var inSite = new Site()
       //println("inSite",inSite.id,"supernode",supernode.id)
@@ -202,7 +218,6 @@ object ChuLiuEdmonds {
       val inEdgeInCycle = minToCycle(inSite).head._1
       treeArcs = treeArcs.filter(_!=(inSite,supernode))
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
-
 
       // then delete v' that v'->v in the cycle
       arcsInCycle = arcsInCycle - arcsInCycle.find(_._2==inEdgeInCycle).get._1
@@ -215,16 +230,12 @@ object ChuLiuEdmonds {
       arcsInCycle.foreach(map => println(map._1.id, map._2.id))
 
  */
-
-
-
       val resultArborescenceArcs = treeArcs.++(arcsInCycle.toList)
 /*
       println("resultArborescenceArcs")
       resultArborescenceArcs.foreach(map => println(map._1.id, map._2.id))
 
  */
-
       def constructArborescence(site1:Site ,site2:Site):Boolean= {
         if (resultArborescenceArcs.contains((site1,site2))){
           true

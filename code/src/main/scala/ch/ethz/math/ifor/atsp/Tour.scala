@@ -15,4 +15,9 @@ class Tour (val input: Input,
       case (site, index) => site -> sequence(index + 1)
     }).toMap
 
+  val listArcsOrdered: List[(Site, Site)] =
+    (sequence.zipWithIndex map {
+      case (site, _) if site == sequence.last => (site , sequence.head)
+      case (site, index) => (site , sequence(index + 1))
+    })
 }

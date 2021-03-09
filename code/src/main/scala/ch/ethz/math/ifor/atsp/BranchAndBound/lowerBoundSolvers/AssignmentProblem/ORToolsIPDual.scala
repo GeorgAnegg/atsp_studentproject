@@ -10,25 +10,10 @@ import com.google.ortools.linearsolver.MPVariable
 
 import scala.collection.mutable
 
-object ORToolsIP extends LowerBoundSolver{
-
+object ORToolsIPDual extends LowerBoundSolver{
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
 
     System.loadLibrary("jniortools")
-
-    var excluded: List[(Site,Site)] = List()
-    var included: List[(Site,Site)] = List()
-    branchNode.varAssignment.foreach{
-      case (site1, map1) => (site1, map1.collect{
-        case (site2, value) if value == Some(false) => excluded = excluded :+ (site1,site2)
-        case (site2, value) if value == Some(true) => included = included :+ (site1,site2)
-      })
-    }
-    println("excluded=====")
-    excluded.foreach(e => println(e._1,e._2))
-    println("included=====")
-    included.foreach(e => println(e._1,e._2))
-
 
     //assert(branchNode.varAssignment.keys.toVector == branchNode.input.sites,"distance matrix incomplete" )
 
@@ -54,21 +39,21 @@ object ORToolsIP extends LowerBoundSolver{
 
     val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
 
-//    for (i <- 0 until numSites) {
-//      for (j <- 0 until numSites) {
-//        if(i != j) {
-//          //println("what happens",branchNode,branchNode.level,branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)))
-//          x(i)(j) = if (branchNode.sitesStatus(branchNode.input.sites(i))(branchNode.input.sites(j)) == null) solver.makeIntVar(0, 1, "")
-//          else if (branchNode.sitesStatus(branchNode.input.sites(i))(branchNode.input.sites(j)).contains(true)) solver.makeIntVar(1, 1, "")
-//          else solver.makeIntVar(0, 0, "")
-//        } else{
-//          x(i)(j) = solver.makeIntVar(0, 0, "")
-//        }
-//        costs(i)(j) = branchNode.costsMap(branchNode.input.sites(i))(branchNode.input.sites(j))
-//        //print(costs(i)(j)+"  ", i,j,inputN.sites(i),inputN.sites(j) )
-//      }
-//      //println("\r\n")
-//    }
+    //    for (i <- 0 until numSites) {
+    //      for (j <- 0 until numSites) {
+    //        if(i != j) {
+    //          //println("what happens",branchNode,branchNode.level,branchNode.sitesStatus(inputN.sites(i))(inputN.sites(j)))
+    //          x(i)(j) = if (branchNode.sitesStatus(branchNode.input.sites(i))(branchNode.input.sites(j)) == null) solver.makeIntVar(0, 1, "")
+    //          else if (branchNode.sitesStatus(branchNode.input.sites(i))(branchNode.input.sites(j)).contains(true)) solver.makeIntVar(1, 1, "")
+    //          else solver.makeIntVar(0, 0, "")
+    //        } else{
+    //          x(i)(j) = solver.makeIntVar(0, 0, "")
+    //        }
+    //        costs(i)(j) = branchNode.costsMap(branchNode.input.sites(i))(branchNode.input.sites(j))
+    //        //print(costs(i)(j)+"  ", i,j,inputN.sites(i),inputN.sites(j) )
+    //      }
+    //      //println("\r\n")
+    //    }
 
     /*
     // Each site has at most one out-degree.
@@ -151,7 +136,7 @@ object ORToolsIP extends LowerBoundSolver{
 
     val resultArray: arcWise[Boolean] = arcWise(branchNode.input, constructResult)
 
-/*
+
     //compute reduced cost
     val reducedCost = branchNode.costsMap.map{
       case (site1, map1) => (site1, map1.map{
@@ -159,8 +144,6 @@ object ORToolsIP extends LowerBoundSolver{
       })
     }
 
-
- */
 
 
     var reducedCost2 = mutable.Map[Site, Map[Site, Double]]()
@@ -188,15 +171,13 @@ object ORToolsIP extends LowerBoundSolver{
       }
     }
 
-/*
+
     println("===============reduced cost===================== ")
     reducedCost.foreach{
       case (site1, map1) => map1.foreach{
         case (site2, value) => println(site1,site2,value)
       }
     }
-
- */
     println("===============reduced cost V2===================")
     reducedCost2.foreach{
       case (site1, map1) => map1.foreach{
@@ -206,22 +187,23 @@ object ORToolsIP extends LowerBoundSolver{
 
 
 
-/*
-    println("final matching")
-    for(i<-resultArray.entries){
-      for(j<-i._2){
-        if (j._2){
-          println(i._1.id,j._1.id,costs.entries(i._1)(j._1))
+    /*
+        println("final matching")
+        for(i<-resultArray.entries){
+          for(j<-i._2){
+            if (j._2){
+              println(i._1.id,j._1.id,costs.entries(i._1)(j._1))
+            }
+          }
         }
-      }
-    }
 
- */
-    (resultArray.entries,reducedCost2.toMap)
-    }
+     */
+    (resultArray.entries,reducedCost)
+  }
 
   // not used
   def computeLB (branchNode: BranchNode) : LowerBound = {
     0.0
   }
+
 }
