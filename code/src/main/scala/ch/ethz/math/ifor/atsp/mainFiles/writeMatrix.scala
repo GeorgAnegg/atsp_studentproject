@@ -1,17 +1,18 @@
-package ch.ethz.math.ifor.atsp
+package ch.ethz.math.ifor.atsp.mainFiles
 
 import java.io.FileOutputStream
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
-import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{namedSolvers,instances}
+import ch.ethz.math.ifor.atsp.instanceAlgoMatrix
+import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{instances, namedSolvers}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-object main extends App {
+object writeMatrix extends App {
 
 
-  val data = instanceAlgoMatrix.instanceAlgoData(5)
+  val data = instanceAlgoMatrix.instanceAlgoData(1)
 
 
   writeSheet()
