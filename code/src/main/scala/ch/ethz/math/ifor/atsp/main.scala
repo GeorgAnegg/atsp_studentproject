@@ -11,7 +11,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 object main extends App {
 
 
-  val data = instanceAlgoMatrix.instanceAlgoData(30)
+  val data = instanceAlgoMatrix.instanceAlgoData(5)
 
 
   writeSheet()

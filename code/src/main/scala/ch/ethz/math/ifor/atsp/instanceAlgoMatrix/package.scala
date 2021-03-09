@@ -44,15 +44,12 @@ package object instanceAlgoMatrix {
     ("DL", DL.solve)*/
   )
 
-  def runAll(maxTime: Int, input: Input): Map[String, Either[(Double, Runtime), String]] = namedSolvers.map {
-    case (name, solver) => name -> timed(maxTime, input, solver)
-  }.toMap
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
       val result = timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
-      Thread.sleep(300*1000)
+      //Thread.sleep(300*1000)
       (name, result)
     }
   }
