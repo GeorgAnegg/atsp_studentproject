@@ -1,12 +1,14 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 
-import ch.ethz.math.ifor.atsp.{Site, arcWise,inf}
+import ch.ethz.math.ifor.atsp.{Site, arcWise, inf}
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 import com.google.ortools.linearsolver.MPConstraint
 import com.google.ortools.linearsolver.MPObjective
 import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPVariable
+
+import scala.collection.mutable
 
 object ORToolsIP extends LowerBoundSolver{
 
@@ -77,6 +79,10 @@ object ORToolsIP extends LowerBoundSolver{
     var constraintInMap: Map[Site,MPConstraint] = Map()
     var constraintOutMap: Map[Site,MPConstraint] = Map()
 
+    var listConstraintsIn: List[MPConstraint] = List()
+    var listConstraintsOut: List[MPConstraint] = List()
+    var constraints: List[MPConstraint] = List()
+
     // construct in- & out-degree constraints
     for (site1 <- branchNode.input.sites){
       val constraintIn:MPConstraint = solver.makeConstraint(1, 1, "")
@@ -85,9 +91,13 @@ object ORToolsIP extends LowerBoundSolver{
         constraintIn.setCoefficient(x.search(site1, site2),1)
         constraintOut.setCoefficient(x.search(site2, site1),1)
       }
+      listConstraintsIn = constraintIn::listConstraintsIn
+      listConstraintsOut = constraintOut::listConstraintsOut
       constraintInMap = constraintInMap ++ Map(site1->constraintIn)
       constraintOutMap = constraintOutMap ++ Map(site1->constraintOut)
     }
+    constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
+
 
     // Create the objective function.
     val objective = solver.objective()
@@ -100,7 +110,7 @@ object ORToolsIP extends LowerBoundSolver{
     objective.setMinimization()
 
     val resultStatus = solver.solve()
-    //println(resultStatus)
+    println(resultStatus)
 
     if(resultStatus == MPSolver.ResultStatus.INFEASIBLE){
       val assignmentInfeasible : Map[Site,Map[Site,Boolean]] = branchNode.varAssignment.map{
@@ -120,7 +130,7 @@ object ORToolsIP extends LowerBoundSolver{
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {
-        //println(site1,site2)
+        println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
         true}
       else {false}
     }
@@ -134,6 +144,49 @@ object ORToolsIP extends LowerBoundSolver{
         case (site2, value) => (site2, value - constraintInMap(site1).dualValue() - constraintOutMap(site2).dualValue())
       })
     }
+
+
+
+    var reducedCost2 = mutable.Map[Site, Map[Site, Double]]()
+    for (item <- branchNode.costsMap){
+      reducedCost2 = reducedCost2 + item
+    }
+
+    //reduced cost v2
+    for(rowConstraint <- constraints){
+      if (rowConstraint.dualValue()!=0.0){
+        for(var1 <- x.entries){
+          for(var2 <- var1._2){
+            if (rowConstraint.getCoefficient(var2._2)!=0 && var1._1!=var2._1){
+              //println("coeff before",var1._1,var2._1,reducedCost(var1._1)(var2._1),rowConstraint.getCoefficient(var2._2),rowConstraint.dualValue())
+              reducedCost2 = reducedCost2.map{
+                case (site1, map1) => (site1, map1.map{
+                  case (site2, value) if site1==var1._1 && site2==var2._1 => (site2, value -rowConstraint.dualValue()*rowConstraint.getCoefficient(var2._2))
+                  case (site2, value) => (site2, value)
+                })
+              }
+
+            }
+          }
+        }
+      }
+    }
+
+
+    println("===============reduced cost===================== ")
+    reducedCost.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) => println(site1,site2,value)
+      }
+    }
+    println("===============reduced cost V2===================")
+    reducedCost2.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) => println(site1,site2,value)
+      }
+    }
+
+
 
 /*
     println("final matching")

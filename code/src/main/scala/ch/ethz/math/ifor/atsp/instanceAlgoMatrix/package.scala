@@ -10,7 +10,7 @@ package object instanceAlgoMatrix {
 
   val instances = List(
     "br17",
-    "ftv33")/*,
+    "ftv33",
     "ftv35",
     "ftv38",
     "p43",
@@ -28,15 +28,15 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
-  )*/
+  )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
     ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
-    ("FT92" , BranchAndCutSolver.solve(_, "",true,true)),
+    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false)),
+    //("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false)),
     ("MTZ", MTZ2020.solve),
     ("GG", GG.solve),
     ("DL", DL.solve)

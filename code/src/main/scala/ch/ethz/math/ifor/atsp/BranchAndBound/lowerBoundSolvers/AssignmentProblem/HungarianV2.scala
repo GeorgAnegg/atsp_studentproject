@@ -1,39 +1,79 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 import ch.ethz.math.ifor.atsp.{Site, arcWise, inf}
-import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound, branchingScheme}
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 
 import scala.collection.mutable
 import scala.util.control.Breaks.{break, breakable}
-object HungarianAP extends LowerBoundSolver{
+object HungarianV2 extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
 
-    println("=========== costs before AP ==========")
+    /*
+    println("=========== assign before AP V2==========")
     branchNode.varAssignment.foreach{
       case (site1, map1) => (site1,map1.foreach{
-        case(site2, value) => println(site1,site2,value)
+        case(site2, value) => println(site1.id,site2.id,value)
       })
     }
 
+    println("=========== costs before AP V2==========")
+    branchNode.costsMap.foreach{
+      case (site1, map1) => (site1,map1.foreach{
+        case(site2, value) => println(site1.id,site2.id,value)
+      })
+    }
+
+     */
 
     val numSites = branchNode.varAssignment.size
 
+    // construct matching map
+    var matching : Map[Site,Site] = Map()
+    var excluded : List[(Site,Site)] = List()
+
+    for (map1 <- branchNode.varAssignment){
+      for (map2 <- map1._2){
+        if (map2._2 != null) {
+          if (map2._2.get) {matching = matching + (map1._1 -> map2._1)}
+          else {excluded= excluded :+ (map1._1 ,map2._1)}
+        }
+      }
+    }
+    /*
+    println("=========== matching==========")
+    matching.foreach{
+      case (site1, site2) => println(site1.id,site2.id)
+    }
+    println("=========== excluded==========")
+    excluded.foreach{
+      case (site1, site2) => println(site1.id,site2.id)
+    }
+
+     */
     // TODO: improve the O(n^3) version Hungarian Method to O(n^2) parametric one
 
     // create s, t nodes
     val start : Site = new Site("s")
     val destination : Site = new Site("t")
+    //println("s t",start.id,destination.id)
 
     // construct cost map
     val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
 
     // construct left sites set
-    val sitesLeft: Array[Site] = costs.entries.keys.toArray
+    val sites: Array[Site] = costs.entries.keys.toArray
+    val sitesLeft = sites.filterNot(matching.keys.toList.contains(_))
+    var sitesRight = sites.filterNot(matching.values.toList.contains(_))
+    sitesRight = sitesRight.map{site => new Site(site.id+"Right")}
+    /*
 
-    val sitesRight: Array[Site] = {
-      sitesLeft.map{site => new Site(site.id+"Right")}
-    }
+    println("=========== left==========")
+    sitesLeft.foreach(a => println(a.id))
+    println("=========== right==========")
+    sitesRight.foreach(a => println(a.id))
+
+     */
 
     // implement a function to search a site by id among all sites
     def searchByID(sites:Array[Site],identity:String):Site={
@@ -41,37 +81,38 @@ object HungarianAP extends LowerBoundSolver{
       sites.foreach{
         site => if (site.id == identity) result = site
       }
-      if(result==null){println("No such sites.")}
+      if(result==null){
+        matching.keys.foreach{
+          site => if (site.id == identity) result = site
+        }
+        matching.values.foreach{
+          site => if (site.id == identity) result = site
+        }
+      }
+      /*
+      if(result==null) {
+        println("No such sites.",identity)
+      }
+
+       */
       result
     }
 
-    // construct matching map
-    var matching : Map[Site,Site] = Map()
-    var excluded : Map[Site,Site] = Map()
+    /*
+    println("=========== matching values==========")
+    matching.values.toList.foreach(e => println(e.id))
 
-    for (map1 <- branchNode.varAssignment){
-      for (map2 <- map1._2){
-        if (map2._2 != null) {
-          if (map2._2.get) {matching = matching + (map1._1 -> map2._1)}
-          else {excluded= excluded + (map1._1 -> map2._1)}
-        }
-      }
-    }
+     */
 
-    val costPrime = costs.entries.map {
-      case (site1, map1) => (site1, map1.map {
-        case (site2, value) if matching.keys.exists(_==site1) || matching.values.exists(_ == site2) => (site2, inf)
-        case (site2, value) if !matching.keys.exists(_==site1) && !matching.values.exists(_ == site2) => (site2, value)
-      })
-    }
+    //costs.entries.keys.foreach{e => println(e.id,matching.values.toList.contains(e))}
 
     // construct arc between left sites set and right sites set
-    val mapV1 = costPrime.map{
-      case(site1,map1)=>(site1,map1.map{
-        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
+    val mapV1:Map[Site,Map[Site,Double]]= costs.entries.collect{
+      case(site1,map1)=>(site1,map1.collect{
+        case(site2,value) if !matching.keys.toList.contains(site1) && !matching.values.toList.contains(site2) && branchNode.varAssignment(site1)(site2) == null => (searchByID(sitesRight,site2.id+"Right"),value)
         //case(site2,value) if branchNode.varAssignment(site1)(site2) != Some(false) && site1 != site2
         //  && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
-        case(site2,value) => (searchByID(sitesRight,site2.id+"Right"),value)
+        //case(site2,_) if branchNode.varAssignment(site1)(site2) == null && site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
       })}
 
     // construct right sites set
@@ -89,7 +130,8 @@ object HungarianAP extends LowerBoundSolver{
     sitesRight.foreach{e=>
       stMap = stMap + (e -> Map(destination->0))
     }
-/*
+
+    /*
     println("=========== stMap ==========")
     stMap.foreach{
       case (site1, map1) => (site1,map1.foreach{
@@ -97,7 +139,9 @@ object HungarianAP extends LowerBoundSolver{
       })
     }
 
- */
+     */
+
+
 
     // construct array for all sites, i.e., s + left + right + t
     val allSites:Array[Site] = Array.concat( sitesLeft, sitesRight) :+ start :+ destination
@@ -109,7 +153,7 @@ object HungarianAP extends LowerBoundSolver{
     // construct potential map
     var potential : Map[Site,Double] = {
       allSites.map{
-         site => site->0.0
+        site => site->0.0
       }.toMap
     }
 
@@ -141,7 +185,7 @@ object HungarianAP extends LowerBoundSolver{
 
     // implement function to update matching
     def updateMatching(arcs:Map[Site,Site],matching:Map[Site,Site]):Map[Site,Site]={
-        matching.++(arcs)
+      matching.++(arcs)
     }
     // implement Dijkstra's shortest s-t path algorithm
     def dijkstra(graph:Map[Site,Map[Site,Double]]): (Map[Site,Double],Map[Site,Site],Map[Site,Site]) = {
@@ -165,38 +209,38 @@ object HungarianAP extends LowerBoundSolver{
 
       // while all nodes are not visited, continue the process
 
-        while (queue.nonEmpty && explored.length != allSites.length-1) {
+      while (queue.nonEmpty && explored.length != allSites.length-1) {
 
-          // take the first element, i.e., lowest-weighted unvisited node
-          queue = queue.sortBy(_._2)
-          val currentSite = queue.head
-          breakable {
-            if (currentSite._1.id == "t") break
-          }
+        // take the first element, i.e., lowest-weighted unvisited node
+        queue = queue.sortBy(_._2)
+        val currentSite = queue.head
+        breakable {
+          if (currentSite._1.id == "t") break
+        }
 
-          // delete the current node from the queue and label it as visited
-          queue = queue.drop(1)
+        // delete the current node from the queue and label it as visited
+        queue = queue.drop(1)
 
-          explored = explored :+ currentSite._1
+        explored = explored :+ currentSite._1
 
-          // construct all the sites that can be reached from currentSite
-          val reachable = graph(currentSite._1).keys
+        // construct all the sites that can be reached from currentSite
+        val reachable = graph(currentSite._1).keys
 
-          // if min-distance can be updated, update; add all these sites to the queue
-          reachable.foreach { nextsite =>
-            if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
-              dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
-              dijkstraPre.update(nextsite, currentSite._1)
-              //println("add", (nextsite.id, dijkstraDist(nextsite)))
-              if (queue.exists(_._1 == nextsite)){
-                queue = queue.filter(_._1!=nextsite)
-              }
-              if (nextsite.id!="t") {
-                queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
-              }
+        // if min-distance can be updated, update; add all these sites to the queue
+        reachable.foreach { nextsite =>
+          if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
+            dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
+            dijkstraPre.update(nextsite, currentSite._1)
+            //println("add", (nextsite.id, dijkstraDist(nextsite)))
+            if (queue.exists(_._1 == nextsite)){
+              queue = queue.filter(_._1!=nextsite)
+            }
+            if (nextsite.id!="t") {
+              queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
             }
           }
         }
+      }
 
 
       // construct a t-s path from dijkstraPre
@@ -228,14 +272,12 @@ object HungarianAP extends LowerBoundSolver{
           case (site, index) if index%2==1 && index < path.length - 1 => path(index + 1)-> site
         }.toMap
       }
-        // return a distance map and a path map
-        (dijkstraDist.toMap, arcs, newMatching)
-      }
+      // return a distance map and a path map
+      (dijkstraDist.toMap, arcs, newMatching)
+    }
 
     // while the size of matching is not equal to numSite, iteratively call dijkstra after updating parameters
     while(matching.size != numSites) {
-
-
       val currentResult = dijkstra(stMap)
       val currentDistance = currentResult._1
       val currentPath = currentResult._2
@@ -281,11 +323,11 @@ object HungarianAP extends LowerBoundSolver{
 
     }
 
-/*
-    println("=============potential=============")
-    potential.foreach{e => println(e._1.id,e._2)}
+    /*
+        println("=============potential=============")
+        potential.foreach{e => println(e._1.id,e._2)}
 
- */
+     */
 
     // construct reduced cost matrix, c(i,j)' = c(i,j) + p(i) - p(j)
 
@@ -293,25 +335,43 @@ object HungarianAP extends LowerBoundSolver{
       case (site1,map1) => (site1, map1.map{
         case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(true) => (site2,0)
         case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
-        case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
-        case (site2, value) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
+        //case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
+        case (site2, value) if sitesLeft.contains(site1) && sitesRight.contains(searchByID(sitesRight,site2.id+"Right")) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
+        case (site2, value) => (site2, inf)
       })
     }
 
+    /*
     println("--------------------------reduced cost matrix using potential=======================")
 
     reducedCostMatrixAP.foreach{
       case (site1, map1) => (site1, map1.foreach{
-        case (site2, value) => println(site1,site2,value)
+        case (site2, value) => println(site1.id,site2.id,value)
       } )
     }
     println("--------------------------=======================")
 
+    matching.foreach{
+      e => println(e._1.id,e._2.id)
+    }
+    println("=====",matching.head._2.id.contains("Right"))
 
+     */
     // construct final matching
     val finalMatching = matching.map{
-      case (site1,site2) => (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
+      case (site1,site2) if site2.id.contains("Right")=> (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
+      case (site1, site2) => (site1, site2)
     }
+    //println(" length of matching: ",finalMatching.size)
+    /*
+    println("finalMatching=========")
+
+    finalMatching.foreach{
+      e => println(e._1.id,e._2.id)
+    }
+    println("=====")
+
+     */
     /*
     println("===========final matching=======")
     finalMatching.foreach{
@@ -323,7 +383,7 @@ object HungarianAP extends LowerBoundSolver{
     // construct the result assignment data structure
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (finalMatching(site1)==site2) {
-        println(site1,site2)
+        //println(site1.id,site2.id)
         true}
       else {false}
     }

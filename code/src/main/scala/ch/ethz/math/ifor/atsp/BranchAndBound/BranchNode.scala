@@ -8,6 +8,7 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf}
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
                  val useAdditive:Boolean,
+                 val isRootNode:Boolean
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
@@ -15,7 +16,9 @@ class BranchNode(val input: Input,
   var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
   var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+  //println(this, lowerBound)
   val lowerBoundCostAP :Double = lowerBound
+
   /*
   println("print reduced cost matrix: ")
   reducedCostMatrixAfterAP.foreach{
@@ -25,12 +28,38 @@ class BranchNode(val input: Input,
   }
 
    */
+
   var parentNode: BranchNode = this
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 
   val allTours: List[Tour] = detectTours(lowerBoundSolve)
   val isLeafNode: IsLeafNode = allTours.length == 1
+
+  val globalHeuristic:(Double,Tour) = {
+    if (isRootNode) {
+      upperBoundSolver.computeUpperBound(this)
+    } else {
+      null
+    }
+  }
+
+  val globalUpperbound:Double = {
+    if (isRootNode) {
+      globalHeuristic._1
+    } else {
+      inf
+    }
+  }
+
+  var lowerBoundrSAP :Double= inf
+  if (useAdditive){
+    if (lowerBoundCostAP != globalUpperbound){
+      val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
+      lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP)
+      lowerBound = lowerBound + lowerBoundrSAP
+    }
+  }
 
   def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
 
@@ -66,33 +95,13 @@ class BranchNode(val input: Input,
         }
       }
     }
+    var a = 0
+    listTours.foreach{e => a= a+ e.sequence.length}
+    println("a", a)
     listTours
   }
 
-  val globalHeuristic:(Double,Tour) = {
-    if (level == 0) {
-      upperBoundSolver.computeUpperBound(this)
-    } else {
-      null
-    }
-  }
 
-  val globalUpperbound:Double = {
-    if (level == 0) {
-      globalHeuristic._1
-    } else {
-      inf
-    }
-  }
-
-  var lowerBoundrSAP :Double= inf
-  if (useAdditive){
-    if (lowerBoundCostAP != globalUpperbound){
-      val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
-      lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP)
-      lowerBound = lowerBound + lowerBoundrSAP
-    }
-  }
 
 
   //println("tour length",allTours.length)
@@ -106,7 +115,8 @@ class BranchNode(val input: Input,
 
     // depending on what lowerBoundSolvers compute and output, adjust how LeafNodes are built
 
-    if (isLeafNode) { //if lower bound is feasible tour, create leaf node
+    if (isLeafNode) {//if lower bound is feasible tour, create leaf node
+      println("find integer solution",allTours.length,allTours.head.sequence.length)
       Left(this)
     }
     else { //else use branching rule to get subproblems

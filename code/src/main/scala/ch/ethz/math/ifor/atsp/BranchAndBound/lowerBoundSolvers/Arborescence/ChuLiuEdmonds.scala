@@ -467,7 +467,7 @@ object ChuLiuEdmonds {
     }
 
      */
-    //println("===============lower bound rSAP is: ",result,"=======================")
+    println("===============lower bound rSAP is: ",result,"=======================")
     result
   }
 

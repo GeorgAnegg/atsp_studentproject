@@ -21,7 +21,7 @@ object Spreadsheet {
           rows = rows.filter(_ != "")
           distMatrix = distMatrix ++ rows
           numSites += 1
-          println(rows.mkString("Array(", ", ", ")"))
+          //println(rows.mkString("Array(", ", ", ")"))
       }
     } catch {
       case e: FileNotFoundException => println("Couldn't find that file.")

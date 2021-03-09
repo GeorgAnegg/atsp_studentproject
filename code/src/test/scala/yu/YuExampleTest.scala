@@ -1,6 +1,7 @@
 package yu
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchAndBoundSolver, BranchNode, rSAPLowerBoundSolver}
+import ch.ethz.math.ifor.atsp.BranchAndCut.BranchAndCutSolver
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.Arborescence.ChuLiuEdmonds
 import ch.ethz.math.ifor.atsp.dataProcessing
 import ch.ethz.math.ifor.atsp.dataProcessing.Spreadsheet
@@ -15,10 +16,10 @@ object YuExampleTest extends App {
 
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/distance_matrix.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/br17.csv",";")
-  val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv",";")
+  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/little1963.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/gr17.csv",";")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/p15.csv",";")
-  //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv"," ")
+  val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv"," ")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/dantzig42.csv"," ")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/att48.csv"," ")
 
