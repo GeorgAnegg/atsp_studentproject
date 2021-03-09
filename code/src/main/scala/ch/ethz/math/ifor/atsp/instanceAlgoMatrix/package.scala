@@ -49,6 +49,7 @@ package object instanceAlgoMatrix {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
       val result = timed(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
+      System.gc()
       //Thread.sleep(300*1000)
       (name, result)
     }
