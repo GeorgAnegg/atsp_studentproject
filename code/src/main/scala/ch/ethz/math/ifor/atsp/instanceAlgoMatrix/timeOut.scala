@@ -1,8 +1,11 @@
 package ch.ethz.math.ifor.atsp.instanceAlgoMatrix
 
+import java.util.{Timer, TimerTask}
 import java.util.concurrent.atomic.AtomicReference
 
 import ch.ethz.math.ifor.atsp.{Input, Output, Runtime}
+
+import scala.language.postfixOps
 
 import scala.util.Try
 import scala.concurrent._
@@ -59,6 +62,53 @@ object timeOut {
   }
 
 
+
+  def after[T](duration: Duration)(block: => T): Future[T] = {
+    val promise = Promise[T]()
+    val t = new Timer()
+    t.schedule(new TimerTask {
+      override def run(): Unit = {
+        promise.complete(Try(block))
+      }
+    }, duration.toMillis)
+    promise.future
+  }
+
+
+  def timed2(maxTime:Int, input: Input, solver: Input=> Output):  Either[(Double,Runtime), String] ={
+    try {
+      lazy val (compute,cancel) = interruptableFuture[Either[(Double,Runtime), String]] { () =>
+        lazy val start = System.nanoTime
+        lazy val output = solver(input)
+        lazy val dur = Runtime((System.nanoTime - start) / 1e9d)
+        lazy val temp = Left(output.value, dur)
+        temp
+      }
+      after(maxTime seconds)({println("computation timed out")
+        cancel()})
+      /*
+      val sleep = Future{
+        Thread.sleep(maxTime*1000)
+        println("computation timed out")
+        cancel()
+        Right("DNF")}
+
+      val fut = Future.firstCompletedOf(List(
+        compute, sleep))
+*/
+      val temp = Await.result(compute, Duration.Inf)
+      return temp
+    }
+
+    catch {
+      case e: CancellationException => Right("DNF")
+        case e: Exception => {println(e)
+          Right("ERROR")
+      }
+    }
+
+
+  }
 
 
 
