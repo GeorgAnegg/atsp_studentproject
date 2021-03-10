@@ -21,6 +21,8 @@ object BranchAndBoundSolver extends Solver {
         case (site2, value) => (site2,value)
       })
     }
+
+    // preferably solve an initial AP here to reduce extra computational time
     val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true,null,null,useParametricAP)
     rootNode.level = 0
 
@@ -38,10 +40,13 @@ object BranchAndBoundSolver extends Solver {
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
       //println("init upper bound",initUpperBound)
 
+
       if (activeBranches.minBy(_.lowerBound).lowerBound >= initUpperBound){
         //println("here1?")
         return new Output(input, initTour)
       }
+
+
 
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
       //println("Number of active sortedNodes", sortedNodes.length)
@@ -58,10 +63,14 @@ object BranchAndBoundSolver extends Solver {
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
+
+
       if (currentBranchNode.lowerBoundCostAP >= initUpperBound || currentBranchNode.lowerBound >= initUpperBound){
         //println("here2?")
         return new Output(input, initTour)
       }
+
+
       println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
       /*

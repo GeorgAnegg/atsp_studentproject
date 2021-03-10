@@ -10,7 +10,7 @@ class BranchNode(val input: Input,
                 ) {
   var isRootNode: Boolean = false
   var parentNode: BranchNode = this
-  var iteration:Int = 0
+  var iteration: Int = 0
 
   System.loadLibrary("jniortools")
 
@@ -31,10 +31,6 @@ class BranchNode(val input: Input,
   val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
   val costs:arcWise[Double] = arcWise(input,input.distance)
 
-  var constraints: List[MPConstraint] = List()
-
-  var listConstraintsIn: List[MPConstraint] = List()
-  var listConstraintsOut: List[MPConstraint] = List()
 
   // construct in- & out-degree constraints
   for (site1 <- input.sites){
@@ -44,13 +40,9 @@ class BranchNode(val input: Input,
       constraintIn.setCoefficient(variables.search(site1, site2),1)
       constraintOut.setCoefficient(variables.search(site2, site1),1)
     }
-    listConstraintsIn = constraintIn::listConstraintsIn
-    listConstraintsOut = constraintIn::listConstraintsOut
   }
-  constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
 
   if (formulation == "MTZ"){
-
     // construct order variables
     var orderVariables:Map[Site, MPVariable]=Map()
     input.sites.foreach {
@@ -68,7 +60,6 @@ class BranchNode(val input: Input,
         }
       }
     }
-
   }
 
   // construct the objective function.
@@ -80,14 +71,11 @@ class BranchNode(val input: Input,
   }
   objectiveFunction.setMinimization()
 
-
   // TODO: Question: Cannot get all constraints from solverLP directly? solver.constraints() doesn't work
-
   var constraintsInNode: List[MPConstraint] = List()
   var reducedCosts:Map[Site, Map[Site, Double]]=Map()
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-
 
   def fromCutToConstraint(cuts:List[(Map[MPVariable,Double],Double)]): Unit ={
     for (cut <- cuts){
@@ -152,40 +140,59 @@ class BranchNode(val input: Input,
     if(!isInteger){
       return List()
     }
-
-    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2==1.0).head._1 })
-
+    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2==1).head._1 })
+    //println("====pairmap init=====")
+    //pairMap.foreach{e => println(e._1,e._2)}
+    var currentList : List[Site] =List()
     var listTours: List[Tour] = List()
-    var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
-
     var currentArc = pairMap.head
+    currentList = currentList :+ currentArc._1
+    currentList = currentList :+ currentArc._2
+    pairMap = pairMap - currentArc._1
 
-    while (pairMap.size>1) {
+    while (pairMap.nonEmpty){
+      //println("====pairmap status=====")
+      //pairMap.foreach{e => println(e._1,e._2)}
 
-      var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
-      // if no tours created, keep tracking
-      if (nextArc._2.id != currentList.head.id) {
-        // currentList  = currentList:::nextArc._1::Nil
-        currentList  = currentList:::nextArc._2::Nil
-        pairMap = pairMap.removed(currentArc._1)
-        currentArc  = nextArc
+      if (pairMap.contains(currentList.last)){
+        val nextArc = pairMap.find(_._1==currentList.last).get
+        if (nextArc._2!=currentList.head){
+          currentList = currentList :+ nextArc._2
+          pairMap = pairMap - nextArc._1
+          currentArc = nextArc
+        } else {
+          pairMap = pairMap - nextArc._1
+          //println("=========")
+          //currentList.foreach{e => println(e)}
+          val findTour = new Tour(input,currentList)
+          listTours = listTours :+ findTour
+          currentList = currentList.drop(currentList.length)
+          if (pairMap.nonEmpty){
+            currentArc = pairMap.head
+            currentList = currentList :+ currentArc._1
+            currentList = currentList :+ currentArc._2
+            pairMap = pairMap - currentArc._1
+          }
+        }
       } else {
-        // else, add the tour created, and staring tracking another remaining arc
-        // currentList  = currentList:::nextArc._1::Nil
-        // currentList  = currentList:::nextArc._2::Nil
+        //println("=========")
+        //currentList.foreach{e => println(e)}
         val findTour = new Tour(input,currentList)
-        listTours = listTours:::findTour::Nil
+        listTours = listTours :+ findTour
         currentList = currentList.drop(currentList.length)
-        pairMap = pairMap.removed(currentArc._1)
-        pairMap = pairMap.removed(nextArc._1)
-        if (pairMap.nonEmpty) {
+        if (pairMap.nonEmpty){
           currentArc = pairMap.head
-          currentList = currentList ::: currentArc._1 :: Nil
-          currentList = currentList ::: currentArc._2 :: Nil
+          currentList = currentList :+ currentArc._1
+          currentList = currentList :+ currentArc._2
+          pairMap = pairMap - currentArc._1
         }
       }
     }
     listTours
+
   }
+
+
+
 
 }

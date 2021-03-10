@@ -9,17 +9,15 @@ object HungarianAP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
 
+    /*
     println("=========== costs before AP ==========")
     branchNode.varAssignment.foreach{
       case (site1, map1) => (site1,map1.foreach{
         case(site2, value) => println(site1,site2,value)
       })
     }
-
-
+     */
     val numSites = branchNode.varAssignment.size
-
-    // TODO: improve the O(n^3) version Hungarian Method to O(n^2) parametric one
 
     // create s, t nodes
     val start : Site = new Site("s")
@@ -278,6 +276,8 @@ object HungarianAP extends LowerBoundSolver{
       matching.foreach{case(s1,s2) => println(s1.id,s2.id)}
 
        */
+      println("size of matching now: ",matching.size)
+
 
     }
 

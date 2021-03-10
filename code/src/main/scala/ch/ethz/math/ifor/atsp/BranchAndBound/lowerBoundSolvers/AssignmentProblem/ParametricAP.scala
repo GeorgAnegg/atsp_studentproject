@@ -9,14 +9,10 @@ import scala.util.control.Breaks.{break, breakable}
 object ParametricAP extends LowerBoundSolver {
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
-    val numSites = branchNode.varAssignment.size
     // need a residual graph
-
-    //println("start parametric, parent level",branchNode.parentNode.level)
     // delete newly excluded arc from the matching of parent node
     val arcExcluded : Map[Site,Site] = branchNode.excludedArcAdded
     //println("s t:",arcExcluded.head._1.id,arcExcluded.head._2.id)
-
     // need to delete (s,t) arc on the residual graph
     var matching : Map[Site,Site] = Map()
     for (i <- branchNode.input.sites){
@@ -36,13 +32,24 @@ object ParametricAP extends LowerBoundSolver {
     matching = matching.filter(_!=arcExcluded.head)
 
     var included : Map[Site,Site] = Map()
-    var excluded : List[(Site,Site)] = List()
+    //var excluded : List[(Site,Site)] = List()
+    var excluded : Map[Site,Site] = Map()
+    /*
     for (map1 <- branchNode.varAssignment){
       for (map2 <- map1._2){
         if (map2._2 != null) {
           if (map2._2.get) {included = included + (map1._1 -> map2._1)}
           else {excluded= excluded :+ (map1._1 ,map2._1)}
         }
+      }
+    }
+     */
+    branchNode.varAssignment.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) if value == null =>
+        case (site2, value) if value.get => included = included + (site1 -> site2)
+        //case (site2, value) if !value.get => excluded= excluded :+ (site1 ,site2)
+        case (site2, value) if !value.get => excluded= excluded + (site1 ->site2)
       }
     }
     /*
@@ -66,6 +73,15 @@ object ParametricAP extends LowerBoundSolver {
     def constructCost(site1:Site ,site2:Site):Double= {
       branchNode.parentNode.reducedCostMatrixAfterAP(site1)(site2)
     }
+
+    val a : Map[Site, Map[Site, Double]]= branchNode.parentNode.reducedCostMatrixAfterAP
+    println("======reducedCostMatrixAfterAP=====")
+    a.collect{
+      case (site1, map1)  =>  (site1, map1.collect{
+        case (site2, value) if value<0 => println(site1.id,site2.id,value)
+      })
+    }
+    println("=======================================================")
 
     // implement a function to search a site by id among all sites
     def searchByID(sites:Array[Site],identity:String):Site={
@@ -116,10 +132,18 @@ object ParametricAP extends LowerBoundSolver {
     }
 
      */
-
     val start : Site = arcExcluded.head._1
     val destination : Site = searchByID(sitesRight,arcExcluded.head._2.id+"Right")
     //println("s,t :",start.id,destination.id)
+
+    val residualCost : Map[Site,Map[Site,Double]] = Map()
+    println("======costs.entries=====")
+    residualCost.foreach{
+      case (site1, map1)  =>  (site1, map1.foreach{
+        case (site2, value) if value<0 => println(site1.id,site2.id,value)
+      })
+    }
+    println("=======================================================")
 
     // construct arc between left sites set and right sites set
     var stMap: Map[Site, Map[Site, Double]] = costs.entries.collect {
@@ -132,8 +156,8 @@ object ParametricAP extends LowerBoundSolver {
       stMap = stMap + (searchByID(sitesRight,e._2.id+"Right") -> Map(e._1->0))
     }
 
-    /*
-    println("======stmap=====")
+/*
+    println("======stmap in Parametric AP=====")
     stMap.foreach{
       case (site1, map1) if site1!=null => (site1, map1.foreach{
         case (site2, value) => println(site1.id,site2.id,value)
@@ -141,7 +165,9 @@ object ParametricAP extends LowerBoundSolver {
     }
     println("=======================================================")
 
-     */
+ */
+
+
     val allSites:Array[Site] = Array.concat( sitesLeft, sitesRight) :+ start :+ destination
 
     // construct potential map
@@ -150,7 +176,6 @@ object ParametricAP extends LowerBoundSolver {
         site => site->0.0
       }.toMap
     }
-
     // implement function to update potential
     def updatePotential(potential:Map[Site,Double],dijkstraDistance:Map[Site,Double]): Map[Site,Double]={
       potential.map{case (site,value) => (site,dijkstraDistance(site)+value)}
@@ -180,7 +205,8 @@ object ParametricAP extends LowerBoundSolver {
     // implement Dijkstra's shortest s-t path algorithm
     def dijkstra(graph:Map[Site,Map[Site,Double]]): (Map[Site,Double],Map[Site,Site],Map[Site,Site]) = {
       // construct a map to record min-weighted predecessors of sites
-      val dijkstraPre: mutable.Map[Site, Site] = mutable.Map()
+      //val dijkstraPre: mutable.Map[Site, Site] = mutable.Map()
+      var dijkstraPre: Map[Site, Site] = Map()
 
       // construct the initial distance map, initially assign all to inf except 0.0 to s node
       val dijkstraDist: mutable.Map[Site, Double] = {
@@ -195,16 +221,17 @@ object ParametricAP extends LowerBoundSolver {
       // construct the queue, and the labeling array
       var explored: Array[Site] = Array()
       var queue: List[(Site, Double)] = List((start, 0.0))
+      var count = 0
 
       // while all nodes are not visited, continue the process
       while (queue.nonEmpty && explored.length != allSites.length-1) {
+        count  += 1
         // take the first element, i.e., lowest-weighted unvisited node
         queue = queue.sortBy(_._2)
         val currentSite = queue.head
         breakable {
           if (currentSite._1 == searchByID(sitesRight,destination.id)) break
         }
-
         // delete the current node from the queue and label it as visited
         queue = queue.drop(1)
 
@@ -225,32 +252,40 @@ object ParametricAP extends LowerBoundSolver {
          */
         val reachable = graph(currentSite._1).keys
 
-        if (reachable.nonEmpty) {
-          // if min-distance can be updated, update; add all these sites to the queue
-          reachable.foreach { nextsite =>
-            if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
-              dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
-              dijkstraPre.update(nextsite, currentSite._1)
-              //println("add", (nextsite.id, dijkstraDist(nextsite)))
-              if (queue.exists(_._1 == nextsite)) {
-                queue = queue.filter(_._1 != nextsite)
-              }
-              if (nextsite.id != destination.id) {
-                queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
-              }
+        // if min-distance can be updated, update; add all these sites to the queue
+        reachable.foreach { nextsite =>
+          if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
+            dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
+            //dijkstraPre.update(nextsite, currentSite._1)
+            dijkstraPre = dijkstraPre ++ Map(nextsite-> currentSite._1)
+            //println("add", (nextsite.id, dijkstraDist(nextsite)))
+            if (queue.exists(_._1 == nextsite)) {
+              queue = queue.filter(_._1 != nextsite)
+            }
+            if (nextsite.id != destination.id) {
+              queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
             }
           }
         }
+
+      }
+      if (dijkstraDist(destination)<0){
+        //println("No s-t path find")
+        println("infeasible")
+        return (dijkstraDist.toMap, Map(), Map())
       }
       // construct a t-s path from dijkstraPre
       var path: Array[Site] = Array(destination)
 
       // if infeasible
       if (!dijkstraPre.contains(destination)){
+        println("infeasible")
         return (dijkstraDist.toMap, Map(), Map())
       }
 
       while (path.last != start) {
+        //println("path last, start",start.id,path.length,dijkstraPre.size,dijkstraPre.values.toList.contains(start),dijkstraDist(destination))
+        //path.foreach{e => print(e.id+"  ")}
         path = path :+ dijkstraPre(path.last)
       }
 
@@ -268,7 +303,6 @@ object ParametricAP extends LowerBoundSolver {
       }
 
        */
-
       val arcs: Map[Site, Site] = {
         path.zipWithIndex.collect {
           case (site, index) if index < path.length - 1 => site-> path(index + 1)
@@ -301,7 +335,6 @@ object ParametricAP extends LowerBoundSolver {
       }
       return (assignmentInfeasible,costInfeasible)
     }
-
     // update potential
     potential = updatePotential(potential,currentDistance)
 
@@ -318,7 +351,6 @@ object ParametricAP extends LowerBoundSolver {
       case (site1,site2) if site2.id.contains("Right")=> (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
       case (site1, site2) => (site1, site2)
     }
-
     /*
     println("final matching size here: ",matching.size)
     println("=============final matching=============")
@@ -348,7 +380,6 @@ object ParametricAP extends LowerBoundSolver {
     }
 
     val resultAssignment: arcWise[Boolean] = arcWise(branchNode.input, constructResult)
-
     //(resultAssignment.entries,costs.entries)
     (resultAssignment.entries,reducedCostMatrixAP)
   }

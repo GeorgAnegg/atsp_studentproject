@@ -12,7 +12,7 @@ class BranchNode(val input: Input,
                  val excludedArcAdded : Map[Site,Site],
                  val parentNode: BranchNode,
                  val useParametricAP:Boolean
-                 ) {
+                ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
   val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) = {
@@ -26,21 +26,21 @@ class BranchNode(val input: Input,
       lowerBoundSolver.compute(branchNode = this)
     }
   }
+
   var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
-  var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
-  //println(this, lowerBound)
-  val lowerBoundCostAP :Double = lowerBound
-
   /*
-  println("print reduced cost matrix: ")
-  reducedCostMatrixAfterAP.foreach{
-    case (site1, map1) => (site1, map1.map{
-      case (site2, value) => println(site1, site2, value)
+  println("======reducedCostMatrixAfterAP in parent node=====")
+  reducedCostMatrixAfterAP.collect{
+    case (site1, map1)  =>  (site1, map1.collect{
+      case (site2, value) => println(site1.id,site2.id,value)
     })
   }
+  println("=======================================================")
 
    */
+  var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+  val lowerBoundCostAP :Double = lowerBound
 
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
@@ -58,6 +58,7 @@ class BranchNode(val input: Input,
 
   val globalUpperbound:Double = {
     if (isRootNode) {
+      //println("iniUB: ",globalHeuristic._1)
       globalHeuristic._1
     } else {
       inf
@@ -65,7 +66,7 @@ class BranchNode(val input: Input,
   }
 
   var lowerBoundrSAP :Double= inf
-  if (useAdditive && isRootNode){
+  if (useAdditive /*&& isRootNode*/){
     if (lowerBoundCostAP != globalUpperbound){
       val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
       lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP,this)
@@ -122,12 +123,6 @@ class BranchNode(val input: Input,
         }
       }
     }
-    /*
-    var a = 0
-    listTours.foreach{e => a= a+ e.sequence.length}
-    println("a", a)
-
-     */
     listTours
 
   }
@@ -179,12 +174,6 @@ class BranchNode(val input: Input,
   }
 
  */
-
-
-
-
-  //println("tour length",allTours.length)
-  //println("leafnode",isLeafNode)
 
   // implement branchStep
   def branchStep: Either[BranchNode, List[BranchNode]] = {

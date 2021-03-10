@@ -22,3 +22,9 @@ lazy val root = (project in file("."))
 
 fork := true
 run / javaOptions += f"-Djava.library.path=${sys.env("OR_TOOLS_HOME")}/lib"
+/*
+scalacOptions ++= Seq(
+  "-deprecation",
+  //other options
+)
+ */

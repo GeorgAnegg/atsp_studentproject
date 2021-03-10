@@ -19,22 +19,15 @@ object BranchAndCutSolver extends Solver {
     if (preprocessing){
       // solve initial AP to get an upperbound and do reduction
       val solverLP: MPSolver = new MPSolver("AssignmentProblem",
-        MPSolver.OptimizationProblemType.CBC_MIXED_INTEGER_PROGRAMMING)
-
+        MPSolver.OptimizationProblemType.GLOP_LINEAR_PROGRAMMING)
       def constructVariable(site1:Site ,site2:Site):MPVariable= {
         if (site1.id==site2.id) {solverLP.makeIntVar(0,0,"")}
         else {
           solverLP.makeIntVar(0,1,"")
         }
       }
-
       val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
       val costs:arcWise[Double] = arcWise(input,input.distance)
-      var constraints: List[MPConstraint] = List()
-
-      var listConstraintsIn: List[MPConstraint] = List()
-      var listConstraintsOut: List[MPConstraint] = List()
-
       // construct in- & out-degree constraints
       for (site1 <- input.sites){
         val constraintIn:MPConstraint = solverLP.makeConstraint(1, 1, "")
@@ -43,11 +36,7 @@ object BranchAndCutSolver extends Solver {
           constraintIn.setCoefficient(variables.search(site1, site2),1)
           constraintOut.setCoefficient(variables.search(site2, site1),1)
         }
-        listConstraintsIn = constraintIn::listConstraintsIn
-        listConstraintsOut = constraintIn::listConstraintsOut
       }
-      constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
-
       // construct the objective function.
       val objectiveFunction : MPObjective = solverLP.objective()
       variables.entries.map{
@@ -55,7 +44,6 @@ object BranchAndCutSolver extends Solver {
           case (site2, variable) => objectiveFunction.setCoefficient(variable,costs.search(site1, site2))
         })
       }
-
       objectiveFunction.setMinimization()
       val resultStatus = solverLP.solve()
       val apAssignment = initAssignmentMap.map{
@@ -64,34 +52,48 @@ object BranchAndCutSolver extends Solver {
           case (site2, value) => (site2, false)
         })
       }
-
       def detectTours(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {
         var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
+        var currentList : List[Site] =List()
         var listTours: List[Tour] = List()
-        var currentList :List[Site] = List(pairMap.head._1, pairMap.head._2)
         var currentArc = pairMap.head
-        while (pairMap.size>1) {
-          var nextArc = pairMap.find(_._1.id == currentArc._2.id).get
-          if (nextArc._2.id != currentList.head.id) {
-            currentList  = currentList:::nextArc._2::Nil
-            pairMap = pairMap.removed(currentArc._1)
-            currentArc  = nextArc
+        currentList = currentList :+ currentArc._1
+        currentList = currentList :+ currentArc._2
+        pairMap = pairMap - currentArc._1
+
+        while (pairMap.nonEmpty){
+          if (pairMap.contains(currentList.last)){
+            val nextArc = pairMap.find(_._1==currentList.last).get
+            if (nextArc._2!=currentList.head){
+              currentList = currentList :+ nextArc._2
+              pairMap = pairMap - nextArc._1
+              currentArc = nextArc
+            } else {
+              pairMap = pairMap - nextArc._1
+              val findTour = new Tour(input,currentList)
+              listTours = listTours :+ findTour
+              currentList = currentList.drop(currentList.length)
+              if (pairMap.nonEmpty){
+                currentArc = pairMap.head
+                currentList = currentList :+ currentArc._1
+                currentList = currentList :+ currentArc._2
+                pairMap = pairMap - currentArc._1
+              }
+            }
           } else {
             val findTour = new Tour(input,currentList)
-            listTours = listTours:::findTour::Nil
+            listTours = listTours :+ findTour
             currentList = currentList.drop(currentList.length)
-            pairMap = pairMap.removed(currentArc._1)
-            pairMap = pairMap.removed(nextArc._1)
-            if (pairMap.nonEmpty) {
+            if (pairMap.nonEmpty){
               currentArc = pairMap.head
-              currentList = currentList ::: currentArc._1 :: Nil
-              currentList = currentList ::: currentArc._2 :: Nil
+              currentList = currentList :+ currentArc._1
+              currentList = currentList :+ currentArc._2
+              pairMap = pairMap - currentArc._1
             }
           }
         }
         listTours
       }
-
       val apTours = detectTours(apAssignment)
       val apCost: Double  = apAssignment.map({case(site1, map1) => input.distMat(site1)(map1.filter(_._2).head._1) }).sum
       val iniHeuristic = upperBoundSolver.computeUpperBound(apCost,apTours,input)
@@ -240,11 +242,8 @@ object BranchAndCutSolver extends Solver {
           }
         }
       }
-
     }
-
     val tour = currentBestNode.get.detectTours(currentBestNode.get.lowerBoundSolve).head
     new Output(input, tour)
-
   }
 }

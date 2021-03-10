@@ -33,27 +33,45 @@ object ChuLiuEdmonds {
         case (site2, value) => (site2,value)
       })
     }
+
     /*
+
     println("ChuLiuEdmonds print reduced cost matrix: ")
-    costsPrime.foreach{
+    costsPrime3.foreach{
       case (site1, map1) => (site1, map1.map{
         case (site2, value) => println(site1, site2, value)
       })
     }
 
      */
+
+
     // root node should have no in-edges
     /*
     val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.map{
       case (site1,map1) => (site1,map1-rootSite)
     }
-
      */
+    /*
     val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.collect{
       case (site1,map1) => (site1,map1.collect{
         case (site2, value) if site2!=rootSite => (site2,value)
       })
     }
+
+     */
+    val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.map{
+      case (site1,map1) => (site1,map1-rootSite)
+    }
+
+    /*
+    println("ChuLiuEdmonds print reduced cost matrix 2: ")
+    costsPrime3.foreach{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) => println(site1, site2, value)
+      })
+    }
+     */
 
     /*
     println("===============costsPrime in ChuLiuEdmonds===================")
@@ -62,7 +80,6 @@ object ChuLiuEdmonds {
         case (site2, value) => println(site1,site2,value)
       }
     }
-
      */
 
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
@@ -203,7 +220,6 @@ object ChuLiuEdmonds {
 
       println("arcsInCycle before")
       arcsInCycle.foreach(map => println(map._1.id, map._2.id))
-
  */
       // in treePrime supernode has an in-edge u->supernode, replace it with u->v, where v is a min-cost node in the supernode
       var inSite = new Site()

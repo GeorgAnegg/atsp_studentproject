@@ -40,16 +40,16 @@ object ORToolsIPDual extends LowerBoundSolver{
         if (branchNode.costsMap(site1)(site2)==Some(true)){
           val constraint:MPConstraint = solver.makeConstraint(0, 0, "")
           constraint.setCoefficient(mapVarIn((site1,"In")),1)
-          constraint.setCoefficient(mapVarIn((site2,"Out")),1)
+          constraint.setCoefficient(mapVarOut((site2,"Out")),1)
         } else if (branchNode.costsMap(site1)(site2)==Some(false)){
           // How to set up for excluded arcs?
           val constraint:MPConstraint = solver.makeConstraint(-inf, -1, "")
           constraint.setCoefficient(mapVarIn((site1,"In")),1)
-          constraint.setCoefficient(mapVarIn((site2,"Out")),1)
+          constraint.setCoefficient(mapVarOut((site2,"Out")),1)
         } else {
           val constraint: MPConstraint = solver.makeConstraint(-inf, branchNode.costsMap(site1)(site2), "")
           constraint.setCoefficient(mapVarIn((site1, "In")), 1)
-          constraint.setCoefficient(mapVarIn((site2, "Out")), 1)
+          constraint.setCoefficient(mapVarOut((site2, "Out")), 1)
         }
       }
     }
@@ -83,6 +83,14 @@ object ORToolsIPDual extends LowerBoundSolver{
       return (assignmentInfeasible,costInfeasible)
     }
 
+    val resultMap : Map[Site,Map[Site,Boolean]] = branchNode.costsMap.map{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) if value - mapVarIn((site1,"In")).solutionValue() - mapVarOut((site2,"Out")).solutionValue()==0
+          => (site2, true )
+        case (site2, value) => (site2, false)
+      })
+    }
+
     //compute reduced cost
     val reducedCost = branchNode.costsMap.map{
       case (site1, map1) => (site1, map1.map{
@@ -90,13 +98,13 @@ object ORToolsIPDual extends LowerBoundSolver{
       })
     }
 
-    println("===============reduced cost===================== ")
+    println("===============reduced cost in IP DUAL===================== ")
     reducedCost.foreach{
       case (site1, map1) => map1.foreach{
         case (site2, value) => println(site1,site2,value)
       }
     }
-    (Map(),reducedCost)
+    (resultMap,reducedCost)
   }
 
   // not used
