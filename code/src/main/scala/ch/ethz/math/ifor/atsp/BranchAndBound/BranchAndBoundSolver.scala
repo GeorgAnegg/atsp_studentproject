@@ -21,7 +21,7 @@ object BranchAndBoundSolver extends Solver {
         case (site2, value) => (site2,value)
       })
     }
-    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true)
+    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true,null)
     rootNode.level = 0
 
     val iniHeuristic = rootNode.globalHeuristic

@@ -8,7 +8,8 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf}
 class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
                  val useAdditive:Boolean,
-                 val isRootNode:Boolean
+                 val isRootNode:Boolean,
+                 val excludedArcAdded : Map[Site,Site]
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
