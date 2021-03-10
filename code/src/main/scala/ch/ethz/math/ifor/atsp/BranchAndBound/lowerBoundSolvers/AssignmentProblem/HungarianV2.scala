@@ -337,8 +337,9 @@ object HungarianV2 extends LowerBoundSolver{
       })
     }
 
-    /*
 
+
+    /*
     println("--------------------------reduced cost matrix using potential=======================")
 
     reducedCostMatrixAP.foreach{
@@ -347,6 +348,16 @@ object HungarianV2 extends LowerBoundSolver{
       } )
     }
     println("--------------------------=======================")
+
+     */
+    /*
+
+    println("reduced by residual")
+    stMap.foreach{
+      case (site1, map1) => (site1, map1.foreach{
+        case (site2, value) => println(site1.id,site2.id,value)
+      } )
+    }
 
      */
 
@@ -362,7 +373,7 @@ object HungarianV2 extends LowerBoundSolver{
       case (site1,site2) if site2.id.contains("Right")=> (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
       case (site1, site2) => (site1, site2)
     }
-    println(" length of matching: ",finalMatching.size)
+    //println(" length of matching: ",finalMatching.size)
 
     /*
     println("finalMatching=========")

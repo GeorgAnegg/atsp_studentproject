@@ -8,7 +8,7 @@ import scala.util.control.Breaks.break
 
 object BranchAndBoundSolver extends Solver {
 
-  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean): Output = {
+  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean): Output = {
     // construct root node
     val numSites: Int = input.sites.length
     val initAssignmentArray: Array[Array[Option[Boolean]]] = Array.ofDim[Option[Boolean]](numSites, numSites)
@@ -21,7 +21,7 @@ object BranchAndBoundSolver extends Solver {
         case (site2, value) => (site2,value)
       })
     }
-    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true,null)
+    val rootNode: BranchNode = new BranchNode(input, initAssignmentMap,useAdditive,true,null,null,useParametricAP)
     rootNode.level = 0
 
     val iniHeuristic = rootNode.globalHeuristic

@@ -1,7 +1,7 @@
 package ch.ethz.math.ifor.atsp
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.ORToolsIP
-import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.{HungarianAP,HungarianV2}
+import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.{HungarianAP,HungarianV2,ParametricAP}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.Arborescence.ChuLiuEdmonds
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.NaiveLowerBound.NaiveLB
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
@@ -19,6 +19,7 @@ package object BranchAndBound {
   val rSAPLowerBoundSolver = ChuLiuEdmonds
   val branchingScheme: BranchingScheme = CT80
   val upperBoundSolver: UpperBoundSolver= Karp79V2
+  val paramatricSolver: LowerBoundSolver = ParametricAP
 
   type IsLeafNode = Boolean
   type LowerBound = Double

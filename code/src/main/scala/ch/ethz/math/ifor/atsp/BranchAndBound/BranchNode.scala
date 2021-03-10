@@ -9,11 +9,23 @@ class BranchNode(val input: Input,
                  var varAssignment: Map[Site, Map[Site, Option[Boolean]]],
                  val useAdditive:Boolean,
                  val isRootNode:Boolean,
-                 val excludedArcAdded : Map[Site,Site]
+                 val excludedArcAdded : Map[Site,Site],
+                 val parentNode: BranchNode,
+                 val useParametricAP:Boolean
                  ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
-  val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) =lowerBoundSolver.compute(branchNode = this)
+  val lowerBoundAP: (Map[Site, Map[Site, IsLeafNode]], Map[Site, Map[Site, LowerBound]]) = {
+    if (useParametricAP){
+      if (parentNode == null){
+        lowerBoundSolver.compute(branchNode = this)
+      } else {
+        paramatricSolver.compute(branchNode = this)
+      }
+    } else {
+      lowerBoundSolver.compute(branchNode = this)
+    }
+  }
   var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
   var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
@@ -30,7 +42,6 @@ class BranchNode(val input: Input,
 
    */
 
-  var parentNode: BranchNode = this
   //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
   //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
 

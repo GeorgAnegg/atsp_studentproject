@@ -3,7 +3,7 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise, inf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
 
 object BranchAndCutSolver extends Solver {
-  def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean): Output = {
+  def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean,useParametricAP:Boolean): Output = {
     System.loadLibrary("jniortools")
 
     // construct root node
