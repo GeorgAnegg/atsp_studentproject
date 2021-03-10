@@ -53,7 +53,7 @@ class BranchNode(val input: Input,
   }
 
   var lowerBoundrSAP :Double= inf
-  if (useAdditive){
+  if (useAdditive && isRootNode){
     if (lowerBoundCostAP != globalUpperbound){
       val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
       lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP,this)

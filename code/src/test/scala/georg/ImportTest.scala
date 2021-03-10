@@ -11,8 +11,8 @@ object ImportTest extends App {
 
   val input = CSV.createInput("ftv35.csv")
   val t1 = System.nanoTime
-  val output = BranchAndCutSolver.solve(input, "",true,false)
-  //val output = DL.solve(input)
+  val output = BranchAndBoundSolver.solve(input, "",true,true)
+  //val output = GG.solve(input)
   val duration = (System.nanoTime - t1) / 1e9d
   output.print()
 

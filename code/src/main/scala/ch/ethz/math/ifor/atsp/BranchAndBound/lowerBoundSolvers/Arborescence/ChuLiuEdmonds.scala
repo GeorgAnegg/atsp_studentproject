@@ -217,7 +217,7 @@ object ChuLiuEdmonds {
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
 
       // then delete v' that v'->v in the cycle
-      if (arcsInCycle.find(_._2==inEdgeInCycle) != null) {
+      if (arcsInCycle.exists(_._2 == inEdgeInCycle)) {
         arcsInCycle = arcsInCycle - arcsInCycle.find(_._2 == inEdgeInCycle).get._1
       }
 

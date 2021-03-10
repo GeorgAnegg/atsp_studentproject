@@ -147,7 +147,7 @@ object ORToolsIP extends LowerBoundSolver{
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {
-        //println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
+        println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
         true}
       else {false}
     }
@@ -177,7 +177,7 @@ object ORToolsIP extends LowerBoundSolver{
         for(var1 <- x.entries){
           for(var2 <- var1._2){
             if (rowConstraint.getCoefficient(var2._2)!=0 && var1._1!=var2._1){
-              //println("coeff before",var1._1,var2._1,reducedCost(var1._1)(var2._1),rowConstraint.getCoefficient(var2._2),rowConstraint.dualValue())
+              //println("coeff before",var1._1,var2._1,reducedCost2(var1._1)(var2._1),rowConstraint.getCoefficient(var2._2),rowConstraint.dualValue())
               reducedCost2 = reducedCost2.map{
                 case (site1, map1) => (site1, map1.map{
                   case (site2, value) if site1==var1._1 && site2==var2._1 => (site2, value -rowConstraint.dualValue()*rowConstraint.getCoefficient(var2._2))
@@ -201,15 +201,13 @@ object ORToolsIP extends LowerBoundSolver{
 
  */
 
-    /*
+
     println("===============reduced cost V2===================")
     reducedCost2.foreach{
       case (site1, map1) => map1.foreach{
         case (site2, value) => println(site1,site2,value)
       }
     }
-
-     */
 
 
 

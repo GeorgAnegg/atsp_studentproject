@@ -362,7 +362,7 @@ object HungarianV2 extends LowerBoundSolver{
       case (site1,site2) if site2.id.contains("Right")=> (site1, searchByID(sitesLeft,site2.id.replace("Right","")))
       case (site1, site2) => (site1, site2)
     }
-    //println(" length of matching: ",finalMatching.size)
+    println(" length of matching: ",finalMatching.size)
 
     /*
     println("finalMatching=========")
