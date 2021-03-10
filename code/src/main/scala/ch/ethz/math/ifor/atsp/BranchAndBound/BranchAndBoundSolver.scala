@@ -46,11 +46,8 @@ object BranchAndBoundSolver extends Solver {
         return new Output(input, initTour)
       }
 
-
-
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
       //println("Number of active sortedNodes", sortedNodes.length)
-
       /*
       println("num sortedNodes active", sortedNodes.length)
       for (i <- sortedNodes) {
@@ -59,17 +56,13 @@ object BranchAndBoundSolver extends Solver {
       println("\r\n")
 
        */
-
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
-
-
 
       if (currentBranchNode.lowerBoundCostAP >= initUpperBound || currentBranchNode.lowerBound >= initUpperBound){
         //println("here2?")
         return new Output(input, initTour)
       }
-
 
       println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
@@ -111,7 +104,6 @@ object BranchAndBoundSolver extends Solver {
           }
       }
     }
-
     val tour = currentBestNode.get.allTours.head
     val list = tour.listArcs
     list.foreach{e => println(e._1,e._2)}

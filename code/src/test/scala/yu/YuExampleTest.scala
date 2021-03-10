@@ -41,7 +41,7 @@ object YuExampleTest extends App {
  */
 
 
-  val output = BranchAndBoundSolver.solve(fromDistVec(input),"",true,false,true)
+  val output = BranchAndBoundSolver.solve(fromDistVec(input),"",true,true,true)
 
   output.print()
   val duration = (System.nanoTime - t1) / 1e9d

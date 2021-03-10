@@ -9,9 +9,9 @@ import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 
 object ImportTest extends App {
 
-  val input = CSV.createInput("ft70.csv")
+  val input = CSV.createInput("ftv70.csv")
   val t1 = System.nanoTime
-  val output = BranchAndCutSolver.solve(input, "",true,false,false)
+  val output = BranchAndBoundSolver.solve(input, "",true,true,true)
   //val output = GG.solve(input)
   val duration = (System.nanoTime - t1) / 1e9d
   output.print()

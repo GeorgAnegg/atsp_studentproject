@@ -1,6 +1,6 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem
 import ch.ethz.math.ifor.atsp.{Site, arcWise, inf}
-import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound, branchingScheme}
+import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 
 import scala.collection.mutable
@@ -8,7 +8,6 @@ import scala.util.control.Breaks.{break, breakable}
 object HungarianAP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
-
     /*
     println("=========== costs before AP ==========")
     branchNode.varAssignment.foreach{
@@ -18,30 +17,6 @@ object HungarianAP extends LowerBoundSolver{
     }
      */
     val numSites = branchNode.varAssignment.size
-
-    // create s, t nodes
-    val start : Site = new Site("s")
-    val destination : Site = new Site("t")
-
-    // construct cost map
-    val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
-
-    // construct left sites set
-    val sitesLeft: Array[Site] = costs.entries.keys.toArray
-
-    val sitesRight: Array[Site] = {
-      sitesLeft.map{site => new Site(site.id+"Right")}
-    }
-
-    // implement a function to search a site by id among all sites
-    def searchByID(sites:Array[Site],identity:String):Site={
-      var result: Site = null
-      sites.foreach{
-        site => if (site.id == identity) result = site
-      }
-      if(result==null){println("No such sites.")}
-      result
-    }
 
     // construct matching map
     var matching : Map[Site,Site] = Map()
@@ -56,6 +31,43 @@ object HungarianAP extends LowerBoundSolver{
       }
     }
 
+    // create s, t nodes
+    val start : Site = new Site("s")
+    val destination : Site = new Site("t")
+
+    // construct cost map
+    val costs:arcWise[Double] = arcWise(branchNode.input,branchNode.input.distance)
+
+    // construct left sites set
+    val sites: Map[Site,String] = costs.entries.keys.map(e => (e -> e.id)).toMap
+    val sitesLeft : Map[Site,String] = sites.filterNot(matching.keys.toList.contains(_))
+    var sitesRight : Map[Site,String] = sites.filterNot(matching.values.toList.contains(_))
+    sitesRight = sitesRight.map{
+      case (site,str) => (new Site(str+"Right"),str+"Right")
+    }
+
+    // implement a function to search a site by id among all sites
+    def searchByID(sites:Map[Site,String],identity:String):Site={
+      var result: Site = null
+      if (sites.values.toList.contains(identity)){
+        result = sites.find(_._2==identity).get._1
+      }
+      if(result==null){
+        matching.keys.foreach{
+          site => if (site.id == identity) result = site
+        }
+        matching.values.foreach{
+          site => if (site.id == identity) result = site
+        }
+      }
+      /*
+      if(result==null) {
+        println("No such sites.",identity)
+      }
+       */
+      result
+    }
+
     val costPrime = costs.entries.map {
       case (site1, map1) => (site1, map1.map {
         case (site2, value) if matching.keys.exists(_==site1) || matching.values.exists(_ == site2) => (site2, inf)
@@ -64,6 +76,7 @@ object HungarianAP extends LowerBoundSolver{
     }
 
     // construct arc between left sites set and right sites set
+    // TODO: Seems slow!
     val mapV1 = costPrime.map{
       case(site1,map1)=>(site1,map1.map{
         case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
@@ -77,7 +90,7 @@ object HungarianAP extends LowerBoundSolver{
     // add arcs from s to nodes in left sites set
     def addSToMap(site:Site, originMap:Map[Site,Map[Site, Double]]): Map[Site,Map[Site, Double]] = {
       val additionalS = sitesLeft.map{
-        item => item->0.0
+        item => item._1->0.0
       }.toMap
       originMap.++(Map(site -> additionalS))
     }
@@ -85,7 +98,7 @@ object HungarianAP extends LowerBoundSolver{
 
     // add arcs from nodes in right sites set to t
     sitesRight.foreach{e=>
-      stMap = stMap + (e -> Map(destination->0))
+      stMap = stMap + (e._1 -> Map(destination->0))
     }
 /*
     println("=========== stMap ==========")
@@ -98,7 +111,7 @@ object HungarianAP extends LowerBoundSolver{
  */
 
     // construct array for all sites, i.e., s + left + right + t
-    val allSites:Array[Site] = Array.concat( sitesLeft, sitesRight) :+ start :+ destination
+    val allSites:Map[Site,String] = sitesLeft++ sitesRight ++ Map(start->start.id) ++ Map(destination->destination.id)
     /*
     allSites.foreach{e=>println("all sites",e,e.id)}
 
@@ -107,7 +120,7 @@ object HungarianAP extends LowerBoundSolver{
     // construct potential map
     var potential : Map[Site,Double] = {
       allSites.map{
-         site => site->0.0
+         site => site._1->0.0
       }.toMap
     }
 
@@ -150,10 +163,9 @@ object HungarianAP extends LowerBoundSolver{
       // construct the initial distance map, initially assign all to inf except 0.0 to s node
       val dijkstraDist: mutable.Map[Site, Double] = {
         allSites.zipWithIndex.map {
-          case (site, _) => site -> inf
+          case (site, _) => site._1 -> inf
         }.to(collection.mutable.Map)
       }
-
       // set the distance of node s to 0.0
       dijkstraDist.update(start, 0.0)
 
@@ -163,10 +175,11 @@ object HungarianAP extends LowerBoundSolver{
 
       // while all nodes are not visited, continue the process
 
-        while (queue.nonEmpty && explored.length != allSites.length-1) {
+        while (queue.nonEmpty && explored.length != allSites.size-1) {
 
           // take the first element, i.e., lowest-weighted unvisited node
           queue = queue.sortBy(_._2)
+          //println("size of queue ",queue.size)
           val currentSite = queue.head
           breakable {
             if (currentSite._1.id == "t") break
@@ -179,7 +192,6 @@ object HungarianAP extends LowerBoundSolver{
 
           // construct all the sites that can be reached from currentSite
           val reachable = graph(currentSite._1).keys
-
           // if min-distance can be updated, update; add all these sites to the queue
           reachable.foreach { nextsite =>
             if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
@@ -187,7 +199,11 @@ object HungarianAP extends LowerBoundSolver{
               dijkstraPre.update(nextsite, currentSite._1)
               //println("add", (nextsite.id, dijkstraDist(nextsite)))
               if (queue.exists(_._1 == nextsite)){
+                //println("exists duplicate",nextsite)
+                //queue.foreach(e=>println(e._1,e._2))
                 queue = queue.filter(_._1!=nextsite)
+                //println("after deletion")
+                //queue.foreach(e=>println(e._1,e._2))
               }
               if (nextsite.id!="t") {
                 queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
@@ -288,21 +304,21 @@ object HungarianAP extends LowerBoundSolver{
  */
 
     // construct reduced cost matrix, c(i,j)' = c(i,j) + p(i) - p(j)
-
     val reducedCostMatrixAP : Map[Site, Map[Site, Double]] = costs.entries.map{
       case (site1,map1) => (site1, map1.map{
-        case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(true) => (site2,0)
-        case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
-        case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
-        case (site2, value) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
+        case (site2, _) if branchNode.varAssignment(site1)(site2) == Some(true) => (site2,0)
+        case (site2, _) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
+        case (site2, _) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
+        case (site2, _) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+
+          potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
       })
     }
 
     println("--------------------------reduced cost matrix using potential=======================")
 
-    reducedCostMatrixAP.foreach{
-      case (site1, map1) => (site1, map1.foreach{
-        case (site2, value) => println(site1,site2,value)
+    reducedCostMatrixAP.collect{
+      case (site1, map1) => (site1, map1.collect{
+        case (site2, value) if value<0 => println(site1,site2,value)
       } )
     }
     println("--------------------------=======================")

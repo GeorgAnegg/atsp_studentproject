@@ -22,19 +22,18 @@ object HungarianV2 extends LowerBoundSolver{
         case(site2, value) => println(site1.id,site2.id,value)
       })
     }
-
      */
     val numSites = branchNode.varAssignment.size
 
     // construct matching map
     var matching : Map[Site,Site] = Map()
-    var excluded : List[(Site,Site)] = List()
+    var excluded : Map[Site,Site] = Map()
 
     for (map1 <- branchNode.varAssignment){
       for (map2 <- map1._2){
         if (map2._2 != null) {
           if (map2._2.get) {matching = matching + (map1._1 -> map2._1)}
-          else {excluded= excluded :+ (map1._1 ,map2._1)}
+          else {excluded= excluded ++ Map(map1._1 -> map2._1)}
         }
       }
     }
@@ -47,7 +46,6 @@ object HungarianV2 extends LowerBoundSolver{
     excluded.foreach{
       case (site1, site2) => println(site1.id,site2.id)
     }
-
      */
     // create s, t nodes
     val start : Site = new Site("s")

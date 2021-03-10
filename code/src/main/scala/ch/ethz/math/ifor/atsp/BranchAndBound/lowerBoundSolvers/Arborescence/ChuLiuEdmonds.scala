@@ -29,13 +29,12 @@ object ChuLiuEdmonds {
     val costsPrime3:Map[Site, Map[Site, Double]] = costs.entries.map{
       case (site1,map1) => (site1,map1.map{
         case (site2, _) if site1==site2 || branchNode.varAssignment(site1)(site2)==Some(false)  => (site2,inf)
-        case (site2, value) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
+        case (site2, _) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
         case (site2, value) => (site2,value)
       })
     }
 
     /*
-
     println("ChuLiuEdmonds print reduced cost matrix: ")
     costsPrime3.foreach{
       case (site1, map1) => (site1, map1.map{
@@ -44,6 +43,8 @@ object ChuLiuEdmonds {
     }
 
      */
+
+
 
 
     // root node should have no in-edges

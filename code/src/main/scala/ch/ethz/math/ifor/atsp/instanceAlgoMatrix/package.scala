@@ -44,7 +44,6 @@ package object instanceAlgoMatrix {
     ("DL", DL.solve)
   )
 
-
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
@@ -54,8 +53,6 @@ package object instanceAlgoMatrix {
       (name, result)
     }
   }
-
-
 
   // matrix of values
   def instanceAlgoData(maxTime: Int): List[(String, List[(String, Either[(Double, Runtime), String])])] = instances.map(name => name ->

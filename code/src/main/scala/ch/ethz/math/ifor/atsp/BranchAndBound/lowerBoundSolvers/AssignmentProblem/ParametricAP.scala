@@ -74,14 +74,6 @@ object ParametricAP extends LowerBoundSolver {
       branchNode.parentNode.reducedCostMatrixAfterAP(site1)(site2)
     }
 
-    val a : Map[Site, Map[Site, Double]]= branchNode.parentNode.reducedCostMatrixAfterAP
-    println("======reducedCostMatrixAfterAP=====")
-    a.collect{
-      case (site1, map1)  =>  (site1, map1.collect{
-        case (site2, value) if value<0 => println(site1.id,site2.id,value)
-      })
-    }
-    println("=======================================================")
 
     // implement a function to search a site by id among all sites
     def searchByID(sites:Array[Site],identity:String):Site={
@@ -136,14 +128,8 @@ object ParametricAP extends LowerBoundSolver {
     val destination : Site = searchByID(sitesRight,arcExcluded.head._2.id+"Right")
     //println("s,t :",start.id,destination.id)
 
-    val residualCost : Map[Site,Map[Site,Double]] = Map()
-    println("======costs.entries=====")
-    residualCost.foreach{
-      case (site1, map1)  =>  (site1, map1.foreach{
-        case (site2, value) if value<0 => println(site1.id,site2.id,value)
-      })
-    }
-    println("=======================================================")
+    //val residualCost : Map[Site,Map[Site,Double]] = Map()
+
 
     // construct arc between left sites set and right sites set
     var stMap: Map[Site, Map[Site, Double]] = costs.entries.collect {
@@ -271,7 +257,7 @@ object ParametricAP extends LowerBoundSolver {
       }
       if (dijkstraDist(destination)<0){
         //println("No s-t path find")
-        println("infeasible")
+        //println("infeasible")
         return (dijkstraDist.toMap, Map(), Map())
       }
       // construct a t-s path from dijkstraPre
@@ -279,7 +265,7 @@ object ParametricAP extends LowerBoundSolver {
 
       // if infeasible
       if (!dijkstraPre.contains(destination)){
-        println("infeasible")
+        //println("infeasible")
         return (dijkstraDist.toMap, Map(), Map())
       }
 
