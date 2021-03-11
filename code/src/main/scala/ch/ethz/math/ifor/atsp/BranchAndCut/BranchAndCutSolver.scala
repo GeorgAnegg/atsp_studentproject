@@ -1,6 +1,7 @@
 package ch.ethz.math.ifor.atsp.BranchAndCut
 import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, arcWise, inf}
 import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPVariable}
+import ch.ethz.math.ifor.atsp.CompactFormulations.MTZ_FracIslands
 
 object BranchAndCutSolver extends Solver {
   def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean,useParametricAP:Boolean): Output = {
@@ -138,6 +139,7 @@ object BranchAndCutSolver extends Solver {
         return new Output(input, initTour)
       }
 
+      println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound)
       //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
@@ -186,7 +188,16 @@ object BranchAndCutSolver extends Solver {
 
         // currentBranchNode.lowerBoundSolve = solutionAfterPricing
 
-        val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
+        //val newCuts: List[(Map[MPVariable, Double], Double)] = cuttingPlane.findCuts(currentBranchNode, globalCuts)
+        var newCuts: List[(Map[MPVariable, Double], Double)] = List()
+        if (formulation == ""){
+          newCuts = cuttingPlane.findCuts(currentBranchNode, globalCuts)
+        }
+        if (formulation == "MTZ"){
+          newCuts = MTZ_FracIslands.fractionalIslands(input,currentBranchNode.lowerBoundSolve,currentBranchNode.variables)
+          newCuts= newCuts ++ cuttingPlane.findCuts(currentBranchNode, globalCuts)
+        }
+        println("Number of new cuts: ",newCuts.size,currentBranchNode.globalConstraints.size)
 
         // TODO: check the slack of the cuts, if > 0.01 and number of cuts > 10, remove the cut
         if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {

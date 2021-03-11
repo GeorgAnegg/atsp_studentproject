@@ -31,7 +31,6 @@ class BranchNode(val input: Input,
   val variables: arcWise[MPVariable] = arcWise(input, constructVariable)
   val costs:arcWise[Double] = arcWise(input,input.distance)
 
-
   // construct in- & out-degree constraints
   for (site1 <- input.sites){
     val constraintIn:MPConstraint = solverLP.makeConstraint(1, 1, "")

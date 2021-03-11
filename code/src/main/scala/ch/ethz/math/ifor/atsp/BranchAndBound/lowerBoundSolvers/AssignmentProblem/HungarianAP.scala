@@ -4,6 +4,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.LowerBoundSolver
 
 import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, PriorityQueue}
 import scala.util.control.Breaks.{break, breakable}
 object HungarianAP extends LowerBoundSolver{
 
@@ -16,6 +17,7 @@ object HungarianAP extends LowerBoundSolver{
       })
     }
      */
+    println("start hungarian ap")
     val numSites = branchNode.varAssignment.size
 
     // construct matching map
@@ -41,10 +43,6 @@ object HungarianAP extends LowerBoundSolver{
     // construct left sites set
     val sites: Map[Site,String] = costs.entries.keys.map(e => (e -> e.id)).toMap
     val sitesLeft : Map[Site,String] = sites.filterNot(matching.keys.toList.contains(_))
-    var sitesRight : Map[Site,String] = sites.filterNot(matching.values.toList.contains(_))
-    sitesRight = sitesRight.map{
-      case (site,str) => (new Site(str+"Right"),str+"Right")
-    }
 
     // implement a function to search a site by id among all sites
     def searchByID(sites:Map[Site,String],identity:String):Site={
@@ -70,20 +68,26 @@ object HungarianAP extends LowerBoundSolver{
 
     val costPrime = costs.entries.map {
       case (site1, map1) => (site1, map1.map {
-        case (site2, value) if matching.keys.exists(_==site1) || matching.values.exists(_ == site2) => (site2, inf)
-        case (site2, value) if !matching.keys.exists(_==site1) && !matching.values.exists(_ == site2) => (site2, value)
+        case (site2, value) if matching.keys.exists(_==site1) || matching.values.exists(_ == site2) => (new Site(site2.id+"Right"), inf)
+        case (site2, value) if !matching.keys.exists(_==site1) && !matching.values.exists(_ == site2) => (new Site(site2.id+"Right"), value)
       })
+    }
+
+    var sitesRight : Map[Site,String] = sites.filterNot(matching.values.toList.contains(_))
+    sitesRight = sitesRight.map{
+      case (site,str) => (new Site(str+"Right"),str+"Right")
     }
 
     // construct arc between left sites set and right sites set
     // TODO: Seems slow!
+    println("start construct residual map")
     val mapV1 = costPrime.map{
       case(site1,map1)=>(site1,map1.map{
-        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (searchByID(sitesRight,site2.id+"Right"),inf)
-        //case(site2,value) if branchNode.varAssignment(site1)(site2) != Some(false) && site1 != site2
-        //  && site1 != site2 => (searchByID(sitesRight,site2.id+"Right"),value)
-        case(site2,value) => (searchByID(sitesRight,site2.id+"Right"),value)
+        case(site2,_) if branchNode.varAssignment(site1)(site2) == Some(false) || site1 == site2 => (sitesRight.find(_._2==site2.id+"Right").get._1,inf)
+        case(site2,value) => (sitesRight.find(_._2==site2.id+"Right").get._1,value)
       })}
+    println("end construct residual map")
+
 
     // construct right sites set
 
@@ -171,22 +175,27 @@ object HungarianAP extends LowerBoundSolver{
 
       // construct the queue, and the labeling array
       var explored: Array[Site] = Array()
-      var queue: List[(Site, Double)] = List((start, 0.0))
+      var queue: ArrayBuffer[(Site, Double)] = ArrayBuffer((start, 0.0))
+      //var queue = new mutable.PriorityQueue[(Site,Double)]()(Ordering.by (a=>a._2))
+      //queue.enqueue((start,0))
 
       // while all nodes are not visited, continue the process
 
         while (queue.nonEmpty && explored.length != allSites.size-1) {
-
           // take the first element, i.e., lowest-weighted unvisited node
-          queue = queue.sortBy(_._2)
+          //queue = queue.sortBy(_._2)
           //println("size of queue ",queue.size)
-          val currentSite = queue.head
+          //val currentSite = queue.head
+          val currentSite = queue.minBy(a=>a._2)
+
           breakable {
             if (currentSite._1.id == "t") break
           }
 
           // delete the current node from the queue and label it as visited
-          queue = queue.drop(1)
+          queue = queue -= currentSite
+          //queue.dequeue()
+
 
           explored = explored :+ currentSite._1
 
@@ -198,15 +207,15 @@ object HungarianAP extends LowerBoundSolver{
               dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
               dijkstraPre.update(nextsite, currentSite._1)
               //println("add", (nextsite.id, dijkstraDist(nextsite)))
-              if (queue.exists(_._1 == nextsite)){
+              //if (queue.exists(_._1 == nextsite)){
                 //println("exists duplicate",nextsite)
                 //queue.foreach(e=>println(e._1,e._2))
-                queue = queue.filter(_._1!=nextsite)
+              queue = queue.filter(_._1!=nextsite)
                 //println("after deletion")
                 //queue.foreach(e=>println(e._1,e._2))
-              }
+              //}
               if (nextsite.id!="t") {
-                queue = queue ::: (nextsite, dijkstraDist(nextsite)) :: Nil
+                queue = queue += ((nextsite, dijkstraDist(nextsite)))
               }
             }
           }
