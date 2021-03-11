@@ -61,6 +61,27 @@ class BranchNode(val input: Input,
     }
   }
 
+  if (formulation == "DL"){
+    // construct order variables
+    var orderVariables:Map[Site, MPVariable]=Map()
+    input.sites.foreach {
+      case site if (site!=input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(1, input.sites.length - 1, ""))
+      case site if (site==input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(negInf, inf, ""))
+    }
+    // Add the order constraints
+    for (i <- input.sites) {
+      for (j <-input.sites){
+        if (j != i && j!= input.sites.head){
+          val constraint  = solverLP.makeConstraint(negInf,input.sites.length-2)
+          constraint.setCoefficient(variables.search(i,j),input.sites.length-1)
+          constraint.setCoefficient(variables.search(j,i),input.sites.length-3)
+          constraint.setCoefficient(orderVariables(i),1)
+          constraint.setCoefficient(orderVariables(j),-1)
+        }
+      }
+    }
+  }
+
   // construct the objective function.
   val objectiveFunction : MPObjective = solverLP.objective()
   variables.entries.map{

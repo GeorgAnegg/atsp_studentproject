@@ -193,7 +193,7 @@ object BranchAndCutSolver extends Solver {
         if (formulation == ""){
           newCuts = cuttingPlane.findCuts(currentBranchNode, globalCuts)
         }
-        if (formulation == "MTZ"){
+        if (formulation == "MTZ" || formulation == "DL"){
           newCuts = MTZ_FracIslands.fractionalIslands(input,currentBranchNode.lowerBoundSolve,currentBranchNode.variables)
           newCuts= newCuts ++ cuttingPlane.findCuts(currentBranchNode, globalCuts)
         }

@@ -33,12 +33,12 @@ package object instanceAlgoMatrix {
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,false)),
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true)),
     //("FT92" , BranchAndBoundSolver.solve(_, "",true,false,false)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
 
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
-
+    ("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
     ("MTZ", MTZ2020.solve),
     ("GG", GG.solve),
     ("DL", DL.solve)
