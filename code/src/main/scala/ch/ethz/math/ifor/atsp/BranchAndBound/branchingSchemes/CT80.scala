@@ -125,6 +125,7 @@ object CT80 extends BranchingScheme {
         case site2-> value if included.contains((site1,site2)) && value!=Some(false) => site2 ->Some(true)
         case site2-> bool  => site2 -> bool
       }}.toMap
+      /*
 
       def avoidPotentialCycle(lbSolve:Map[Site,Map[Site, Option[Boolean]]]): List[(Site,Site)] = {
 
@@ -140,6 +141,8 @@ object CT80 extends BranchingScheme {
             }
           }
         }
+
+
 
         var additionalExcluded: List[(Site,Site)] = List()
 
@@ -184,10 +187,11 @@ object CT80 extends BranchingScheme {
           }
         }
       additionalExcluded
-      }
+      */
 
       // exclude all arcs that could create a cycle if included
 
+      /*
       val additionalExcluded :List[(Site,Site)]= {
         if (included.length+includedArcs.size>2){
           avoidPotentialCycle(resultMap)
@@ -196,20 +200,26 @@ object CT80 extends BranchingScheme {
         }
       }
 
-      //val additionalExcluded = List()
+       */
+      /*
+
+      val additionalExcluded = List()
 
       val finalMap:Map[Site,Map[Site, Option[Boolean]]] = resultMap.collect{case site1-> map1 => site1 -> map1.collect{
         case site2-> _ if additionalExcluded.contains((site1,site2)) => site2 ->Some(false)
         case site2-> bool if !additionalExcluded.contains((site1,site2)) => site2 -> bool
       }}
 
+       */
+
+      val finalMap = resultMap
+
       //println(childMap)
 
       //println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
-      var newNode = new BranchNode(branchNode.input, finalMap,branchNode.useAdditive,false)
+      var newNode = new BranchNode(branchNode.input, finalMap,branchNode.useAdditive,false,Map(listArcs(i)._1->listArcs(i)._2),branchNode,branchNode.useParametricAP)
       // link children to parent, update level
-      newNode.parentNode = branchNode
       newNode.level = branchNode.level + 1
       listChildrenNodes = newNode :: listChildrenNodes
     }

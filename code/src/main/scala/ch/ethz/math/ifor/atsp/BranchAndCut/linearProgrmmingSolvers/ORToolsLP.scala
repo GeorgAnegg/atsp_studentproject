@@ -6,7 +6,7 @@ import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPV
 
 object ORToolsLP extends LinearProgrammingSolver {
   def findSolution(input:Input,vars:arcWise[MPVariable],solver:MPSolver): Map[Site, Map[Site, Double]] = {
-
+    //println("start solving LP")
     val result = solver.solve()
     //println(result)
 
@@ -25,7 +25,7 @@ object ORToolsLP extends LinearProgrammingSolver {
     }
 
      */
-
+    //println("end solving LP")
     resultSol.entries
 
   }

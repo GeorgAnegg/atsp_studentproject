@@ -29,31 +29,50 @@ object ChuLiuEdmonds {
     val costsPrime3:Map[Site, Map[Site, Double]] = costs.entries.map{
       case (site1,map1) => (site1,map1.map{
         case (site2, _) if site1==site2 || branchNode.varAssignment(site1)(site2)==Some(false)  => (site2,inf)
-        case (site2, value) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
+        case (site2, _) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
         case (site2, value) => (site2,value)
       })
     }
+
     /*
     println("ChuLiuEdmonds print reduced cost matrix: ")
-    costsPrime.foreach{
+    costsPrime3.foreach{
       case (site1, map1) => (site1, map1.map{
         case (site2, value) => println(site1, site2, value)
       })
     }
 
      */
+
+
+
+
     // root node should have no in-edges
     /*
     val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.map{
       case (site1,map1) => (site1,map1-rootSite)
     }
-
      */
+    /*
     val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.collect{
       case (site1,map1) => (site1,map1.collect{
         case (site2, value) if site2!=rootSite => (site2,value)
       })
     }
+
+     */
+    val costsPrime:Map[Site, Map[Site, Double]] = costsPrime3.map{
+      case (site1,map1) => (site1,map1-rootSite)
+    }
+
+    /*
+    println("ChuLiuEdmonds print reduced cost matrix 2: ")
+    costsPrime3.foreach{
+      case (site1, map1) => (site1, map1.map{
+        case (site2, value) => println(site1, site2, value)
+      })
+    }
+     */
 
     /*
     println("===============costsPrime in ChuLiuEdmonds===================")
@@ -62,7 +81,6 @@ object ChuLiuEdmonds {
         case (site2, value) => println(site1,site2,value)
       }
     }
-
      */
 
     // implement ChuLiuEdmonds algorithm to find the shortest spanning arborescence rooted at vertex r
@@ -203,7 +221,6 @@ object ChuLiuEdmonds {
 
       println("arcsInCycle before")
       arcsInCycle.foreach(map => println(map._1.id, map._2.id))
-
  */
       // in treePrime supernode has an in-edge u->supernode, replace it with u->v, where v is a min-cost node in the supernode
       var inSite = new Site()
@@ -217,7 +234,7 @@ object ChuLiuEdmonds {
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
 
       // then delete v' that v'->v in the cycle
-      if (arcsInCycle.find(_._2==inEdgeInCycle) != null) {
+      if (arcsInCycle.exists(_._2 == inEdgeInCycle)) {
         arcsInCycle = arcsInCycle - arcsInCycle.find(_._2 == inEdgeInCycle).get._1
       }
 
@@ -469,7 +486,7 @@ object ChuLiuEdmonds {
     }
 
      */
-    println("===============lower bound rSAP is: ",result,"=======================")
+    //println("===============lower bound rSAP is: ",result,"=======================")
     result
   }
 

@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicReference
 import ch.ethz.math.ifor.atsp.{Input, Output, Runtime}
 
 import scala.language.postfixOps
-
 import scala.util.Try
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -14,6 +13,21 @@ import ExecutionContext.Implicits.global
 
 object timeOut {
 
+
+  def notTimed(maxTime: Int, input:Input, solver: Input=> Output): Either[(Double,Runtime), String] ={
+    try {
+      lazy val start = System.nanoTime
+      lazy val output = solver(input)
+      lazy val dur = Runtime((System.nanoTime - start) / 1e9d)
+      lazy val temp = Left(output.value, dur)
+      temp
+    }
+    catch {
+      case e: OutOfMemoryError => {System.gc()//suggest garbage collection
+        Right("DNF")}
+      case e: Exception => Right("ERROR")
+    }
+  }
 
   /** returns a custom future that is interruptable
     *

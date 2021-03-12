@@ -2,7 +2,7 @@ package ch.ethz.math.ifor.atsp
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver
 import ch.ethz.math.ifor.atsp.BranchAndCut.BranchAndCutSolver
-import ch.ethz.math.ifor.atsp.CompactFormulations.{DL, GG, MTZ2020}
+import ch.ethz.math.ifor.atsp.CompactFormulations.{DL, GG, MTZ}
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut._
 
@@ -33,17 +33,15 @@ package object instanceAlgoMatrix {
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false)),
-    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true)),
-    ("FT97", BranchAndCutSolver.solve(_, "",true,false)),
-
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false)),
-
-    ("MTZ", MTZ2020.solve),
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true)),
+    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,false)),
+    ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
+    //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
+    ("MTZ", MTZ.solve),
     ("GG", GG.solve),
     ("DL", DL.solve)
   )
-
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
@@ -54,8 +52,6 @@ package object instanceAlgoMatrix {
       (name, result)
     }
   }
-
-
 
   // matrix of values
   def instanceAlgoData(maxTime: Int): List[(String, List[(String, Either[(Double, Runtime), String])])] = instances.map(name => name ->

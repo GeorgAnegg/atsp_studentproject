@@ -22,19 +22,18 @@ object HungarianV2 extends LowerBoundSolver{
         case(site2, value) => println(site1.id,site2.id,value)
       })
     }
-
      */
     val numSites = branchNode.varAssignment.size
 
     // construct matching map
     var matching : Map[Site,Site] = Map()
-    var excluded : List[(Site,Site)] = List()
+    var excluded : Map[Site,Site] = Map()
 
     for (map1 <- branchNode.varAssignment){
       for (map2 <- map1._2){
         if (map2._2 != null) {
           if (map2._2.get) {matching = matching + (map1._1 -> map2._1)}
-          else {excluded= excluded :+ (map1._1 ,map2._1)}
+          else {excluded= excluded ++ Map(map1._1 -> map2._1)}
         }
       }
     }
@@ -47,7 +46,6 @@ object HungarianV2 extends LowerBoundSolver{
     excluded.foreach{
       case (site1, site2) => println(site1.id,site2.id)
     }
-
      */
     // create s, t nodes
     val start : Site = new Site("s")
@@ -317,6 +315,7 @@ object HungarianV2 extends LowerBoundSolver{
 
        */
 
+      println("size of matching now: ",matching.size)
     }
 
     /*
@@ -332,13 +331,14 @@ object HungarianV2 extends LowerBoundSolver{
         case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(true) => (site2,0)
         case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
         //case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
-        case (site2, value) if sitesLeft.contains(site1) && sitesRight.contains(searchByID(sitesRight,site2.id+"Right")) => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)-potential(searchByID(sitesRight,site2.id+"Right")))
+        case (site2, value) if sitesLeft.contains(site1) && sitesRight.contains(searchByID(sitesRight,site2.id+"Right"))
+        => (site2, mapV1(site1)(searchByID(sitesRight,site2.id+"Right"))+potential(site1)
+          -potential(searchByID(sitesRight,site2.id+"Right")))
         case (site2, value) => (site2, inf)
       })
     }
 
     /*
-
     println("--------------------------reduced cost matrix using potential=======================")
 
     reducedCostMatrixAP.foreach{
@@ -347,6 +347,16 @@ object HungarianV2 extends LowerBoundSolver{
       } )
     }
     println("--------------------------=======================")
+
+     */
+    /*
+
+    println("reduced by residual")
+    stMap.foreach{
+      case (site1, map1) => (site1, map1.foreach{
+        case (site2, value) => println(site1.id,site2.id,value)
+      } )
+    }
 
      */
 
