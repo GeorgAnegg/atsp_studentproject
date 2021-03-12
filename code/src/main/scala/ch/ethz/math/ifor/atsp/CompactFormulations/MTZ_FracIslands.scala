@@ -41,17 +41,15 @@ object MTZ_FracIslands extends Solver{
       val currentSite = allSites.head
       visited = visited :+ currentSite
 
-      var adjSites: List[Site] = allEdges(currentSite)
-      if (adjSites.size > 1) {
-        currentIsland = currentIsland :+ currentSite
+      if (allEdges(currentSite).size > 1) {
+
         allSites = allSites.drop(1)
+
+        var adjSites: List[Site] = allEdges(currentSite)
 
         while (adjSites.nonEmpty) {
           var added: List[Site] = List()
-          for (e <- adjSites){
-            visited = visited :+ e
-            currentIsland = currentIsland :+ e
-          }
+          adjSites.foreach{e =>visited = visited :+ e}
           for (i <- adjSites) {
             val res = findNeighbours(i, currentIsland)
             currentIsland = currentIsland ++ res._2
@@ -62,34 +60,19 @@ object MTZ_FracIslands extends Solver{
           }
           adjSites = adjSites ++ added
         }
-          allIslands = allIslands :+ currentIsland
-          currentIsland = currentIsland.drop(currentIsland.size)
+        allIslands = allIslands :+ currentIsland
+        currentIsland = currentIsland.drop(currentIsland.size)
       }
 
       else {
         allSites = allSites.drop(1)
       }
-      /*
-      else if (allEdges(currentSite).length == 1){
-        val toSite = allEdges(currentSite).head
-        val toSiteNeighbours = allEdges(toSite)
-        if (toSiteNeighbours.size==1){
-          if (toSiteNeighbours.head==currentSite){
-            currentIsland = currentIsland :+ currentSite
-            currentIsland = currentIsland :+ toSite
-            allSites = allSites.filterNot(_ == toSite)
-            currentIsland = currentIsland.drop(currentIsland.size)
-          }
-        }
-      }
-
-       */
 
     }
     var resList: List[(Map[MPVariable,Double],Double)] = List()
 
 
-    /*
+
     println("size of islands: ",allIslands.size)
     for (i<-allIslands){
       for (j<-i){
@@ -97,7 +80,7 @@ object MTZ_FracIslands extends Solver{
       }
       println("\r\n")
     }
-     */
+
     if (allIslands.size==1 && allIslands.head.length>=input.sites.length-1){
       return List()
     }

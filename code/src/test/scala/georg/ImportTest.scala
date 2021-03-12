@@ -1,6 +1,4 @@
 package georg
-
-
 import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchAndBoundSolver, BranchNode, rSAPLowerBoundSolver}
 import ch.ethz.math.ifor.atsp.BranchAndCut.{BranchAndCutSolver, BranchNode}
 import ch.ethz.math.ifor.atsp.CompactFormulations.{MTZ,DL,GG}
@@ -31,12 +29,12 @@ object ImportTest extends App {
     "rbg443"
   )
 
-  val input = CSV.createInput("ftv170.csv")
+  val input = CSV.createInput("br17.csv")
   val t1 = System.nanoTime
-  val output = BranchAndCutSolver.solve(input, "",true,true,false)
-  //val output = MTZ2020.solve(input)
+  val output = BranchAndCutSolver.solve(input, "MTZ",true,true,false)
+  //val output = MTZ.solve(input,"",true, true, true)
   val duration = (System.nanoTime - t1) / 1e9d
-  output.print()
+  //output.print()
 
   println("Run time:" + duration)
 }

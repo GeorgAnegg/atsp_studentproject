@@ -1,10 +1,10 @@
 package ch.ethz.math.ifor.atsp.CompactFormulations
 
-import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf,Solver}
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
-object DL extends CompactFormulation {
-  def solve(input: Input): Output={
+object DL extends Solver {
+  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean): Output={
 
     System.loadLibrary("jniortools")
 

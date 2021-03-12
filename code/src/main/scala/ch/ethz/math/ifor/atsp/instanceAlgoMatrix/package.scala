@@ -38,9 +38,9 @@ package object instanceAlgoMatrix {
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
     //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
-    ("MTZ", MTZ.solve),
-    ("GG", GG.solve),
-    ("DL", DL.solve)
+    ("MTZ", MTZ.solve(_,"",true, true, true)),
+    ("GG", GG.solve(_,"",true, true, true)),
+    ("DL", DL.solve(_,"",true, true, true))
   )
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
