@@ -29,18 +29,19 @@ object incremental
 
     List("optValues", "runningTimes").foreach(category => {
       val sheet = workbook.getSheet(category)
-      val row = sheet.createRow(rowCounter)
+      var row = sheet.getRow(rowCounter)
+      if (row ==null) {row = sheet.createRow(rowCounter) }
       val nameCell = row.createCell(0)
       nameCell.setCellValue(input)
 
       //fill in data
       data.zipWithIndex.foreach {
         case ((name, either), index) => {
-          val column = index + 1
+          val column = index + 1 //TODO: CHOOSE THIS CAREFULLY!
           println(s"writing value ${either} for ${name} in cell ${column}")
           var cell = row.getCell(column)
           if (cell == null) {
-            cell = row.createCell(column)
+            cell = row.createCell(column)}
             cell.setCellValue(either match {
               case Left(pair) => {
                 category match {
@@ -50,7 +51,6 @@ object incremental
               }
               case Right(s) => s
             })
-          }
         }
       }
     }
