@@ -36,17 +36,17 @@ package object instanceAlgoMatrix {
     ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true)),
     ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,false)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false))//,
     //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
-    ("MTZ", MTZ.solve),
-    ("GG", GG.solve),
-    ("DL", DL.solve)
+    //("MTZ", MTZ.solve),
+    //("GG", GG.solve),
+    //("DL", DL.solve)
   )
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
-      val result = timed2(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
+      val result = notTimed(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
       Thread.sleep(300*1000)
       System.gc()
       (name, result)
