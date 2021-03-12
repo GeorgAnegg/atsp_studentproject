@@ -2,7 +2,7 @@ package ch.ethz.math.ifor.atsp
 
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver
 import ch.ethz.math.ifor.atsp.BranchAndCut.BranchAndCutSolver
-import ch.ethz.math.ifor.atsp.CompactFormulations.{DL, GG, MTZ2020}
+import ch.ethz.math.ifor.atsp.CompactFormulations.{DL, GG, MTZ}
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut._
 
@@ -38,7 +38,7 @@ package object instanceAlgoMatrix {
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
     //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
-    ("MTZ", MTZ2020.solve),
+    ("MTZ", MTZ.solve),
     ("GG", GG.solve),
     ("DL", DL.solve)
   )

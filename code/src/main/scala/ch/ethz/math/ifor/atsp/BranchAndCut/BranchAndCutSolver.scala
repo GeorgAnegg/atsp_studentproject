@@ -139,7 +139,7 @@ object BranchAndCutSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      //println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound)
+      //println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound,"iteration",currentBranchNode.iteration,currentBranchNode)
       //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
@@ -152,7 +152,6 @@ object BranchAndCutSolver extends Solver {
         for (subtour <- currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve)){
           var resultMap: Map[MPVariable, Double] = Map()
           val set1 = subtour.sequence
-          val set2 = input.sites.toList diff set1
           for (node1 <- set1) {
             for (node2 <- set1) {
               resultMap = resultMap ++ Map(currentBranchNode.variables.search(node1, node2) -> 1.0)
@@ -174,7 +173,14 @@ object BranchAndCutSolver extends Solver {
           }
           result
         }
-        currentBranchNode.lowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
+        //currentBranchNode.lowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
+
+        val oldLowerBound = currentBranchNode.lowerBound
+        val newLowerBound = currentBranchNode.computeLowerBound(currentBranchNode.lowerBoundSolve)
+        if (newLowerBound <= oldLowerBound){
+          currentBranchNode.iteration += 1
+        }
+        currentBranchNode.lowerBound = newLowerBound
         activeBranches = activeBranches ++ List(currentBranchNode)
         //println("Integer solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
       }
@@ -226,8 +232,7 @@ object BranchAndCutSolver extends Solver {
           //print("Fractional solution, cuts found, lower bound is:"+currentBranchNode.lowerBound+"\r\n")
         } else {
           //println("Here2?")
-
-          //print("No cuts found or attain max iteration for one node\r\n")
+          //print("No cuts found or attain max iteration for one node, start branching\r\n")
           // check if current solution is integer
           if (currentBranchNode.isInteger) {
             //print("current node is integer\r\n")

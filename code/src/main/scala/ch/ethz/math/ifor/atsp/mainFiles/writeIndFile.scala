@@ -42,7 +42,6 @@ object writeIndFile extends App {
 
     val data = instanceAlgoMatrix.runAll(maxTime, input)
 
-
     val sheet = workbook.createSheet(input)
 
     //write header row

@@ -3,7 +3,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
 import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf}
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
-object MTZ2020 extends CompactFormulation {
+object MTZ extends CompactFormulation {
   def solve(input: Input): Output={
 
     System.loadLibrary("jniortools")

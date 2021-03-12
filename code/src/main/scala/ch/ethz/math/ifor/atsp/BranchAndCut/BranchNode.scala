@@ -100,9 +100,11 @@ class BranchNode(val input: Input,
   def fromCutToConstraint(cuts:List[(Map[MPVariable,Double],Double)]): Unit ={
     for (cut <- cuts){
       val constraint : MPConstraint = solverLP.makeConstraint(negInf, cut._2, "")
-      cut._1.foreach{
-        case (mpVariable,coefficient) => constraint.setCoefficient(mpVariable,coefficient)
+      for(e<-cut._1){
+        constraint.setCoefficient(e._1,e._2)
+        //constraint.setIsLazy(true)
       }
+      //cut._1.foreach{ case (mpVariable,coefficient) => constraint.setCoefficient(mpVariable,coefficient)}
       constraintsInNode = constraintsInNode ++ List(constraint)
     }
   }
