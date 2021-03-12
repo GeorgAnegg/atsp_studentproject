@@ -64,7 +64,7 @@ object BranchAndBoundSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      //println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
+      println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
       /*
             println("active branches after sorted")

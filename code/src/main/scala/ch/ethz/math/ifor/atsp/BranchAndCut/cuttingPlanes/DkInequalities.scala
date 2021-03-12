@@ -197,6 +197,7 @@ object DkInequalities extends CuttingPlane {
         nodes = nodes.drop(1)
         val slack = computePhi(current) - current.size + 1
         println("Length of current dk list: ",current.length,"slack is: "+slack)
+        phiList.foreach{case e => println(e._1.size,e._2)}
         if (slack > 0) {
           // if current list is violated, add to the result list
           val newInequality = constructInequality(current)

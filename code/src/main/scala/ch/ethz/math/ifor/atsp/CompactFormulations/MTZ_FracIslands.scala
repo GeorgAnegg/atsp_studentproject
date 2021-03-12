@@ -72,7 +72,6 @@ object MTZ_FracIslands extends Solver{
     var resList: List[(Map[MPVariable,Double],Double)] = List()
 
 
-
     println("size of islands: ",allIslands.size)
     for (i<-allIslands){
       for (j<-i){

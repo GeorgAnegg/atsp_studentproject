@@ -181,13 +181,15 @@ object BranchAndCutSolver extends Solver {
           currentBranchNode.iteration += 1
         }
         currentBranchNode.lowerBound = newLowerBound
+
+
         activeBranches = activeBranches ++ List(currentBranchNode)
         //println("Integer solution with more than one subtours, num of cuts inside: ",currentBranchNode.globalConstraints.size)
       }
       else {
         // apply AP-pricing
         // set threshold to 2000 temporarily because it largely slows down the computational time for current instances
-        if (numSites >= 2000) {
+        if (numSites >= 1000) {
           currentBranchNode = pricingScheme.updateColumns(currentBranchNode)
         }
         // val solutionAfterPricing: Map[Site, Map[Site, Double]] = pricingScheme.updateColumns(currentBranchNode)
@@ -203,7 +205,7 @@ object BranchAndCutSolver extends Solver {
           newCuts = MTZ_FracIslands.fractionalIslands(input,currentBranchNode.lowerBoundSolve,currentBranchNode.variables)
           newCuts= newCuts ++ cuttingPlane.findCuts(currentBranchNode, globalCuts)
         }
-        println("Number of new cuts: ",newCuts.size,currentBranchNode.globalConstraints.size)
+        //println("Number of new cuts: ",newCuts.size,currentBranchNode.globalConstraints.size)
 
         // TODO: check the slack of the cuts, if > 0.01 and number of cuts > 10, remove the cut
         if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {

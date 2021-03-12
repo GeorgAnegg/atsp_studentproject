@@ -19,6 +19,7 @@ object APPricing extends PricingScheme {
     for (item <- branchNode.costsMap){
       reducedCost = reducedCost + item
     }
+    println("number of constraints: ",branchNode.constraintsInNode)
 
     for(rowConstraint <- branchNode.constraintsInNode){
       if (rowConstraint.dualValue()!=0.0){
@@ -39,6 +40,11 @@ object APPricing extends PricingScheme {
       }
     }
 
+    reducedCost.collect{
+      case (site1, map1) => map1.collect{
+        case (site2, value) if value ==0 => println(site1, site2, value)
+      }
+    }
     // calculate cardinality of arcs of negative reduced cost
     var mu :Int = 0
     reducedCost.collect{
@@ -171,7 +177,7 @@ object APPricing extends PricingScheme {
 
         val newNode = new BranchNode(branchNode.input,newAssignment,branchNode.globalConstraints,branchNode.formulation)
         // recursion
-        return updateColumns(newNode)
+        updateColumns(newNode)
       }
     }
     }

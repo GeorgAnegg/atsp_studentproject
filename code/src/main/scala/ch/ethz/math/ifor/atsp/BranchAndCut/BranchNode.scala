@@ -45,8 +45,9 @@ class BranchNode(val input: Input,
     // construct order variables
     var orderVariables:Map[Site, MPVariable]=Map()
     input.sites.foreach {
-      case site if (site!=input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(1, input.sites.length - 1, ""))
-      case site if (site==input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(negInf, inf, ""))
+      //case site if (site!=input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(1, input.sites.length - 1, ""))
+      //case site if (site==input.sites.head)=> orderVariables += (site -> solverLP.makeNumVar(negInf, inf, ""))
+      case site => orderVariables += (site -> solverLP.makeNumVar(negInf, inf, ""))
     }
     // Add the order constraints
     for (i <- input.sites) {
@@ -144,6 +145,8 @@ class BranchNode(val input: Input,
 
   var lowerBound: Double = computeLowerBound(lowerBoundSolve)
 
+  /*
+
   def findTour(solution:Map[Site, Map[Site, Double]]):Tour={
     var pairMap = solution.map({ case (site1, map1) => site1 -> map1.filter(_._2 == 1.0).head._1 })
     var siteList : List[Site] = List()
@@ -157,6 +160,8 @@ class BranchNode(val input: Input,
     }
     new Tour(input,siteList)
   }
+
+   */
 
   def detectTours(lbSolve:Map[Site, Map[Site, Double]]):List[Tour] = {
     if(!isInteger){

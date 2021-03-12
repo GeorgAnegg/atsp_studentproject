@@ -17,6 +17,8 @@ object ORToolsLP extends LinearProgrammingSolver {
     }
 
     val resultSol:arcWise[Double] = arcWise(input,constructVariable)
+
+
     /*
     for (i <- input.sites) {
       for (j <- input.sites) {
@@ -25,6 +27,7 @@ object ORToolsLP extends LinearProgrammingSolver {
     }
 
      */
+
     //println("end solving LP")
     resultSol.entries
 
