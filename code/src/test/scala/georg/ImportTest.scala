@@ -31,10 +31,10 @@ object ImportTest extends App {
     "rbg443"
   )
 
-  val input = CSV.createInput("ftv44.csv")
+  val input = CSV.createInput("kro124p.csv")
   val t1 = System.nanoTime
-  //val output = BranchAndCutSolver.solve(input, "DL",true,true,true)
-  val output = DL.solve(input)
+  val output = BranchAndCutSolver.solve(input, "MTZ",true,true,false)
+  //val output = MTZ2020.solve(input)
   val duration = (System.nanoTime - t1) / 1e9d
   output.print()
 

@@ -64,7 +64,7 @@ object BranchAndBoundSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
+      //println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
       /*
             println("active branches after sorted")
@@ -106,9 +106,9 @@ object BranchAndBoundSolver extends Solver {
     }
     val tour = currentBestNode.get.allTours.head
     val list = tour.listArcs
-    list.foreach{e => println(e._1,e._2)}
-    println("optimal length: ", tour.length,tour.sequence.length,input.sites.length)
-    input.sites.foreach{e => println(e)}
+    //list.foreach{e => println(e._1,e._2)}
+    //println("optimal length: ", tour.length,tour.sequence.length,input.sites.length)
+    //input.sites.foreach{e => println(e)}
     new Output(input, tour)
   }
 }

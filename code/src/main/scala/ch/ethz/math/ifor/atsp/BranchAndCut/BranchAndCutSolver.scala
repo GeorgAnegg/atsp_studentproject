@@ -103,7 +103,7 @@ object BranchAndCutSolver extends Solver {
       if (apCost == initUpperBound){
         return new Output(input, initTour)
       }
-      println("ini upper: ", +initUpperBound)
+      //println("ini upper: ", +initUpperBound)
     }
 
     // Need a global cuts pool
@@ -139,7 +139,7 @@ object BranchAndCutSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound)
+      //println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound)
       //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){
@@ -197,7 +197,7 @@ object BranchAndCutSolver extends Solver {
           newCuts = MTZ_FracIslands.fractionalIslands(input,currentBranchNode.lowerBoundSolve,currentBranchNode.variables)
           newCuts= newCuts ++ cuttingPlane.findCuts(currentBranchNode, globalCuts)
         }
-        println("Number of new cuts: ",newCuts.size,currentBranchNode.globalConstraints.size)
+        //println("Number of new cuts: ",newCuts.size,currentBranchNode.globalConstraints.size)
 
         // TODO: check the slack of the cuts, if > 0.01 and number of cuts > 10, remove the cut
         if (newCuts.nonEmpty && currentBranchNode.iteration <= 5) {

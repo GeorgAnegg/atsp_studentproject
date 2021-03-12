@@ -11,8 +11,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
 object writeIndFile extends App {
 
-  writeFile("ftv64", 1)
+  // pure MTZ, DL, and GG need much more time to compute an optimal than CDT, FT92, FT97
+  // set maxTime = 60s for these three perhaps is more practical
+  writeFile("ftv35", 60)
 
+  // TODO: there might be a problem in reading file "kro124p"
   val instances = List(
     "br17",
     "ftv33",

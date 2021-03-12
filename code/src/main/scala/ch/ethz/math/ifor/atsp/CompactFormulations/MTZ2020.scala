@@ -16,7 +16,7 @@ object MTZ2020 extends CompactFormulation {
     //val x = Array.ofDim[MPVariable](numSites, numSites)
 
     def constructVariable(site1:Site ,site2:Site):MPVariable= {
-      if (site1.id==site2.id) {solver.makeNumVar(0,0,"")}
+      if (site1.id==site2.id) {solver.makeIntVar(0,0,"")}
       else {
         solver.makeIntVar(0,1,"")
       }

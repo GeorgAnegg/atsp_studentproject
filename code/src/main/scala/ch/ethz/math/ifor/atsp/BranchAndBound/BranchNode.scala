@@ -184,7 +184,7 @@ class BranchNode(val input: Input,
     // depending on what lowerBoundSolvers compute and output, adjust how LeafNodes are built
 
     if (isLeafNode) {//if lower bound is feasible tour, create leaf node
-      println("find integer solution",allTours.length,allTours.head.sequence.length)
+      //println("find integer solution",allTours.length,allTours.head.sequence.length)
       Left(this)
     }
     else { //else use branching rule to get subproblems
