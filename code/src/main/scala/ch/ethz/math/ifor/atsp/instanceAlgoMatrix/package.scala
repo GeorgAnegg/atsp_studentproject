@@ -33,7 +33,7 @@ package object instanceAlgoMatrix {
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true)),
+    //("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true)),
     ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,false)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
     ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false))//,
@@ -47,8 +47,8 @@ package object instanceAlgoMatrix {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
       val result = notTimed(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
-      Thread.sleep(300*1000)
-      System.gc()
+      //Thread.sleep(300*1000)
+      //System.gc()
       (name, result)
     }
   }

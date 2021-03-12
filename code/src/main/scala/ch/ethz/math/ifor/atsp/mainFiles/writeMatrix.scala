@@ -9,7 +9,8 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{instances, namedSolvers}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-object writeMatrix extends App {
+object writeMatrix extends App
+ {
 
 
   val data = instanceAlgoMatrix.instanceAlgoData(60)

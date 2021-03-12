@@ -9,10 +9,13 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{instances, namedSolvers}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut.timed
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 
-object writeIndFile extends App {
+object writeIndFile {
+  def main(args: Array[String]): Unit = {
+    writeFile(args(0), 60)
+
+  }
 
 
-  writeFile("kro124p", 20)
 
   // pure MTZ, DL, and GG need much more time to compute an optimal than CDT, FT92, FT97
   // set maxTime = 60s for these three perhaps is more practical
