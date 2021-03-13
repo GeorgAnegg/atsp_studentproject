@@ -7,7 +7,7 @@ import ch.ethz.math.ifor.atsp.{Site, arcWise, inf}
 import scala.collection.mutable
 import scala.util.control.Breaks.{break, breakable}
 
-object ParaTest extends LowerBoundSolver{
+object ParametricTest extends LowerBoundSolver{
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
     // need a residual graph
     // delete newly excluded arc from the matching of parent node

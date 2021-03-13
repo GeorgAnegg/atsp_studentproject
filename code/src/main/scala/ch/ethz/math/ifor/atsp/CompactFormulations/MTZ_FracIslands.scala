@@ -72,13 +72,16 @@ object MTZ_FracIslands extends Solver{
     var resList: List[(Map[MPVariable,Double],Double)] = List()
 
 
-    println("size of islands: ",allIslands.size)
+    //println("size of islands: ",allIslands.size)
+    /*
     for (i<-allIslands){
       for (j<-i){
         print(j+"  ")
       }
       println("\r\n")
     }
+
+     */
 
     if (allIslands.size==1 && allIslands.head.length>=input.sites.length-1){
       return List()

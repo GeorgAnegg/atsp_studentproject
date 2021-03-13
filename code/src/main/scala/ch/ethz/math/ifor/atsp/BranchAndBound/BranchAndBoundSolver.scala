@@ -30,7 +30,7 @@ object BranchAndBoundSolver extends Solver {
     val iniHeuristic = rootNode.globalHeuristic
     val initUpperBound = iniHeuristic._1
     val initTour = iniHeuristic._2
-    println("init upper bound",initUpperBound)
+    //println("init upper bound",initUpperBound)
 
     if (rootNode.lowerBound==initUpperBound){
       return new Output(input, initTour)
@@ -69,7 +69,7 @@ object BranchAndBoundSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
+      //println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
 
       /*
             println("active branches after sorted")

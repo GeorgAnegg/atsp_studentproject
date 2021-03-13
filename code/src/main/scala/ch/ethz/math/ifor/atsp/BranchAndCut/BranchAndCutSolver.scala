@@ -139,7 +139,7 @@ object BranchAndCutSolver extends Solver {
         return new Output(input, initTour)
       }
 
-      println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound,"iteration",currentBranchNode.iteration,currentBranchNode)
+      //println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound,"iteration",currentBranchNode.iteration,currentBranchNode)
       //print("Is integer? ",currentBranchNode.isInteger,"num of tours? ",currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size)
 
       if (currentBranchNode.isInteger && currentBranchNode.detectTours(currentBranchNode.lowerBoundSolve).size==1){

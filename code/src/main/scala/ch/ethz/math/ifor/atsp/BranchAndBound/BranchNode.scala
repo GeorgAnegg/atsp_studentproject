@@ -51,7 +51,7 @@ class BranchNode(val input: Input,
       //println("iniUB: ",globalHeuristic._1)
       globalHeuristic._1
     } else {
-      inf
+      this.parentNode.globalUpperbound
     }
   }
 

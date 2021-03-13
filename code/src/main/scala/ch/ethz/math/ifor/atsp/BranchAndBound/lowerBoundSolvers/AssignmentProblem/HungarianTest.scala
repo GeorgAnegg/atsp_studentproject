@@ -409,7 +409,7 @@ object HungarianTest extends LowerBoundSolver{
     // dij takes a residual graph, returns d(i) for all i
 
 
-    println("Optimal AP cost: ",costFinal)
+    //println("Optimal AP cost: ",costFinal)
     (resultAssignment.entries,reducedCost)
   }
 

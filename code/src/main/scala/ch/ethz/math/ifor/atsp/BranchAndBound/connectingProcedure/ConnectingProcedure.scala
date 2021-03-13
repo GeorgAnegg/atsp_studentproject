@@ -1,5 +1,5 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.connectingProcedure
-import ch.ethz.math.ifor.atsp.{Site}
+import ch.ethz.math.ifor.atsp.Site
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
 object ConnectingProcedure {
 
@@ -18,7 +18,7 @@ object ConnectingProcedure {
     }
 
     if(numberOfZeros > zeroArcsThreshold || branchNode.isRootNode) {
-      println("need connecting")
+      //println("need connecting")
       var tours: List[Map[Site, Site]] = List()
       branchNode.allTours.foreach(tour => tours = tours ::: tour.listArcs :: Nil)
       //println("size of subtours before connecting: ",tours.size)
@@ -46,7 +46,7 @@ object ConnectingProcedure {
          */
         var currentTour = tours.head
         //println("current tour")
-        currentTour.foreach{e => println(e._1,e._2)}
+        //currentTour.foreach{e => println(e._1,e._2)}
         tours = tours.filter(_!=currentTour)
         toursMap = toursMap.updated(currentTour,true)
         var alreadyPatched = false
@@ -78,7 +78,7 @@ object ConnectingProcedure {
             //var visited: Map[Map[Site,Site],Boolean]=Map()
             //tourA.foreach(a => visited = visited ++ Map(Map(a) -> false))
             while (count!=tourA.size && !alreadyPatched){
-              // TODO: this line need to be taken further consideration
+              // TODO: there might be better way to write this line
               var arcOther = tourA.head
               //val tmp = visited.filter(_._2==false).head._1
               // var arcOther = (tmp.keys.head,tmp.values.head)
@@ -167,7 +167,7 @@ object ConnectingProcedure {
         return (resultAssignment,true,false)
       }
     }
-    println("do not need connecting")
+    //println("do not need connecting")
     (branchNode.lowerBoundSolve, false, false)
     }
 }
