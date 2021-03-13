@@ -8,11 +8,11 @@ import com.google.ortools.linearsolver.MPObjective
 import com.google.ortools.linearsolver.MPSolver
 import com.google.ortools.linearsolver.MPVariable
 import scala.collection.mutable
+import ch.ethz.math.ifor.atsp.BranchAndBound.lowerBoundSolvers.AssignmentProblem.ORToolsIPDual
 
 object ORToolsIP extends LowerBoundSolver{
 
   def compute(branchNode: BranchNode): (Map[Site, Map[Site, Boolean]],Map[Site, Map[Site, Double]])  = {
-
     System.loadLibrary("jniortools")
     /*
     var excluded: List[(Site,Site)] = List()
@@ -26,8 +26,7 @@ object ORToolsIP extends LowerBoundSolver{
      */
 
     val solver: MPSolver = new MPSolver("AssignmentProblem",
-      MPSolver.OptimizationProblemType.GLOP_LINEAR_PROGRAMMING)
-
+      MPSolver.OptimizationProblemType.CLP_LINEAR_PROGRAMMING)
     // x(i)(j) is an array of 0-1 variables, which will be 1
     // if site i is assigned to site j.
     //val x = Array.ofDim[MPVariable](numSites, numSites)
@@ -81,14 +80,13 @@ object ORToolsIP extends LowerBoundSolver{
         //println("Number of constraints = " + solver.numConstraints(),i,j,x.search(i,j))
       }
     }
-
      */
     var constraintInMap: Map[Site,MPConstraint] = Map()
     var constraintOutMap: Map[Site,MPConstraint] = Map()
 
-    //var listConstraintsIn: Map[MPConstraint,Double] = Map()
-    //var listConstraintsOut: Map[MPConstraint,Double] = Map()
-    //var constraints: Map[MPConstraint,Double] = Map()
+    var listConstraintsIn: Map[MPConstraint,Double] = Map()
+    var listConstraintsOut: Map[MPConstraint,Double] = Map()
+    var constraints: Map[MPConstraint,Double] = Map()
 
     // construct in- & out-degree constraints
     for (site1 <- branchNode.input.sites){
@@ -98,12 +96,12 @@ object ORToolsIP extends LowerBoundSolver{
         constraintIn.setCoefficient(x.search(site1, site2),1)
         constraintOut.setCoefficient(x.search(site2, site1),1)
       }
-      //listConstraintsIn = listConstraintsIn ++ Map(constraintIn->0.0)
-      //listConstraintsOut = listConstraintsOut ++ Map(constraintOut->0.0)
+      listConstraintsIn = listConstraintsIn ++ Map(constraintIn->0.0)
+      listConstraintsOut = listConstraintsOut ++ Map(constraintOut->0.0)
       constraintInMap = constraintInMap ++ Map(site1->constraintIn)
       constraintOutMap = constraintOutMap ++ Map(site1->constraintOut)
     }
-    //constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
+    constraints = constraints ++ listConstraintsIn ++ listConstraintsOut
 
     // Create the objective function.
     val objective = solver.objective()
@@ -136,8 +134,8 @@ object ORToolsIP extends LowerBoundSolver{
 
     def constructResult(site1:Site ,site2:Site):Boolean= {
       if (x.search(site1,site2).solutionValue == 1) {
-        //println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),
-        //  branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
+        println(site1,site2,constraintInMap(site1).dualValue(),constraintOutMap(site2).dualValue(),
+          branchNode.costsMap(site1)(site2)-constraintInMap(site1).dualValue()-constraintOutMap(site2).dualValue())
         true}
       else {false}
     }
@@ -151,18 +149,17 @@ object ORToolsIP extends LowerBoundSolver{
     }
 
     //compute reduced cost
+
     val reducedCost = branchNode.costsMap.map{
       case (site1, map1) => (site1, map1.map{
-        case (site2, value) => (site2, value - constraintInMap(site1).dualValue() - constraintOutMap(site2).dualValue())
+        case (site2, value) => (site2, value - constraintOutMap(site1).dualValue() - constraintInMap(site2).dualValue())
       })
     }
 
-    /*
-    var reducedCost2 = mutable.Map[Site, Map[Site, Double]]()
-    for (item <- branchNode.costsMap){
-      reducedCost2 = reducedCost2 + item
-    }
 
+
+/*
+    var reducedCost2 = branchNode.costsMap
 
     println("stuck here reduced cost?")
     //reduced cost v2
@@ -185,17 +182,19 @@ object ORToolsIP extends LowerBoundSolver{
       }
     }
 
-     */
+ */
 
-    /*
+
+
+
     println("===============reduced cost in OR Tools IP===================== ")
     reducedCost.collect{
       case (site1, map1) => map1.collect{
-        case (site2, value) if value ==Double.NaN || value < 0=> println(site1,site2,value)
+        case (site2, value) => println(site1,site2,value)
       }
     }
 
-     */
+
 
 
 
@@ -207,6 +206,8 @@ object ORToolsIP extends LowerBoundSolver{
         case (site2, value) => println(site1,site2,value)
       }
     }
+
+
 
  */
 
@@ -226,6 +227,7 @@ object ORToolsIP extends LowerBoundSolver{
     //println("Finish OR Tools AP")
     (resultArray.entries,reducedCost)
     }
+
 
   // not used
   def computeLB (branchNode: BranchNode) : LowerBound = {

@@ -28,8 +28,8 @@ object ORToolsIPDual extends LowerBoundSolver{
     var mapVarOut: Map[(Site,String),MPVariable]= Map()
 
     for (site <- branchNode.input.sites){
-      val variableIn : MPVariable = solver.makeNumVar(0,inf,"")
-      val variableOut : MPVariable = solver.makeNumVar(0,inf,"")
+      val variableIn : MPVariable = solver.makeIntVar(0,inf,"")
+      val variableOut : MPVariable = solver.makeIntVar(0,inf,"")
       mapVarIn = mapVarIn ++ Map((site,"In")->variableIn)
       mapVarOut = mapVarOut ++ Map((site,"Out")->variableOut)
       }
@@ -47,7 +47,7 @@ object ORToolsIPDual extends LowerBoundSolver{
           constraint.setCoefficient(mapVarIn((site1,"In")),1)
           constraint.setCoefficient(mapVarOut((site2,"Out")),1)
         } else {
-          val constraint: MPConstraint = solver.makeConstraint(-inf, branchNode.costsMap(site1)(site2), "")
+          val constraint: MPConstraint = solver.makeConstraint(0, branchNode.costsMap(site1)(site2), "")
           constraint.setCoefficient(mapVarIn((site1, "In")), 1)
           constraint.setCoefficient(mapVarOut((site2, "Out")), 1)
         }
@@ -92,9 +92,9 @@ object ORToolsIPDual extends LowerBoundSolver{
     }
 
     //compute reduced cost
-    val reducedCost = branchNode.costsMap.map{
-      case (site1, map1) => (site1, map1.map{
-        case (site2, value) => (site2, value - mapVarIn((site1,"In")).solutionValue() - mapVarOut((site2,"Out")).solutionValue())
+    val reducedCost = branchNode.costsMap.collect{
+      case (site1, map1) => (site1, map1.collect{
+        case (site2, value) if value - mapVarIn((site1,"In")).solutionValue() - mapVarOut((site2,"Out")).solutionValue() <0=> (site2, value - mapVarIn((site1,"In")).solutionValue() - mapVarOut((site2,"Out")).solutionValue())
       })
     }
 

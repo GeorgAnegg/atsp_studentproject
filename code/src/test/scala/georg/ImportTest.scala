@@ -6,7 +6,6 @@ import ch.ethz.math.ifor.atsp.CompactFormulations.{MTZ,DL,GG}
 import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 
 object ImportTest extends App {
-
   val instances = List(
     "br17",
     "ftv33",
@@ -29,9 +28,9 @@ object ImportTest extends App {
     "rbg443"
   )
 
-  val input = CSV.createInput("ftv33.csv")
+  val input = CSV.createInput("rbg323.csv")
   val t1 = System.nanoTime
-  val output = BranchAndCutSolver.solve(input, "",true,false,false)
+  val output = BranchAndBoundSolver.solve(input, "",true,false,true)
   //val output = MTZ.solve(input,"",true, true, true)
   val duration = (System.nanoTime - t1) / 1e9d
   output.print()

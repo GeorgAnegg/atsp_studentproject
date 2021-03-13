@@ -1,6 +1,10 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
+import ch.ethz.math.ifor.atsp.BranchAndBound.BranchAndBoundSolver.detectTours
+
 import scala.util.control.Breaks._
 import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf}
+import ch.ethz.math.ifor.atsp.BranchAndBound.connectingProcedure.ConnectingProcedure.reduceNumberOfSubtours
+
 /** class for node classes like branch node
  * @param input contains input
  * @param varAssignment contains information for which variables are already set to 0 or 1
@@ -29,24 +33,9 @@ class BranchNode(val input: Input,
 
   var lowerBoundSolve: Map[Site, Map[Site, Boolean]] = lowerBoundAP._1
   var reducedCostMatrixAfterAP : Map[Site, Map[Site, Double]] = lowerBoundAP._2
-  /*
-  println("======reducedCostMatrixAfterAP in parent node=====")
-  reducedCostMatrixAfterAP.collect{
-    case (site1, map1)  =>  (site1, map1.collect{
-      case (site2, value) => println(site1.id,site2.id,value)
-    })
-  }
-  println("=======================================================")
-
-   */
+  var allTours: List[Tour] = detectToursV2(lowerBoundSolve)
   var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
-  val lowerBoundCostAP :Double = lowerBound
-
-  //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
-  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
-
-  val allTours: List[Tour] = detectToursV2(lowerBoundSolve)
-  val isLeafNode: IsLeafNode = allTours.length == 1
+  var lowerBoundCostAP: Double = lowerBound
 
   val globalHeuristic:(Double,Tour) = {
     if (isRootNode) {
@@ -64,6 +53,31 @@ class BranchNode(val input: Input,
       inf
     }
   }
+
+  val connectingResult = reduceNumberOfSubtours(this)
+  if (connectingResult._3 || connectingResult._2){
+    this.lowerBoundSolve = connectingResult._1
+    allTours = detectToursV2(lowerBoundSolve)
+    lowerBound =  lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+    lowerBoundCostAP = lowerBound
+  }
+
+  /*
+  println("======reducedCostMatrixAfterAP in parent node=====")
+  reducedCostMatrixAfterAP.collect{
+    case (site1, map1)  =>  (site1, map1.collect{
+      case (site2, value) => println(site1.id,site2.id,value)
+    })
+  }
+  println("=======================================================")
+
+   */
+
+  //var reducedCostMatrix: Map[Site, Map[Site, Double]] = Map()
+  //val naiveLowerBound: LowerBound = naiveLowerBoundSolver.computeLB(branchNode = this)
+
+  //val allTours: List[Tour] = detectToursV2(lowerBoundSolve)
+  val isLeafNode: IsLeafNode = allTours.length == 1
 
   var lowerBoundrSAP :Double= inf
   if (useAdditive /*&& isRootNode*/){
@@ -124,7 +138,6 @@ class BranchNode(val input: Input,
       }
     }
     listTours
-
   }
 /*
 

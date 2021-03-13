@@ -34,6 +34,7 @@ object ChuLiuEdmonds {
       })
     }
 
+
     /*
     println("ChuLiuEdmonds print reduced cost matrix: ")
     costsPrime3.foreach{
@@ -43,6 +44,8 @@ object ChuLiuEdmonds {
     }
 
      */
+
+
 
 
 
@@ -486,7 +489,7 @@ object ChuLiuEdmonds {
     }
 
      */
-    //println("===============lower bound rSAP is: ",result,"=======================")
+    println("===============lower bound rSAP is: ",result,"=======================")
     result
   }
 

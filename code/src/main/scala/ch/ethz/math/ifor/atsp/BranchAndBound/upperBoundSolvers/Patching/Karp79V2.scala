@@ -89,7 +89,7 @@ object Karp79V2 extends UpperBoundSolver {
       case (site1,site2) => listTour = listTour :+ site1
     }
     val tour = new Tour(branchNode.input,listTour)
-    //println("Finish UB")
+    //println("Finish UB",upperBound)
     (upperBound,tour)
   }
 

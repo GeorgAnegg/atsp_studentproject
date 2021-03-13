@@ -1,8 +1,8 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound
-
+import ch.ethz.math.ifor.atsp.BranchAndBound.connectingProcedure.ConnectingProcedure.reduceNumberOfSubtours
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers
 import ch.ethz.math.ifor.atsp.BranchAndBound.upperBoundSolvers.Patching.Karp79.computeUpperBound
-import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, inf}
+import ch.ethz.math.ifor.atsp.{Input, Output, Site, Solver, Tour, inf}
 
 import scala.util.control.Breaks.break
 
@@ -29,7 +29,11 @@ object BranchAndBoundSolver extends Solver {
     val iniHeuristic = rootNode.globalHeuristic
     val initUpperBound = iniHeuristic._1
     val initTour = iniHeuristic._2
-    //println("init upper bound",initUpperBound)
+    println("init upper bound",initUpperBound)
+
+    if (rootNode.lowerBound==initUpperBound){
+      return new Output(input, initTour)
+    }
 
     var currentBestNode: Option[BranchNode] = None
 
@@ -111,4 +115,59 @@ object BranchAndBoundSolver extends Solver {
     //input.sites.foreach{e => println(e)}
     new Output(input, tour)
   }
+
+  def detectTours(lbSolve:Map[Site, Map[Site, Boolean]],input: Input):List[Tour] = {
+    var pairMap = lbSolve.map({ case (site1, map1) => site1 -> map1.filter(_._2).head._1 })
+    //println("====pairmap init=====")
+    //pairMap.foreach{e => println(e._1,e._2)}
+    var currentList : List[Site] =List()
+    var listTours: List[Tour] = List()
+    var currentArc = pairMap.head
+    currentList = currentList :+ currentArc._1
+    currentList = currentList :+ currentArc._2
+    pairMap = pairMap - currentArc._1
+
+    while (pairMap.nonEmpty){
+      //println("====pairmap status=====")
+      //pairMap.foreach{e => println(e._1,e._2)}
+
+      if (pairMap.contains(currentList.last)){
+        val nextArc = pairMap.find(_._1==currentList.last).get
+        if (nextArc._2!=currentList.head){
+          currentList = currentList :+ nextArc._2
+          pairMap = pairMap - nextArc._1
+          currentArc = nextArc
+        } else {
+          pairMap = pairMap - nextArc._1
+          //println("=========")
+          //currentList.foreach{e => println(e)}
+          val findTour = new Tour(input,currentList)
+          listTours = listTours :+ findTour
+          currentList = currentList.drop(currentList.length)
+          if (pairMap.nonEmpty){
+            currentArc = pairMap.head
+            currentList = currentList :+ currentArc._1
+            currentList = currentList :+ currentArc._2
+            pairMap = pairMap - currentArc._1
+          }
+        }
+      } else {
+        //println("=========")
+        //currentList.foreach{e => println(e)}
+        val findTour = new Tour(input,currentList)
+        listTours = listTours :+ findTour
+        currentList = currentList.drop(currentList.length)
+        if (pairMap.nonEmpty){
+          currentArc = pairMap.head
+          currentList = currentList :+ currentArc._1
+          currentList = currentList :+ currentArc._2
+          pairMap = pairMap - currentArc._1
+        }
+      }
+    }
+    listTours
+  }
+
+
+
 }
