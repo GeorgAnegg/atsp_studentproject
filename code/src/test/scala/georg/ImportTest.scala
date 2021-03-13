@@ -28,7 +28,7 @@ object ImportTest extends App {
     "rbg443"
   )
 
-  val input = CSV.createInput("rbg323.csv")
+  val input = CSV.createInput("br17.csv")
   val t1 = System.nanoTime
   val output = BranchAndBoundSolver.solve(input, "",true,false,true)
   //val output = MTZ.solve(input,"",true, true, true)

@@ -1,7 +1,7 @@
 package ch.ethz.math.ifor.atsp.BranchAndBound.connectingProcedure
 import ch.ethz.math.ifor.atsp.{Site}
 import ch.ethz.math.ifor.atsp.BranchAndBound.BranchNode
-object ConnectingProcedure {
+object ConnectingV2 {
 
   def reduceNumberOfSubtours(branchNode: BranchNode): (Map[Site,Map[Site,Boolean]],Boolean,Boolean) = {
 
@@ -75,15 +75,8 @@ object ConnectingProcedure {
             var arcCurrent = localCurrentTour.head
             //println("current arc ",arcCurrent._1,arcCurrent._2,"current size ",localCurrentTour.size)
             var count = 0
-            //var visited: Map[Map[Site,Site],Boolean]=Map()
-            //tourA.foreach(a => visited = visited ++ Map(Map(a) -> false))
             while (count!=tourA.size && !alreadyPatched){
-              // TODO: this line need to be taken further consideration
               var arcOther = tourA.head
-              //val tmp = visited.filter(_._2==false).head._1
-              // var arcOther = (tmp.keys.head,tmp.values.head)
-              //visited = visited.updated(Map(arcOther),true)
-              //println(arcOther._1,arcOther._2)
               count += 1
               //println("tour A arc ",arcOther._1,arcOther._2)
               if (branchNode.reducedCostMatrixAfterAP(arcCurrent._1)(arcOther._2)==0 &&
@@ -169,5 +162,5 @@ object ConnectingProcedure {
     }
     println("do not need connecting")
     (branchNode.lowerBoundSolve, false, false)
-    }
+  }
 }
