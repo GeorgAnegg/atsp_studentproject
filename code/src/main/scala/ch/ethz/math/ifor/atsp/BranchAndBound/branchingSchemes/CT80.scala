@@ -218,7 +218,8 @@ object CT80 extends BranchingScheme {
 
       //println("childmap",childMap)
       // return a new branchNode with new updated varAssignment, and add to the result list
-      var newNode = new BranchNode(branchNode.input, finalMap,branchNode.useAdditive,false,Map(listArcs(i)._1->listArcs(i)._2),branchNode,branchNode.useParametricAP)
+      var newNode = new BranchNode(branchNode.input, finalMap,branchNode.useAdditive,false,
+        Map(listArcs(i)._1->listArcs(i)._2),branchNode,branchNode.useParametricAP,branchNode.useConnecting)
       // link children to parent, update level
       newNode.level = branchNode.level + 1
       listChildrenNodes = newNode :: listChildrenNodes

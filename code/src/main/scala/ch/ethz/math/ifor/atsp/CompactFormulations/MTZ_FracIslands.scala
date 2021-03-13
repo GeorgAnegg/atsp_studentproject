@@ -97,7 +97,7 @@ object MTZ_FracIslands extends Solver{
     resList
   }
 
-  def solve (input: Input,formulation:String, preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean):Output={
+  def solve (input: Input,formulation:String, preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean,useConnecting:Boolean):Output={
     System.loadLibrary("jniortools")
 
     val solver: MPSolver = new MPSolver("",

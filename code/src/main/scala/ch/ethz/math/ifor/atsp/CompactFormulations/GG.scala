@@ -5,7 +5,7 @@ import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
 object GG extends Solver {
 
-  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean): Output={
+  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean,useConnecting:Boolean): Output={
 
     System.loadLibrary("jniortools")
 

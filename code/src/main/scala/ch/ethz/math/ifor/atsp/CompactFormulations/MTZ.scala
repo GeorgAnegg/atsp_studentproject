@@ -4,7 +4,7 @@ import ch.ethz.math.ifor.atsp.{Input, Output, Site, Tour, arcWise, inf, negInf,S
 import com.google.ortools.linearsolver.{MPSolver, MPVariable}
 
 object MTZ extends Solver {
-  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean): Output= {
+  def solve(input: Input,formulation:String,preprocessing:Boolean,useAdditive:Boolean,useParametricAP:Boolean,useConnecting:Boolean): Output= {
 
     System.loadLibrary("jniortools")
 

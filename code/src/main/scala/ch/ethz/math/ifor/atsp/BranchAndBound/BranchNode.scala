@@ -15,7 +15,8 @@ class BranchNode(val input: Input,
                  val isRootNode:Boolean,
                  val excludedArcAdded : Map[Site,Site],
                  val parentNode: BranchNode,
-                 val useParametricAP:Boolean
+                 val useParametricAP:Boolean,
+                 val useConnecting:Boolean
                 ) {
   var level = 0
   val costsMap: Map[Site, Map[Site, Double]] = input.distMat
@@ -54,12 +55,15 @@ class BranchNode(val input: Input,
     }
   }
 
-  val connectingResult = reduceNumberOfSubtours(this)
-  if (connectingResult._3 || connectingResult._2){
-    this.lowerBoundSolve = connectingResult._1
-    allTours = detectToursV2(lowerBoundSolve)
-    lowerBound =  lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
-    lowerBoundCostAP = lowerBound
+  var connectingResult:(Map[Site,Map[Site,Boolean]],Boolean,Boolean) = (Map(),false,false)
+  if (useConnecting) {
+    connectingResult = reduceNumberOfSubtours(this)
+    if (connectingResult._3 || connectingResult._2) {
+      this.lowerBoundSolve = connectingResult._1
+      allTours = detectToursV2(lowerBoundSolve)
+      lowerBound = lowerBoundSolve.map({ case (site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+      lowerBoundCostAP = lowerBound
+    }
   }
 
   /*

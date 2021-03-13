@@ -4,7 +4,7 @@ import com.google.ortools.linearsolver.{MPConstraint, MPObjective, MPSolver, MPV
 import ch.ethz.math.ifor.atsp.CompactFormulations.MTZ_FracIslands
 
 object BranchAndCutSolver extends Solver {
-  def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean,useParametricAP:Boolean): Output = {
+  def solve(input: Input, formulation:String, preprocessing:Boolean,useAddditive:Boolean,useParametricAP:Boolean,useConnecting:Boolean): Output = {
     System.loadLibrary("jniortools")
 
     // construct root node

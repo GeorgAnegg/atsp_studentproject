@@ -42,7 +42,7 @@ object YuExampleTest extends App {
  */
 
 
-  val output = BranchAndBoundSolver.solve(fromDistVec(input),"",true,true,true)
+  val output = BranchAndBoundSolver.solve(fromDistVec(input),"",true,true,true,false)
 
   //val output = MTZ_FracIslands.solve(fromDistVec(input),"",true,true,true)
   output.print()

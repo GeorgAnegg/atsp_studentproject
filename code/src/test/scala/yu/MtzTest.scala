@@ -18,7 +18,7 @@ object MtzTest extends App{
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/fri26.csv"," ")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/dantzig42.csv"," ")
   //val input = a.createInput("/Users/yudeng/Desktop/atsp/raw_data/att48.csv"," ")
-  val output = MTZ.solve(fromDistVec(input),"",true, true, true)
+  val output = MTZ.solve(fromDistVec(input),"",true, true, true,false)
   //output.print()
   val duration = (System.nanoTime - t1) / 1e9d
   println("Run time:" + duration)

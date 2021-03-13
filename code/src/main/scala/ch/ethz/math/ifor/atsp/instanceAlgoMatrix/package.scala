@@ -33,14 +33,14 @@ package object instanceAlgoMatrix {
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
-    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,false)),
-    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,true)),
-    ("FT97", BranchAndCutSolver.solve(_, "",true,false,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false)),
-    ("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false)),
-    ("MTZ", MTZ.solve(_,"",true, true, true)),
-    ("GG", GG.solve(_,"",true, true, true)),
-    ("DL", DL.solve(_,"",true, true, true))
+    ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true,true)),
+    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,true,false)),
+    ("FT97", BranchAndCutSolver.solve(_, "",true,false,false,false)),
+    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false,false)),
+    ("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false,false)),
+    ("MTZ", MTZ.solve(_,"",true, true, true,false)),
+    ("GG", GG.solve(_,"",true, true, true,false)),
+    ("DL", DL.solve(_,"",true, true, true,false))
   )
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
