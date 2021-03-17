@@ -75,13 +75,14 @@ def writeCell (rowNumber:Int,
                either: Either[(Double, Runtime), String],
                workbook: Workbook, sheetNames: List[String]): Unit = {
 
+  println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
+
   sheetNames.foreach(category => {
     val sheet = workbook.getSheet(category)
     var row = sheet.getRow(rowNumber)
     if (row ==null) {row = sheet.createRow(rowNumber) }
 
 
-    println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
     var cell = row.getCell(colNumber)
     if (cell == null) {
       cell = row.createCell(colNumber)}
