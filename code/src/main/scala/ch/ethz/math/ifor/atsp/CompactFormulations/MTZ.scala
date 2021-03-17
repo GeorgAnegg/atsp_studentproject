@@ -117,6 +117,6 @@ object MTZ extends Solver {
     }
     val tour = new Tour(input, siteList)
     println("end mtz")
-    new Output(input, tour)
+    new Output(input, tour,1,tour.length)
   }
 }

@@ -31,15 +31,17 @@ object BranchAndBoundSolver extends Solver {
     val initUpperBound = iniHeuristic._1
     val initTour = iniHeuristic._2
     //println("init upper bound",initUpperBound)
+    val iniLowerBound = rootNode.lowerBound
 
     if (rootNode.lowerBound==initUpperBound){
-      return new Output(input, initTour)
+      return new Output(input, initTour,1,rootNode.lowerBound)
     }
 
     var currentBestNode: Option[BranchNode] = None
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
 
+    var countNodes : Int = 0
     while (activeBranches.nonEmpty) {
 
       /** CT80 uses lowest-lower-bound search instead of depth-first search */
@@ -48,7 +50,7 @@ object BranchAndBoundSolver extends Solver {
 
       if (activeBranches.minBy(_.lowerBound).lowerBound >= initUpperBound){
         //println("here1?")
-        return new Output(input, initTour)
+        return new Output(input, initTour,countNodes,iniLowerBound)
       }
 
       val sortedNodes: List[BranchNode] = activeBranches.filter(_.lowerBound<=initUpperBound).sortBy(_.lowerBound)
@@ -64,9 +66,10 @@ object BranchAndBoundSolver extends Solver {
       val currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
+      countNodes += 1
       if (currentBranchNode.lowerBoundCostAP >= initUpperBound || currentBranchNode.lowerBound >= initUpperBound){
         //println("here2?")
-        return new Output(input, initTour)
+        return new Output(input, initTour,countNodes,iniLowerBound)
       }
 
       println("Number of active sortedNodes", sortedNodes.length,currentBranchNode.lowerBound,currentBranchNode.lowerBoundrSAP,currentBranchNode.lowerBoundCostAP,initUpperBound)
@@ -114,7 +117,7 @@ object BranchAndBoundSolver extends Solver {
     //list.foreach{e => println(e._1,e._2)}
     //println("optimal length: ", tour.length,tour.sequence.length,input.sites.length)
     //input.sites.foreach{e => println(e)}
-    new Output(input, tour)
+    new Output(input, tour,countNodes,iniLowerBound)
   }
 
   def detectTours(lbSolve:Map[Site, Map[Site, Boolean]],input: Input):List[Tour] = {

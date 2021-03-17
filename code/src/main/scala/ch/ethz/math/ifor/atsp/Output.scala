@@ -1,7 +1,10 @@
 package ch.ethz.math.ifor.atsp
 
 class Output (val input: Input,
-              val tour: Tour){
+              val tour: Tour,
+              val numberNodesExplored : Int,
+              val firstLowerBound : Double
+             ){
 
   /* require tour to include all sites */
   assert(tour.sequence.toSet == input.sites.toSet, "tour incomplete")

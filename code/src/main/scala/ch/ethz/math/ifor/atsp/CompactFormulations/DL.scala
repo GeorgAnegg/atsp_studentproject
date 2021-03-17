@@ -111,7 +111,7 @@ object DL extends Solver {
       currentSite = nextSite
     }
     val tour = new Tour(input,siteList)
-    val optOutput = new Output(input, tour)
+    val optOutput = new Output(input, tour,1,tour.length)
 
     optOutput
   }

@@ -101,7 +101,7 @@ object BranchAndCutSolver extends Solver {
       initUpperBound = iniHeuristic._1
       initTour = iniHeuristic._2
       if (apCost == initUpperBound){
-        return new Output(input, initTour)
+        return new Output(input, initTour,1,apCost)
       }
       //println("ini upper: ", +initUpperBound)
     }
@@ -112,6 +112,7 @@ object BranchAndCutSolver extends Solver {
     val rootNode: BranchNode = new BranchNode(input,initAssignmentMap,globalCuts,formulation)
     rootNode.level = 0
     rootNode.isRootNode = true
+    val iniLowerBound = rootNode.lowerBound
 
     var activeBranches: List[BranchNode] = List(rootNode) // start with root node
     var currentBestNode: Option[BranchNode] = None
@@ -125,6 +126,7 @@ object BranchAndCutSolver extends Solver {
     // 2. if no cuts found, apply PR90 MINCUT algorithm for SEC separation
     // 3. if no cuts found, shrink, apply separation algorithms for comb, D_k and odd CAT
     // 4. if some cuts are found, add to the current LP and repeat, else if (...)
+    var countNodes : Int = 0
     while (activeBranches.nonEmpty) {
       //println("Number of active nodes: "+activeBranches.size)
 
@@ -135,8 +137,9 @@ object BranchAndCutSolver extends Solver {
       var currentBranchNode = sortedNodes.head //consider node with smallest lower bound
       activeBranches = sortedNodes.reverse.init //remove considered node from active nodes
 
+      countNodes += 1
       if (currentBranchNode.lowerBound == initUpperBound){
-        return new Output(input, initTour)
+        return new Output(input, initTour,countNodes,iniLowerBound)
       }
 
       //println("Number of active nodes: "+activeBranches.size,"lower bound: ",currentBranchNode.lowerBound,"upper bound: ",initUpperBound,"iteration",currentBranchNode.iteration,currentBranchNode)
@@ -262,6 +265,6 @@ object BranchAndCutSolver extends Solver {
       }
     }
     val tour = currentBestNode.get.detectTours(currentBestNode.get.lowerBoundSolve).head
-    new Output(input, tour)
+    new Output(input, tour,countNodes,iniLowerBound)
   }
 }

@@ -257,6 +257,7 @@ object MTZ_FracIslands extends Solver{
       }
     }
 
+    var countNodes : Int = 1
     while (!isInteger(currentSolution) || detectTours(currentSolution).length!=1){
       val cuts  = fractionalIslands(input, currentSolution,x)
       if (cuts.nonEmpty){
@@ -265,10 +266,11 @@ object MTZ_FracIslands extends Solver{
         }
       }
       currentSolution = solveRelaxation(input, x, solver)
+      countNodes += 1
     }
 
     val toursInSolution = detectTours(currentSolution)
-    new Output(input, toursInSolution.head)
+    new Output(input, toursInSolution.head,countNodes,0)
   }
 
 
