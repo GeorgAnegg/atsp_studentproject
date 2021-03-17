@@ -28,7 +28,7 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
-  ).reverse
+  )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
