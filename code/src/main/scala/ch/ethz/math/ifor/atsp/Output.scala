@@ -6,8 +6,7 @@ class Output (val input: Input,
   /* require tour to include all sites */
   assert(tour.sequence.toSet == input.sites.toSet, "tour incomplete")
 
-
-  def value:Double = tour.length
+  def value : Double = tour.length
 
   def print(): Unit = {
     //println("List of arcs on optimal solution:")
