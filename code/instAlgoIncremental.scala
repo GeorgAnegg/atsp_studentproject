@@ -33,18 +33,36 @@ object instAlgoIncremental
 
 
 
-    val file = new FileInputStream(new File("instAlgoMatrix_60.xlsx"))
+
+    val filename = s"instAlgoMatrix_60.xlsx"
+    val file = new FileInputStream(new File(filename))
 
     val workbook = new XSSFWorkbook(file)
+    val sheetNames:List[String] = List("optValues", "runningTimes")
+//
+//    sheetNames.foreach { name =>
+//      val sheet = workbook.createSheet(name)
+//      //create header row
+//      val header = sheet.createRow(0)
+//      namedSolvers.map(_._1).zipWithIndex.foreach {
+//        case (solverID, index)=>
+//          val cell = header.createCell(index)
+//          cell.setCellValue(solverID)}
+//      instances.zipWithIndex.foreach {
+//        case (instanceID, index) =>
+//          val row = sheet.createRow(index + 1)
+//          val cell = row.createCell(0)
+//          cell.setCellValue(instanceID)
+//      }
+//    }
 
 
-    val filename = "/u/ganegg/Documents/atsp/code/instAlgoMatrix_60.xlsx" //System.getProperty("user.dir") + s"/src/main/resources/allAlgosIncr.xlsx"
-    //val inp = getClass.getResourceAsStream("/allAlgosIncr.xlsx") // PROBLEMATIC
-    //val workbook = WorkbookFactory.create(new File(filename))
 
-    writeCell(rowNumber,colNumber,either,workbook)
+    writeCell(rowNumber,colNumber,either,workbook, sheetNames)
 
-    val fileOut = new FileOutputStream(filename)
+    val filename_global = System.getProperty("user.dir")+s"/${filename}"
+
+    val fileOut = new FileOutputStream(filename_global)
     workbook.write(fileOut)
 
     fileOut.close()
@@ -55,9 +73,9 @@ object instAlgoIncremental
 def writeCell (rowNumber:Int,
                colNumber:Int,
                either: Either[(Double, Runtime), String],
-               workbook: Workbook): Unit = {
+               workbook: Workbook, sheetNames: List[String]): Unit = {
 
-  List("optValues", "runningTimes").foreach(category => {
+  sheetNames.foreach(category => {
     val sheet = workbook.getSheet(category)
     var row = sheet.getRow(rowNumber)
     if (row ==null) {row = sheet.createRow(rowNumber) }
