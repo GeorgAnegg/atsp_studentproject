@@ -35,6 +35,7 @@ object ChuLiuEdmonds {
     }
 
     /*
+
     println("ChuLiuEdmonds print reduced cost matrix: ")
     costsPrime3.foreach{
       case (site1, map1) => (site1, map1.map{
@@ -43,11 +44,6 @@ object ChuLiuEdmonds {
     }
 
      */
-
-
-
-
-
 
     // root node should have no in-edges
     /*
@@ -67,14 +63,6 @@ object ChuLiuEdmonds {
       case (site1,map1) => (site1,map1-rootSite)
     }
 
-    /*
-    println("ChuLiuEdmonds print reduced cost matrix 2: ")
-    costsPrime3.foreach{
-      case (site1, map1) => (site1, map1.map{
-        case (site2, value) => println(site1, site2, value)
-      })
-    }
-     */
 
     /*
     println("===============costsPrime in ChuLiuEdmonds===================")
@@ -106,8 +94,12 @@ object ChuLiuEdmonds {
       for(site <- graph.keys){
         if (site != rootSite){
           //println("here"+site.id)
-          minInDegreeMap= minInDegreeMap.++(inDegreeSites(graph, site)._1)
-          minCost= minCost.++(inDegreeSites(graph, site)._2)
+          val tmp = inDegreeSites(graph,site)
+          //minInDegreeMap= minInDegreeMap.++(tmp._1)
+          //minCost= minCost.++(tmp._2)
+
+          minInDegreeMap= minInDegreeMap.++(tmp._1)
+          minCost= minCost.++(tmp._2)
           //println("size",minInDegreeMap.size)
         }
       }
@@ -126,6 +118,7 @@ object ChuLiuEdmonds {
       val firstCycleFound = detectCycles(minInDegreeMap,inputHere)
 
       if (firstCycleFound.isEmpty){
+        //println("no cycle found")
         def constructArborescence(site1:Site ,site2:Site):Boolean=
           if (minInDegreeMap.contains((site1,site2))){
             true
@@ -146,6 +139,8 @@ object ChuLiuEdmonds {
  */
         return result.entries
       }
+
+      //println("find a cycle")
 
       // if minInDegreeMap contains a cycle
       /*
@@ -171,7 +166,7 @@ object ChuLiuEdmonds {
       }
 
  */
-      // construct the shrinked graph, by contracting cycle to a single supernode
+      // construct the shrunk graph, by contracting cycle to a single supernode
       val shrinkingResult = shrinkGraph(reducedCosts,firstCycleFound.head.sequence,minCost)
       val shrinkingGraph :Map[Site, Map[Site, Double]] = shrinkingResult._1
       val minToCycle:Map[Site, Map[Site, Double]] = shrinkingResult._2
@@ -182,6 +177,16 @@ object ChuLiuEdmonds {
       val treePrime = chuLiuEdmonds(shrinkingGraph)
       var treeArcs : List[(Site,Site)]=List()
       var arcsInCycle:Map[Site,Site]= firstCycleFound.head.listArcs
+      // sites in arcsInCycle need to be ordered !!!!!
+
+      /*
+      println("supernode ----------------arcs in cycle")
+      arcsInCycle.foreach{
+        case (a,b) => println(supernode,a,b)
+      }
+      println("-------------------------------")
+
+       */
 
       val inputPrime = new Input(reducedCosts.keys.toVector,reducedCosts)
 /*
@@ -208,7 +213,6 @@ object ChuLiuEdmonds {
           case (site2, value) if value => treeArcs = treeArcs ::: (site1,site2) :: Nil
         }
       }
-
       // extend treePrime to an arborescence by adding all but one edge of the cycle C
 
       // if in treePrime, supernode has an out-edge supernode->u, replace it with v->u, where v is a min-cost node in the supernode
@@ -219,21 +223,32 @@ object ChuLiuEdmonds {
       }
 /*
       println("treeArcs before")
-      treeArcs.foreach(map => println(map._1.id, map._2.id))
+      treeArcs.foreach(map => println(map._1, map._2))
 
       println("arcsInCycle before")
-      arcsInCycle.foreach(map => println(map._1.id, map._2.id))
+      arcsInCycle.foreach(map => println(map._1, map._2))
+
  */
+
       // in treePrime supernode has an in-edge u->supernode, replace it with u->v, where v is a min-cost node in the supernode
       var inSite = new Site()
       //println("inSite",inSite.id,"supernode",supernode.id)
       treeArcs.collect{
         case (site1,site2) if site2==supernode => inSite = site1
       }
-      //println("inSite",inSite.id)
+      //println(inSite,rootSite)
+      /*
+      minToCycle.foreach{
+        case (site1, map1) => map1.foreach{
+          case (site2, value) => println(site1,site2,value)
+        }
+      }
+
+       */
       val inEdgeInCycle = minToCycle(inSite).head._1
       treeArcs = treeArcs.filter(_!=(inSite,supernode))
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
+      //println("inSite",inSite,"inEdgeInCycle",inEdgeInCycle)
 
       // then delete v' that v'->v in the cycle
       if (arcsInCycle.exists(_._2 == inEdgeInCycle)) {
@@ -242,12 +257,13 @@ object ChuLiuEdmonds {
 
 /*
       println("treeArcs after")
-      treeArcs.foreach(map => println(map._1.id, map._2.id))
+      treeArcs.foreach(map => println(map._1, map._2))
 
       println("arcsInCycle after")
-      arcsInCycle.foreach(map => println(map._1.id, map._2.id))
+      arcsInCycle.foreach(map => println(map._1, map._2))
 
  */
+
       val resultArborescenceArcs = treeArcs.++(arcsInCycle.toList)
 /*
       println("resultArborescenceArcs")
@@ -265,7 +281,6 @@ object ChuLiuEdmonds {
 
     // return the minimum cost in-site and the corresponding cost
     def inDegreeSites(graph:Map[Site, Map[Site, Double]],site:Site):(List[(Site,Site)],Map[Site,Double])={
-
       var result: List[(Site,Double)] = List()
       graph.collect{
         case (site1, map1) => (site1,map1.collect{
@@ -275,10 +290,12 @@ object ChuLiuEdmonds {
         )
       }
       val sorted_list = result.sortBy(_._2)
-      //sorted_list.foreach{e => println("insite: "+e._1.id+" with cost "+e._2)}
+      //println("===============min Incoming Arc=================")
+      //sorted_list.foreach{e => println(site,e._1,e._2)}
+      //println("====================================================")
       val minInSite = sorted_list.head._1
       val minInCost = sorted_list.head._2
-      //println("site: "+site.id, "in site: ",minInSite.id)
+      //println("chosen: "+site,minInSite,minInCost)
       (List((minInSite,site)),Map(site->minInCost))
     }
 /*
@@ -335,10 +352,26 @@ object ChuLiuEdmonds {
           // println("=================find a tour using DFS=================",site.id)
           currentTour = site :: currentTour
         }
-
       }
+      //currentTour.foreach{case e=>println("current Tour: ",e)}
       if(currentTour.nonEmpty) {
-        val tour = new Tour(input, currentTour)
+        // need to order sites
+        var listSites :List[Site] = List(currentTour.head)
+        val firstSite = currentTour.head
+        var stop = false
+        var currentSite = currentTour.head
+        while (pairMap.exists(_._2==currentSite) && !stop){
+          //println("loop",listSites.size,currentTour.size)
+          val preSite = pairMap.find(_._2==currentSite).get._1
+          if (preSite!=firstSite){
+            listSites = preSite +: listSites
+            currentSite = preSite
+          } else {
+            stop = true
+          }
+        }
+        //listSites.foreach(e => println("in detect cycle ", e))
+        val tour = new Tour(input, listSites)
         listTour = listTour ::: tour :: Nil
       }
       listTour
@@ -397,19 +430,25 @@ object ChuLiuEdmonds {
     def shrinkGraph(graph:Map[Site, Map[Site, Double]],cycle:List[Site],minCost:Map[Site,Double]):(Map[Site, Map[Site, Double]],Map[Site, Map[Site, Double]],Map[Site, Map[Site, Double]],Site)={
       // create supernode newSite
       val newSite = new Site()
-
+      //cycle.foreach{case c=>println("supernode: ", newSite,c)}
+      //println("now shink grgaph, keys of graph before shrinking:")
+      //graph.keys.foreach(e => println(newSite,e))
       // if a node outside cycle, say u, has multiple arcs into the supernode, then just keep the minimum-cost arc
+      // Map[SiteOutsideCycle, Map[SiteInsideCycle,Double]]
       val minToCycle:Map[Site, Map[Site,Double]]={
         var result:Map[Site, Map[Site,Double]] = Map()
         for (site <-graph.keys){
+          //println("start searcch for site: ",site)
           if (!cycle.contains(site)){
-            var minMap:Map[Site,Double] = Map(site->inf)
+            var minMap:Map[Site,Double] = Map(cycle.head->inf)
             for (siteInCycle <- cycle){
-              if (graph(site)(siteInCycle) < minMap.last._2){
-                minMap = Map(siteInCycle->graph(site)(siteInCycle))
+              val currentCost = graph(site)(siteInCycle)
+              if (currentCost < minMap.last._2){
+                minMap = Map(siteInCycle->currentCost)
               }
             }
             result = result.++(Map(site -> minMap))
+            //println("found min",site,minMap.head._1,minMap.head._2)
           }
         }
         result
@@ -425,14 +464,16 @@ object ChuLiuEdmonds {
  */
       // Is it necessary to keep only the min-cost out-arc of the supernode?
       // if the supernode has multiple out-arcs to a node outside the circle, then just keep the minimum-cost one
+      // Map[SiteOutsideCycle, Map[SiteInsideCycle,Double]]
       val minFromCycle:Map[Site, Map[Site,Double]]={
         var result:Map[Site, Map[Site,Double]] = Map()
         for (site <-graph.keys){
           if (!cycle.contains(site) && site != rootSite){
-            var minMap:Map[Site,Double] = Map(site->inf)
+            var minMap:Map[Site,Double] = Map(cycle.head->inf)
             for (siteInCycle <- cycle){
-              if (graph(siteInCycle)(site) < minMap.last._2){
-                minMap = Map(siteInCycle->graph(siteInCycle)(site))
+              val currentCost = graph(siteInCycle)(site)
+              if (currentCost < minMap.last._2){
+                minMap = Map(siteInCycle->currentCost)
               }
             }
             result = result.++(Map(site -> minMap))
@@ -453,7 +494,8 @@ object ChuLiuEdmonds {
       var newMap = graph.collect{
         case (site1,map1) => (site1,map1.collect{
           // should only keep the min-cost in-arc of the supernode
-          case(site2, value) if !cycle.contains(site1) && cycle.contains(site2) && value == minToCycle(site1).values.head => (newSite, value)
+          //case(site2, value) if !cycle.contains(site1) && cycle.contains(site2) && value == minToCycle(site1).values.head => (newSite, value)
+          case(site2, value) if !cycle.contains(site1) && cycle.contains(site2) && minToCycle(site1).head._1==site2 => (newSite, value)
           case(site2, value) if !cycle.contains(site1) && !cycle.contains(site2) => (site2, value)
           case(site2, value) if cycle.contains(site1) && !cycle.contains(site2) => (site2, value)
         })
@@ -471,6 +513,7 @@ object ChuLiuEdmonds {
     resultAssignment.collect{
       case (site1,map1) => (site1, map1.collect{
         case (site2, value) if value => result = result + input.distMat(site1)(site2)
+        //case (site2, value) if value => println(site1,site2,input.distMat(site1)(site2))
       })
     }
     /*
@@ -488,7 +531,7 @@ object ChuLiuEdmonds {
     }
 
      */
-    println("===============lower bound rSAP is: ",result,"=======================")
+    //println("===============lower bound rSAP is: ",result,"=======================")
     result
   }
 

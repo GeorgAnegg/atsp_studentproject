@@ -9,7 +9,7 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut._
 package object instanceAlgoMatrix {
 
   val instances = List(
-    "br17",
+    /*"br17",
     "ftv33",
     "ftv35",
     "ftv38",
@@ -18,29 +18,31 @@ package object instanceAlgoMatrix {
     "ftv47",
     "ry48p",
     "ft53",
-    "ftv55",
-    "ftv64",
-    "ftv70",
-    "ft70",
-    "kro124p",
-    "ftv170",
-    "rbg323",
+
+     */
+    //"ftv55",
+    //"ftv64",
+    //"ftv70",
+    //"ft70",
+    //"kro124p",
+    //"ftv170",
+    //"rbg323",
     "rbg358",
-    "rbg403",
-    "rbg443"
+    //"rbg403",
+    //"rbg443"
   )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
   val namedSolvers :List[(String, Input => Output)] = List(
     ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true,true)),
-    ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,true,true)),
-    ("FT97", BranchAndCutSolver.solve(_, "",true,false,false,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false,false)),
-    ("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false,false)),
-    ("MTZ", MTZ.solve(_,"",true, false, false,false)),
-    ("GG", GG.solve(_,"",true, false, false,false)),
-    ("DL", DL.solve(_,"",true, false, false,false))
+    //("FT92" , BranchAndBoundSolver.solve(_, "",true,true,true,true)),
+    //("FT97", BranchAndCutSolver.solve(_, "",true,false,false,false)),
+    //("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false,false)),
+    //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false,false)),
+    //("MTZ", MTZ.solve(_,"",true, false, false,false)),
+    //("GG", GG.solve(_,"",true, false, false,false)),
+    //("DL", DL.solve(_,"",true, false, false,false))
   )
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
