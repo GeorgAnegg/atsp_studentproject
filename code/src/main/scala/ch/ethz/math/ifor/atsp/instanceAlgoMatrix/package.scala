@@ -28,7 +28,7 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
-  )
+  ).reverse
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
 
@@ -48,7 +48,6 @@ package object instanceAlgoMatrix {
         println(s"Solving instance $input with $name")
       val result = timed2(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
       //System.gc()
-      //Thread.sleep(1*1000)
       (name, result)
     }
   }
