@@ -14,17 +14,17 @@ import ExecutionContext.Implicits.global
 object timeOut {
 
 
-  def notTimed(maxTime: Int, input:Input, solver: Input=> Output): Either[(Double,Runtime), String] ={
+  def notTimed(maxTime: Int, input:Input, solver: Input=> Output): Either[(Int, Double, Double,Runtime), String] ={
     try {
       lazy val start = System.nanoTime
       lazy val output = solver(input)
       lazy val dur = Runtime((System.nanoTime - start) / 1e9d)
-      lazy val temp = Left(output.value, dur)
+      lazy val temp = Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
       temp
     }
     catch {
-      case e: OutOfMemoryError => {System.gc()//suggest garbage collection
-        Right("DNF")}
+      case e: OutOfMemoryError => System.gc() //suggest garbage collection
+        Right("DNF")
       case e: Exception => Right("ERROR")
     }
   }
@@ -51,9 +51,6 @@ object timeOut {
       p.tryFailure(new CancellationException)
     })
   }
-
-
-
 
 
   /** this is supposed to remove references to ongoing future and let it be garbage collected, but it didn't make a difference
@@ -89,13 +86,13 @@ object timeOut {
   }
 
 
-  def timed2(maxTime:Int, input: Input, solver: Input=> Output):  Either[(Double,Runtime), String] ={
+  def timed2(maxTime:Int, input: Input, solver: Input=> Output):  Either[(Int, Double, Double,Runtime), String] ={
     try {
-      lazy val (compute,cancel) = interruptableFuture[Either[(Double,Runtime), String]] { () =>
+      lazy val (compute,cancel) = interruptableFuture[Either[(Int, Double, Double,Runtime), String]] { () =>
         lazy val start = System.nanoTime
         lazy val output = solver(input)
         lazy val dur = Runtime((System.nanoTime - start) / 1e9d)
-        lazy val temp = Left(output.value, dur)
+        lazy val temp = Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
         temp
       }
       after(maxTime seconds)({println("computation timed out")
@@ -133,14 +130,14 @@ object timeOut {
     * @param solver
     * @return
     */
-  def timed(maxTime:Int, input:Input , solver: Input=> Output): Either[(Double,Runtime), String]= {
+  def timed(maxTime:Int, input:Input , solver: Input=> Output): Either[(Int,Double,Double,Runtime), String]= {
     try {
 
-      val (compute,cancel) = interruptableFuture[Either[(Double,Runtime), String]] { () =>
+      val (compute,cancel) = interruptableFuture[Either[(Int,Double,Double,Runtime), String]] { () =>
         val start = System.nanoTime
         val output = solver(input)
         val dur = Runtime((System.nanoTime - start) / 1e9d)
-        Left(output.value, dur)
+        Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
       }
       val sleep = Future{
         Thread.sleep(maxTime*1000)

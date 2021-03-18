@@ -43,7 +43,7 @@ package object instanceAlgoMatrix {
     ("DL", DL.solve(_,"",true, false, false,false))
   )
 
-  def runAll(maxTime: Int, input: String): List[(String, Either[(Double, Runtime), String])] = namedSolvers.map {
+  def runAll(maxTime: Int, input: String): List[(String, Either[(Int, Double, Double, Runtime), String])] = namedSolvers.map {
     case (name, solver) => {
         println(s"Solving instance $input with $name")
       val result = timed2(maxTime, namedInputs.find( _._1 == input).get._2 , solver)
@@ -54,7 +54,7 @@ package object instanceAlgoMatrix {
   }
 
   // matrix of values
-  def instanceAlgoData(maxTime: Int): List[(String, List[(String, Either[(Double, Runtime), String])])] = instances.map(name => name ->
+  def instanceAlgoData(maxTime: Int): List[(String, List[(String, Either[(Int, Double, Double, Runtime), String])])] = instances.map(name => name ->
   runAll(maxTime, name))
 
 }

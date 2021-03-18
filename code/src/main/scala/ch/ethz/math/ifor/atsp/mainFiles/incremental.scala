@@ -18,10 +18,7 @@ object incremental
     System.exit(0) //THIS SHUTS DOWN THE JVM TO CANCEL ONGOING FUTURES
   }
 
-
-
-
-
+  
   def writeRows(workbook: Workbook, input:String, data:List[(String, Either[(Double, Runtime), String])])= {
 
     val rowCounter = instances.indexOf(input) + 1

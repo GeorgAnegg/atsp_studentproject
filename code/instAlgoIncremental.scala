@@ -24,21 +24,18 @@ object instAlgoIncremental
       val dur = Runtime((System.nanoTime - start) / 1e9d)
       println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
       val output = namedSolvers.find(_._1 == args(1)).get._2(CSV.createInput(args(0)))
-      Left(output.value, dur)
+      Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
     }
     catch {
       case e: Any => {println(e)
         Right("ERROR")}
     }
 
-
-
-
     val filename = s"instAlgoMatrix_60.xlsx"
     val file = new FileInputStream(new File(filename))
 
     val workbook = new XSSFWorkbook(file)
-    val sheetNames:List[String] = List("optValues", "runningTimes")
+    val sheetNames:List[String] = List("numberNodes", "firstLB", "optValues", "runningTimes")
 //
 //    sheetNames.foreach { name =>
 //      val sheet = workbook.createSheet(name)
@@ -56,8 +53,6 @@ object instAlgoIncremental
 //      }
 //    }
 
-
-
     writeCell(rowNumber,colNumber,either,workbook, sheetNames)
 
     val filename_global = System.getProperty("user.dir")+s"/${filename}"
@@ -72,7 +67,7 @@ object instAlgoIncremental
 
 def writeCell (rowNumber:Int,
                colNumber:Int,
-               either: Either[(Double, Runtime), String],
+               either: Either[(Int, Double, Double, Runtime), String],
                workbook: Workbook, sheetNames: List[String]): Unit = {
 
   println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
@@ -89,14 +84,14 @@ def writeCell (rowNumber:Int,
     cell.setCellValue(either match {
           case Left(pair) => {
             category match {
-              case "optValues" => pair._1.toString
-              case "runningTimes" => pair._2.toString
+              case "numberNodes" => pair._1.toString
+              case "firstLB" => pair._2.toString
+              case "optValues" => pair._3.toString
+              case "runningTimes" => pair._4.toString
             }
           }
           case Right(s) => s
         })
-
-
   }
   )
 
