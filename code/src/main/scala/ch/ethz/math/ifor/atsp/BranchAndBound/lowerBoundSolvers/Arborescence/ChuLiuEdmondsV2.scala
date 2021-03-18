@@ -4,7 +4,7 @@ import ch.ethz.math.ifor.atsp.BranchAndBound.{BranchNode, LowerBound}
 import ch.ethz.math.ifor.atsp.{Input, Site, Tour, arcWise, inf}
 
 object ChuLiuEdmondsV2 {
-  def compute(input: Input,branchNode: BranchNode):Double={
+  def compute(input: Input,branchNode: BranchNode):(Double,Map[Site,Map[Site,Double]])={
     // first check var assignment
 
     var infeasible = true
@@ -15,13 +15,15 @@ object ChuLiuEdmondsV2 {
     }
 
     if (infeasible){
-      return inf
+      return (inf,Map())
     }
 
     // choose an arbitrary root node
     val rootSite = input.sites(0)
     // println("rootnode is: " + rootSite.id)
     // construct cost graph
+    var minInRoot : Double = 0.0
+
     val costs:arcWise[Double] = arcWise(input,input.distance)
     // block ii entries and some(false) entries
     val costsPrime3:Map[Site, Map[Site, Double]] = costs.entries.map{
@@ -30,6 +32,13 @@ object ChuLiuEdmondsV2 {
         case (site2, _) if site1!=site2 && branchNode.varAssignment(site1)(site2)==Some(true) => (site2,0)
         case (site2, value) => (site2,value)
       })
+    }
+
+    for (i<-input.sites){
+      val currentCost = costsPrime3(i)(rootSite)
+      if (currentCost<minInRoot){
+        minInRoot = currentCost
+      }
     }
 
     /*
@@ -249,8 +258,9 @@ object ChuLiuEdmondsV2 {
       val inEdgeInCycle = minToCycle(inSite).head._1
       treeArcs = treeArcs.filter(_!=(inSite,supernode))
       treeArcs = treeArcs ::: (inSite,inEdgeInCycle) :: Nil
-      //println("inSite",inSite,"inEdgeInCycle",inEdgeInCycle)
 
+      //firstCycleFound.head.sequence.foreach{e => println("site in cycle: ",e)}
+      //println("insite: ",inSite,"inEdgeInCycle",inEdgeInCycle,minToCycle(inSite).head._2)
 
       // compute all sites in the current supernode, all in their original id
       def recuFindSites(cycle:List[Site]):List[Site]={
@@ -462,7 +472,7 @@ object ChuLiuEdmondsV2 {
       // create supernode newSite
       val newSite = new Site()
       globalSupernodes = globalSupernodes ++ Map(newSite->cycle)
-      cycle.foreach{case c=>println("supernode: ", newSite,c)}
+      //cycle.foreach{case c=>println("supernode: ", newSite,c)}
       //println("now shink grgaph, keys of graph before shrinking:")
       //graph.keys.foreach(e => println(newSite,e))
       // if a node outside cycle, say u, has multiple arcs into the supernode, then just keep the minimum-cost arc
@@ -541,6 +551,7 @@ object ChuLiuEdmondsV2 {
     val resultAssignment:Map[Site,Map[Site,Boolean]] = chuLiuEdmonds(costsPrime)
 
     var result:Double = 0.0
+    result += minInRoot
 
     resultAssignment.collect{
       case (site1,map1) => (site1, map1.collect{
@@ -556,15 +567,19 @@ object ChuLiuEdmondsV2 {
       println("=======================print reduced cost matrix in Chu-Liu/Edmonds=================================")
       reducedCostMatrix.map{
       case (site1, map1) => (site1, map1.map{
-      case (site2, value) => println(site1,site2,costs.entries(site1)(site2),reducedCostMatrix(site1)(site2))
+      case (site2, value) if value < 0 => println(site1,site2,costs.entries(site1)(site2),reducedCostMatrix(site1)(site2))
+      case (site2, value) =>
     })
     }
     }
 
-    printReducedCost()
+    //printReducedCost()
 
-    println("===============lower bound rSAP is: ",result,"=======================")
-    result
+    if (result==inf){
+      result = 0
+    }
+    //println("===============lower bound rSAP is: ",result,"=======================")
+    (result,reducedCostMatrix)
   }
 
   // not used
