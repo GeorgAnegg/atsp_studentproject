@@ -37,6 +37,7 @@ class BranchNode(val input: Input,
   var allTours: List[Tour] = detectToursV2(lowerBoundSolve)
   var lowerBound: LowerBound  = lowerBoundSolve.map({case(site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
   var lowerBoundCostAP: Double = lowerBound
+  //println("lower bound here after AP: ",lowerBound)
 
   val globalHeuristic:(Double,Tour) = {
     if (isRootNode) {
@@ -62,6 +63,7 @@ class BranchNode(val input: Input,
       this.lowerBoundSolve = connectingResult._1
       allTours = detectToursV2(lowerBoundSolve)
       lowerBound = lowerBoundSolve.map({ case (site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
+      //println("lower bound here after connecting: ",lowerBound,connectingResult._3,connectingResult._2)
       lowerBoundCostAP = lowerBound
     }
   }
@@ -85,11 +87,11 @@ class BranchNode(val input: Input,
 
   var lowerBoundrSAP :Double= inf
   if (useAdditive /*&& isRootNode*/){
-    if (lowerBoundCostAP != globalUpperbound){
-      val inputRSAP = new Input(input.sites,reducedCostMatrixAfterAP)
-      lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP,this)
-      lowerBound = lowerBound + lowerBoundrSAP
-    }
+      if (lowerBoundCostAP != globalUpperbound) {
+        val inputRSAP = new Input(input.sites, reducedCostMatrixAfterAP)
+        lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP, this)
+        lowerBound = lowerBound + lowerBoundrSAP
+      }
   }
 
   def detectToursV2(lbSolve:Map[Site, Map[Site, Boolean]]):List[Tour] = {

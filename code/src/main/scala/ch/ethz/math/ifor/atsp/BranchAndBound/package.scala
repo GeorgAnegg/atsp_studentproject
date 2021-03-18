@@ -16,7 +16,7 @@ package object BranchAndBound {
   val lowerBoundSolver: LowerBoundSolver = HungarianTest
   //val lowerBoundSolver: LowerBoundSolver = HungarianV2
   val naiveLowerBoundSolver: LowerBoundSolver = NaiveLB
-  val rSAPLowerBoundSolver = AdditiveV1
+  val rSAPLowerBoundSolver = ChuLiuEdmonds
   val branchingScheme: BranchingScheme = CT80
   val upperBoundSolver: UpperBoundSolver= Karp79V2
   val paramatricSolver: LowerBoundSolver = ParametricTest

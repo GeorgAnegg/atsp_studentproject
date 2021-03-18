@@ -19,10 +19,7 @@ object incremental
   }
 
 
-
-
-
-  def writeRows(workbook: Workbook, input:String, data:List[(String, Either[(Double, Runtime), String])])= {
+  def writeRows(workbook: Workbook, input:String, data:List[(String, Either[(Int, Double, Double, Runtime), String])])= {
 
     val rowCounter = instances.indexOf(input) + 1
 
@@ -45,8 +42,10 @@ object incremental
             cell.setCellValue(either match {
               case Left(pair) => {
                 category match {
-                  case "optValues" => pair._1.toString
-                  case "runningTimes" => pair._2.toString
+                  case "numberNodes" => pair._1.toString
+                  case "firstLB" => pair._2.toString
+                  case "optValues" => pair._3.toString
+                  case "runningTimes" => pair._4.toString
                 }
               }
               case Right(s) => s
@@ -59,7 +58,7 @@ object incremental
 
 
 
-  def writeToFile(input:String, data: List[(String, Either[(Double, Runtime), String])])={
+  def writeToFile(input:String, data: List[(String, Either[(Int, Double, Double, Runtime), String])])={
     val filename = System.getProperty("user.dir") + s"/src/main/resources/allAlgosIncr.xlsx"
     val inp = getClass.getResourceAsStream("/allAlgosIncr.xlsx")
     val workbook = WorkbookFactory.create(inp)

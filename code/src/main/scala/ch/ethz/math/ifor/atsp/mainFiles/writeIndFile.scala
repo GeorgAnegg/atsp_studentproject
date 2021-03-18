@@ -69,7 +69,7 @@ object writeIndFile {
       for (i <- data.indices) {
         val cell = row.createCell(i + 1)
         cell.setCellValue(data(i)._2 match {
-          case Left(pair) => pair._2.toString
+          case Left(pair) => pair._4.toString
           case Right(s) => s
         })
       }
@@ -85,12 +85,43 @@ object writeIndFile {
       for (i <- data.indices) {
         val cell = row.createCell(i + 1)
         cell.setCellValue(data(i)._2 match {
-          case Left(pair) => pair._1.toString
+          case Left(pair) => pair._3.toString
           case Right(s) => s
         })
       }
     }
 
+    rowCounter = 3
+    //fill in data
+    data.foreach { entry =>
+      val row = sheet.createRow(rowCounter)
+      val nameCell = row.createCell(0)
+      nameCell.setCellValue("first LB")
+
+      for (i <- data.indices) {
+        val cell = row.createCell(i + 1)
+        cell.setCellValue(data(i)._2 match {
+          case Left(pair) => pair._2.toString
+          case Right(s) => s
+        })
+      }
+    }
+
+    rowCounter = 4
+    //fill in data
+    data.foreach { entry =>
+      val row = sheet.createRow(rowCounter)
+      val nameCell = row.createCell(0)
+      nameCell.setCellValue("Number of nodes")
+
+      for (i <- data.indices) {
+        val cell = row.createCell(i + 1)
+        cell.setCellValue(data(i)._2 match {
+          case Left(pair) => pair._1.toString
+          case Right(s) => s
+        })
+      }
+    }
   }
 
 

@@ -551,7 +551,7 @@ object ChuLiuEdmondsV2 {
     val resultAssignment:Map[Site,Map[Site,Boolean]] = chuLiuEdmonds(costsPrime)
 
     var result:Double = 0.0
-    result += minInRoot
+    //result += minInRoot
 
     resultAssignment.collect{
       case (site1,map1) => (site1, map1.collect{
@@ -578,7 +578,7 @@ object ChuLiuEdmondsV2 {
     if (result==inf){
       result = 0
     }
-    //println("===============lower bound rSAP is: ",result,"=======================")
+    println("===============lower bound rSAP is: ",result,"=======================")
     (result,reducedCostMatrix)
   }
 
