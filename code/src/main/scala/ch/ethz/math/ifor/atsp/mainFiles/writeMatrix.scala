@@ -12,7 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook
 object writeMatrix extends App {
 
 
-  val data = instanceAlgoMatrix.instanceAlgoData(10)
+  val data = instanceAlgoMatrix.instanceAlgoData(20)
 
 
   writeFile()
@@ -92,7 +92,7 @@ object writeMatrix extends App {
   def writeNumberNodes(workbook: XSSFWorkbook)= {
 
 
-    val sheet = workbook.createSheet("runningTimes")
+    val sheet = workbook.createSheet("NumberNodes")
 
     //write header row
     val headerRow = sheet.createRow(0)
@@ -128,7 +128,7 @@ object writeMatrix extends App {
   def writeFirstLB(workbook: XSSFWorkbook)= {
 
 
-    val sheet = workbook.createSheet("runningTimes")
+    val sheet = workbook.createSheet("FirstLB")
 
     //write header row
     val headerRow = sheet.createRow(0)
@@ -167,6 +167,8 @@ object writeMatrix extends App {
 
     writeRunningTimes(workbook)
     writeOptValues(workbook)
+    writeFirstLB(workbook)
+    writeNumberNodes(workbook)
 
     val fileOut = new FileOutputStream(filename)
     workbook.write(fileOut)
@@ -178,6 +180,7 @@ object writeMatrix extends App {
     println(" XLSX file written to:")
     println(filename)
     println("====================")
+    System.exit(0)
   }
 
 

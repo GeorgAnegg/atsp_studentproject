@@ -63,6 +63,7 @@ object instAlgoIncremental
     fileOut.close()
     workbook.close()
 
+    System.exit(0)
   }
 
 def writeCell (rowNumber:Int,

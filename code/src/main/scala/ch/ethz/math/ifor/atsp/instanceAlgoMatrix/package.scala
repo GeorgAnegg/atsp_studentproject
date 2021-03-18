@@ -9,9 +9,11 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut._
 package object instanceAlgoMatrix {
 
   val instances = List(
-    "br17",
+    //"br17",
     "ftv33",
+
     "ftv35",
+    /*
     "ftv38",
     "p43",
     "ftv44",
@@ -28,6 +30,8 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
+
+     */
   )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
@@ -36,11 +40,11 @@ package object instanceAlgoMatrix {
     ("CDT" , BranchAndBoundSolver.solve(_, "",true,false,true,true)),
     ("FT92" , BranchAndBoundSolver.solve(_, "",true,true,true,true)),
     ("FT97", BranchAndCutSolver.solve(_, "",true,false,false,false)),
-    ("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false,false)),
+    //("MTZ_FT97", BranchAndCutSolver.solve(_,"MTZ",true,false,false,false)),
     //("DL_FT97", BranchAndCutSolver.solve(_,"DL",true,false,false,false)),
     ("MTZ", MTZ.solve(_,"",true, false, false,false)),
-    ("GG", GG.solve(_,"",true, false, false,false)),
-    ("DL", DL.solve(_,"",true, false, false,false))
+    //("GG", GG.solve(_,"",true, false, false,false)),
+    //("DL", DL.solve(_,"",true, false, false,false))
   )
 
   def runAll(maxTime: Int, input: String): List[(String, Either[(Int, Double, Double, Runtime), String])] = namedSolvers.map {
