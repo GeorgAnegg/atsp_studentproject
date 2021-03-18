@@ -9,11 +9,9 @@ import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.timeOut._
 package object instanceAlgoMatrix {
 
   val instances = List(
-    //"br17",
+    "br17",
     "ftv33",
-
     "ftv35",
-    /*
     "ftv38",
     "p43",
     "ftv44",
@@ -30,8 +28,6 @@ package object instanceAlgoMatrix {
     "rbg358",
     "rbg403",
     "rbg443"
-
-     */
   )
 
   val namedInputs:List[(String, Input)] = instances.map(name => (name , CSV.createInput(name+".csv")))
