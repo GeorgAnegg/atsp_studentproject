@@ -24,8 +24,10 @@ object instAlgoIncremental
       val start = System.nanoTime
       val dur = Runtime((System.nanoTime - start) / 1e9d)
       println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
+
       val output = namedSolvers.find(_._1 == args(1)).get._2(input)
       Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
+
     }
     catch {
       case e: Any => {println(e)
@@ -36,7 +38,7 @@ object instAlgoIncremental
     val file = new FileInputStream(new File(filename))
 
     val workbook = new XSSFWorkbook(file)
-    val sheetNames:List[String] = List("numberNodes", "firstLB", "optValues", "runningTimes")
+    val sheetNames:List[String] = List("optValues", "runningTimes")
 //
 //    sheetNames.foreach { name =>
 //      val sheet = workbook.createSheet(name)
@@ -70,7 +72,7 @@ object instAlgoIncremental
 
 def writeCell (rowNumber:Int,
                colNumber:Int,
-               either: Either[(Int, Double, Double, Runtime), String],
+               either: Either[(Double, Runtime), String],
                workbook: Workbook, sheetNames: List[String]): Unit = {
 
   println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
@@ -87,10 +89,8 @@ def writeCell (rowNumber:Int,
     cell.setCellValue(either match {
           case Left(pair) => {
             category match {
-              case "numberNodes" => pair._1.toString
-              case "firstLB" => pair._2.toString
-              case "optValues" => pair._3.toString
-              case "runningTimes" => pair._4.toString
+              case "optValues" => pair._1.toString
+              case "runningTimes" => pair._2.toString
             }
           }
           case Right(s) => s

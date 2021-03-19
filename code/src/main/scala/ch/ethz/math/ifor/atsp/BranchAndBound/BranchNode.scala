@@ -64,7 +64,7 @@ class BranchNode(val input: Input,
       allTours = detectToursV2(lowerBoundSolve)
       lowerBound = lowerBoundSolve.map({ case (site1, map1) => costsMap(site1)(map1.filter(_._2).head._1) }).sum
       //println("lower bound here after connecting: ",lowerBound,connectingResult._3,connectingResult._2)
-      lowerBoundCostAP = lowerBound
+      //lowerBoundCostAP = lowerBound
     }
   }
 
@@ -89,7 +89,9 @@ class BranchNode(val input: Input,
   if (useAdditive /*&& isRootNode*/){
       if (lowerBoundCostAP != globalUpperbound) {
         val inputRSAP = new Input(input.sites, reducedCostMatrixAfterAP)
+        //println("start rSAP")
         lowerBoundrSAP = rSAPLowerBoundSolver.compute(inputRSAP, this)
+        //println("end rSAP")
         lowerBound = lowerBound + lowerBoundrSAP
       }
   }

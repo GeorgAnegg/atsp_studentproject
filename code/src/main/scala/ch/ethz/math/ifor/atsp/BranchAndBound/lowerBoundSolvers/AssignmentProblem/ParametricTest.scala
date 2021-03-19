@@ -90,7 +90,7 @@ object ParametricTest extends LowerBoundSolver{
         }
       }
       if (result==null){
-        //print("Did not find: ",identity)
+        print("Did not find: ",identity)
       }
       result
     }
@@ -111,36 +111,48 @@ object ParametricTest extends LowerBoundSolver{
     // construct left sites set
     val sites: Array[Site] = costs.entries.keys.toArray
     val sitesLeft = sites.filterNot(included.keys.toList.contains(_))
-    var sitesRight = sites.filterNot(included.values.toList.contains(_))
-    sitesRight = sitesRight.map{site => new Site(site.id+"Right")}
+    //var sitesRight = sites.filterNot(included.values.toList.contains(_))
+    var sitesRight = sites.map{site => new Site(site.id+"Right")}
+    //sitesRight = sitesRight.map{site => new Site(site.id+"Right")}
+
     /*
     println("=========== sitesLeft==========")
     sitesLeft.foreach{
       case (site1) => println(site1.id)
     }
+
     println("=========== sitesRight==========")
     sitesRight.foreach{
       case (site1) => println(site1.id)
     }
 
      */
+
     val start : Site = arcExcluded.head._1
     val destination : Site = searchByID(sitesRight,arcExcluded.head._2.id+"Right")
     //println("s,t :",start.id,destination.id)
 
     //val residualCost : Map[Site,Map[Site,Double]] = Map()
 
-
     // construct arc between left sites set and right sites set
     var stMap: Map[Site, Map[Site, Double]] = costs.entries.collect {
       case (site1, map1) => (site1, map1.collect {
         case (site2, value) if !included.keys.toList.contains(site1) && !included.exists(_._2==site2)
-          && branchNode.varAssignment(site1)(site2) == null && !matching.exists(_==(site1->site2))=> (searchByID(sitesRight, site2.id + "Right"), value)
+          && branchNode.varAssignment(site1)(site2) == null && !matching.exists(_==(site1,site2))=> (searchByID(sitesRight, site2.id + "Right"), value)
       })
     }
     matching.foreach{e=>
       stMap = stMap + (searchByID(sitesRight,e._2.id+"Right") -> Map(e._1->0))
     }
+
+    /*
+    stMap.foreach{
+      case (site1, map1) => map1.foreach{
+        case (site2, value) => println(site1,site2,value)
+      }
+    }
+
+     */
 
     /*
         println("======stmap in Parametric AP=====")
@@ -201,6 +213,9 @@ object ParametricTest extends LowerBoundSolver{
         }.to(collection.mutable.Map)
       }
 
+      //println("==========dijkstraDist======",start,destination)
+      //dijkstraDist.foreach(a => println(a._1, a._2, start, destination))
+
       // set the distance of node s to 0.0
       dijkstraDist.update(start, 0.0)
 
@@ -239,7 +254,9 @@ object ParametricTest extends LowerBoundSolver{
         val reachable = graph(currentSite._1).keys
 
         // if min-distance can be updated, update; add all these sites to the queue
+        //println("start,destination: ",start, destination,reachable.size,currentSite._1,currentSite._2)
         reachable.foreach { nextsite =>
+          //dijkstraDist.foreach(a => println(a._1, a._2, start, destination))
           if (dijkstraDist(nextsite) > dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite)) {
             dijkstraDist.update(nextsite, dijkstraDist(currentSite._1) + graph(currentSite._1)(nextsite))
             //dijkstraPre.update(nextsite, currentSite._1)
@@ -351,8 +368,12 @@ object ParametricTest extends LowerBoundSolver{
         case (site2, value) if branchNode.varAssignment(site1)(site2) == Some(false) => (site2,inf)
         //case (site2, value) if potential(searchByID(sitesRight,site2.id+"Right")) == inf => (site2,inf)
         case (site2, value) if sitesLeft.contains(site1) && sitesRight.contains(searchByID(sitesRight,site2.id+"Right"))
+          && potential(searchByID(sitesRight,site2.id+"Right"))!=inf
         => (site2, costs.entries(site1)(site2)+ potential(site1)-
           potential(searchByID(sitesRight,site2.id+"Right")))
+        case (site2, value) if sitesLeft.contains(site1) && sitesRight.contains(searchByID(sitesRight,site2.id+"Right"))
+          && potential(searchByID(sitesRight,site2.id+"Right"))==inf
+        => (site2, 0)
         case (site2, value) => (site2, value)
       })
     }

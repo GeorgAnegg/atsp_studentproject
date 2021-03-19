@@ -13,7 +13,7 @@ object writeMatrix extends App
  {
 
 
-  val data = instanceAlgoMatrix.instanceAlgoData(20)
+  val data = instanceAlgoMatrix.instanceAlgoData(60)
 
 
   writeFile()
