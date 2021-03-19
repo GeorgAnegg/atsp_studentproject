@@ -68,7 +68,7 @@ object instAlgoIncremental
 
 
       }
-      else {println("cell already filled")}
+      else {println(s"cell ${args(0).dropRight(4)}, ${args(1)} already filled")}
 
     }
     )
