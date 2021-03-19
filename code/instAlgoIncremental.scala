@@ -22,10 +22,11 @@ object instAlgoIncremental
     try {
       val input = CSV.createInput(args(0))
       val start = System.nanoTime
-      val dur = Runtime((System.nanoTime - start) / 1e9d)
+      
       println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
 
       val output = namedSolvers.find(_._1 == args(1)).get._2(input)
+      val dur = Runtime((System.nanoTime - start) / 1e9d)
       Left(output.value, dur)
 
     }
