@@ -5,7 +5,7 @@ import ch.ethz.math.ifor.atsp.dataProcessing.CSV
 import ch.ethz.math.ifor.atsp.{Runtime, instanceAlgoMatrix}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.{instances, namedSolvers}
 import ch.ethz.math.ifor.atsp.instanceAlgoMatrix.runAll
-import org.apache.poi.ss.usermodel.{Workbook, WorkbookFactory}
+import org.apache.poi.ss.usermodel.{CellType, Workbook, WorkbookFactory}
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -86,16 +86,19 @@ def writeCell (rowNumber:Int,
 
     var cell = row.getCell(colNumber)
     if (cell == null) {
-      cell = row.createCell(colNumber)}
-    cell.setCellValue(either match {
-          case Left(pair) => {
-            category match {
-              case "optValues" => pair._1.toString
-              case "runningTimes" => pair._2.toString
-            }
-          }
-          case Right(s) => s
-        })
+      cell = row.createCell(colNumber)
+    cell.setCellValue("empty")}
+    if (List("ERROR", "emtpy").contains(cell.getStringCellValue)) {
+      cell.setCellValue(either match {
+      case Left(pair) => {
+        category match {
+          case "optValues" => pair._1.toString
+          case "runningTimes" => pair._2.toString
+        }
+      }
+      case Right(s) => s
+    })}
+
   }
   )
 
