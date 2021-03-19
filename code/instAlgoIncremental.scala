@@ -24,35 +24,45 @@ object instAlgoIncremental
     val workbook = new XSSFWorkbook(file)
     val sheetNames:List[String] = List("optValues", "runningTimes")
 
+    val checkRow = workbook.getSheet(sheetNames(0)).getRow(rowNumber)
+    var checkCell = checkRow.getCell(colNumber)
+    if (checkCell==null) {checkCell = checkRow.createCell(colNumber)
+    checkCell.setCellValue("empty")}
 
-    sheetNames.foreach(category => {
-      val sheet = workbook.getSheet(category)
-      var row = sheet.getRow(rowNumber)
-      if (row ==null) {row = sheet.createRow(rowNumber) }
+    if (List("ERROR", "empty").contains(checkCell.getStringCellValue)) {
 
+      val either =
+        try {
+          val input = CSV.createInput(args(0))
+          val start = System.nanoTime
 
-      var cell = row.getCell(colNumber)
-      if (cell == null) {
-        cell = row.createCell(colNumber)
-        cell.setCellValue("empty")}
-      if (List("ERROR", "emtpy").contains(cell.getStringCellValue)) {
+          println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
 
-        val either =
-          try {
-            val input = CSV.createInput(args(0))
-            val start = System.nanoTime
+          val output = namedSolvers.find(_._1 == args(1)).get._2(input)
+          val dur = Runtime((System.nanoTime - start) / 1e9d)
+          Left(output.value, dur)
 
-            println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
-
-            val output = namedSolvers.find(_._1 == args(1)).get._2(input)
-            val dur = Runtime((System.nanoTime - start) / 1e9d)
-            Left(output.value, dur)
-
+        }
+        catch {
+          case e: Any => {
+            println(e)
+            Right("ERROR")
           }
-          catch {
-            case e: Any => {println(e)
-              Right("ERROR")}
-          }
+        }
+
+      println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
+
+
+      sheetNames.foreach(category => {
+        val sheet = workbook.getSheet(category)
+        var row = sheet.getRow(rowNumber)
+        if (row ==null) {row = sheet.createRow(rowNumber) }
+
+
+        var cell = row.getCell(colNumber)
+        if (cell == null) {
+          cell = row.createCell(colNumber)
+          cell.setCellValue("empty")}
 
 
 
@@ -68,61 +78,26 @@ object instAlgoIncremental
 
 
       }
-      else {println(s"cell ${args(0).dropRight(4)}, ${args(1)} already filled")}
+      )
+
+
+      val filename_global = System.getProperty("user.dir")+s"/${filename}"
+
+      val fileOut = new FileOutputStream(filename_global)
+      workbook.write(fileOut)
+
+      fileOut.close()
+
 
     }
-    )
+    else {println(s"cell ${args(0).dropRight(4)}, ${args(1)} already filled")}
 
-
-
-
-    //writeCell(rowNumber,colNumber,either,workbook, sheetNames)
-
-
-
-    val filename_global = System.getProperty("user.dir")+s"/${filename}"
-
-    val fileOut = new FileOutputStream(filename_global)
-    workbook.write(fileOut)
-
-    fileOut.close()
 
     workbook.close()
 
-    System.exit(0)
-  }
-
-def writeCell (rowNumber:Int,
-               colNumber:Int,
-               either: Either[(Double, Runtime), String],
-               workbook: Workbook, sheetNames: List[String]): Unit = {
-
-  println(s"writing value ${either} in row ${rowNumber} and column ${colNumber}")
-
-  sheetNames.foreach(category => {
-    val sheet = workbook.getSheet(category)
-    var row = sheet.getRow(rowNumber)
-    if (row ==null) {row = sheet.createRow(rowNumber) }
 
 
-    var cell = row.getCell(colNumber)
-    if (cell == null) {
-      cell = row.createCell(colNumber)
-    cell.setCellValue("empty")}
-    if (List("ERROR", "emtpy").contains(cell.getStringCellValue)) {
-      cell.setCellValue(either match {
-      case Left(pair) => {
-        category match {
-          case "optValues" => pair._1.toString
-          case "runningTimes" => pair._2.toString
-        }
-      }
-      case Right(s) => s
-    })}
 
   }
-  )
-
-}
 
 }
