@@ -26,7 +26,7 @@ object instAlgoIncremental
       println(s"solving ${args(0).dropRight(4)} with solver ${args(1)}")
 
       val output = namedSolvers.find(_._1 == args(1)).get._2(input)
-      Left(output.numberNodesExplored, output.firstLowerBound, output.value, dur)
+      Left(output.value, dur)
 
     }
     catch {
